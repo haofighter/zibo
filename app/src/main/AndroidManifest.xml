@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="com.szxb.zibo">
+    <!-- 用于自定义一个权限 -->
+    <!-- 声明一个新的权限 -->
+    <permission android:name="com.hao.MI" /> <!-- 使用一个新的权限 -->
+    <uses-permission android:name="android.permission.DELETE_PACKAGES" />
+    <uses-permission android:name="com.hao.MI" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.READ_FRAME_BUFFER" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.MOUNT_UNMOUNT_FILESYSTEMS" />
+    <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"></uses-permission>
+    <uses-permission
+        android:name="android.permission.PACKAGE_USAGE_STATS"
+        tools:ignore="ProtectedPermissions" />
+    <uses-permission
+        android:name="android.permission.PACKAGE_USAGE_STATS"
+        tools:ignore="ProtectedPermissions" />
+
+    <application
+        android:name=".base.BusApp"
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme">
+        <activity
+            android:name=".moudle.zibo.SelectLineActivity"
+            android:launchMode="singleTask"
+            android:theme="@style/AppTheme"></activity>
+        <activity
+            android:name=".moudle.zibo.SetBusNuActivity"
+            android:launchMode="singleTask"
+            android:theme="@style/AppTheme"></activity>
+        <activity
+            android:name=".moudle.init.InitActiivty"
+            android:launchMode="singleTask">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+
+            </intent-filter>
+        </activity> <!-- 开机广播 -->
+        <receiver android:name=".broadcast.BootBroadcastReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+        <receiver android:name=".broadcast.SdCardReciver">
+            <intent-filter android:priority="800">
+                <action android:name="android.intent.action.MEDIA_MOUNTED" />
+                <action android:name="android.intent.action.MEDIA_EJECT" />
+
+                <data android:scheme="file" />
+            </intent-filter>
+        </receiver>
+
+        <activity
+            android:name=".moudle.zibo.Main2Activity"
+            android:label="@string/title_activity_main2"
+            android:launchMode="singleTask"
+            android:theme="@style/AppTheme" />
+
+        <receiver android:name=".broadcast.NetChangeReceiver">
+            <intent-filter>
+                <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
+            </intent-filter>
+        </receiver>
+
+        <activity android:name=".base.BaseActivity" />
+
+        <service android:name="org.eclipse.paho.android.service.MqttService" />
+        <service android:name=".Mqtt.GetPushService" />
+
+        <service
+            android:name="com.baidu.location.f"
+            android:enabled="true"
+            android:process=":remote"></service>
+
+        <meta-data
+            android:name="com.baidu.lbsapi.API_KEY"
+            android:value="0jCuOIb9EnGZsQlDdWmtA8xGgUjCFVOK" />
+
+        <activity
+            android:name=".moudle.zibo.GPSColletActivity"
+            android:launchMode="singleTask"
+            android:theme="@style/AppTheme" />
+    </application>
+
+</manifest>

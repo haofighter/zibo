@@ -1,0 +1,290 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/param_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/gray_dd"
+    android:orientation="horizontal"
+    android:visibility="gone">
+
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="5dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="车辆号："
+                android:textColor="@color/white" />
+
+            <TextView
+                android:id="@+id/bus_no"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="right"
+                android:textColor="@color/white" />
+        </LinearLayout>
+
+        <include layout="@layout/v_05_line" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="5dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="线路名："
+                android:textColor="@color/white" />
+
+            <TextView
+                android:id="@+id/line_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="right"
+                android:textColor="@color/white" />
+        </LinearLayout>
+
+        <include layout="@layout/v_05_line" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="5dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="司机号："
+                android:textColor="@color/white" />
+
+            <TextView
+                android:id="@+id/driver_no"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="right"
+                android:textColor="@color/white" />
+        </LinearLayout>
+
+
+        <include layout="@layout/v_05_line" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="5dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="线路号："
+                android:textColor="@color/white" />
+
+            <TextView
+                android:id="@+id/line_id"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="right"
+                android:textColor="@color/white" />
+        </LinearLayout>
+
+        <include layout="@layout/v_05_line" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="5dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="bin版本："
+                android:textColor="@color/white" />
+
+            <TextView
+                android:id="@+id/bin_ver"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="right"
+                android:textColor="@color/white" />
+        </LinearLayout>
+
+        <include layout="@layout/v_05_line" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="5dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="app版本："
+                android:textColor="@color/white" />
+
+            <TextView
+                android:id="@+id/app_ver"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="right"
+                android:textColor="@color/white" />
+        </LinearLayout>
+
+        <include layout="@layout/v_05_line" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="5dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="票价版本："
+                android:textColor="@color/white" />
+
+            <TextView
+                android:id="@+id/far_ver"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="right"
+                android:textColor="@color/white" />
+        </LinearLayout>
+
+        <include layout="@layout/v_05_line" />
+    </LinearLayout>
+    <include layout="@layout/or_05_line" />
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="5dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="银联pos："
+                android:textColor="@color/white" />
+
+            <TextView
+                android:id="@+id/union_pos"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="right"
+                android:textColor="@color/white" />
+        </LinearLayout>
+
+        <include layout="@layout/v_05_line" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="5dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="银联商户："
+                android:textColor="@color/white" />
+
+            <TextView
+                android:id="@+id/union_mch"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="right"
+                android:textColor="@color/white" />
+        </LinearLayout>
+
+        <include layout="@layout/v_05_line" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="5dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="密钥版本："
+                android:textColor="@color/white" />
+
+            <TextView
+                android:id="@+id/key_ver"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="right"
+                android:textColor="@color/white" />
+        </LinearLayout>
+
+        <include layout="@layout/v_05_line" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="5dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="线路版本："
+                android:textColor="@color/white" />
+
+            <TextView
+                android:id="@+id/lin_ver"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="right"
+                android:textColor="@color/white" />
+        </LinearLayout>
+
+        <include layout="@layout/v_05_line" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="5dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="坐标："
+                android:textColor="@color/white" />
+
+            <TextView
+                android:id="@+id/location_now"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="right"
+                android:textColor="@color/white" />
+        </LinearLayout>
+
+        <include layout="@layout/v_05_line" />
+
+    </LinearLayout>
+</LinearLayout>

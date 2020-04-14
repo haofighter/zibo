@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="380dp"
+                android:layout_height="200dp"
+                android:layout_gravity="center"
+                android:id="@+id/init_layout"
+                android:background="@mipmap/background"
+                android:orientation="vertical">
+
+
+    <TextView
+            android:id="@+id/tip"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:gravity="center"
+            android:layout_marginLeft="5dp"
+            android:text="同步中"
+            android:textColor="@color/colorWhite"
+            android:textSize="23sp"/>
+
+    <ImageView
+            android:id="@+id/progress"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="5dp"
+            android:layout_marginTop="11dp"
+            android:layout_centerHorizontal="true"
+            android:layout_toRightOf="@id/tip"
+            android:background="@drawable/progress_list"/>
+
+    <EditText
+            android:id="@+id/update_info"
+            android:layout_width="match_parent"
+            android:layout_height="120dp"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"
+            android:gravity="center"
+            android:background="@color/transparent"
+            android:text="具体信息"
+            android:textColor="@color/colorWhite"
+            android:textSize="10sp"/>
+
+    <TextView
+            android:id="@+id/tip_info"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_marginBottom="3dp"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="5dp"
+            android:text="温馨提示:\n\t\t\t\t退一步心顺路宽都平安，抢半步车挤人怨招祸端！"
+            android:textColor="@color/colorWhite"
+            android:textSize="16sp"
+            android:textStyle="italic|bold"/>
+</RelativeLayout>
