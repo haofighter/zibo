@@ -107,8 +107,7 @@ public class devCmd {
 
 
     public void doCmd() {
-        MiLog.i("k21数据", "cla=" + FileUtils.bytesToHexString(new byte[]{cla}) + "     ins=" + FileUtils.bytesToHexString(new byte[]{ins}) + "     date" + FileUtils.bytesToHexString(dataBuf));
-        if ((cla & 0x80) != 0) {
+         if ((cla & 0x80) != 0) {
             switch (cla) {
                 case (byte) 0x8b:
                     DoCmd.doHeart(devCmd.this);
@@ -125,7 +124,7 @@ public class devCmd {
                 case (byte) 0x83://按键
                     DoCmd.doKeyPress(devCmd.this);
                     break;
-                case (byte) 0x8e://银联参数获取
+                case (byte) 0x8e://外接键盘
                     DoCmd.dokeyboard(devCmd.this);
                     break;
             }

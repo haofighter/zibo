@@ -10,11 +10,15 @@ import com.hao.lib.Util.Type;
 import com.szxb.zibo.base.BusApp;
 import com.szxb.zibo.config.haikou.Black;
 import com.szxb.zibo.config.haikou.BlackList;
+import com.szxb.zibo.config.haikou.Whitelist;
 import com.szxb.zibo.config.zibo.DBManagerZB;
 import com.szxb.zibo.config.zibo.InitConfigZB;
 import com.szxb.zibo.config.zibo.PublicKey;
 import com.szxb.zibo.db.manage.DBCore;
 import com.szxb.zibo.moudle.function.card.CardInfoEntity;
+import com.szxb.zibo.moudle.function.card.JTB.File1AJTBInfoEntity;
+import com.szxb.zibo.moudle.function.card.JTB.File1EJTBInfoEntity;
+import com.szxb.zibo.moudle.function.card.JTB.FileJTBPay;
 import com.szxb.zibo.moudle.function.location.GPSEntity;
 import com.szxb.zibo.moudle.function.location.GPSEvent;
 import com.szxb.zibo.util.BusToast;
@@ -46,7 +50,7 @@ public class PraseLine {
         try {
             byte[] bytes = FileUtils.readFile(file);
             praseAllLineByte(bytes);
-        }catch (Exception e){
+        } catch (Exception e) {
             BusToast.showToast("初始化线路参数失败", false);
         }
     }
@@ -114,24 +118,24 @@ public class PraseLine {
                     if (farePlan != null) {
                         BasicFare basicFare = DBManagerZB.getBasicPrice(farePlan.getPricePayCaseNum());
                         BusApp.getPosManager().setBasePrice(Integer.parseInt(basicFare.getPrice()));
-                        MiLog.i("设置基础票价", basicFare.getPrice());
+                        MiLog.i("参数配置", "设置基础票价：" + basicFare.getPrice());
                     }
-                    BusApp.getPosManager().setDirection("0000");
+//                    BusApp.getPosManager().setDirection("0000");
                 } else if (fareRulePlan.fareRuleType.equals("P")) {
                     GPSEvent.GPSEventOpen();
                     BusApp.getPosManager().setBasePrice(PraseLine.getMorePayPrice(null, true, true));
-                    BusApp.getPosManager().setDirection("0001");
+//                    BusApp.getPosManager().setDirection("0001");
                 } else if (fareRulePlan.fareRuleType.equals("X")) {
                     GPSEvent.GPSEventOpen();
                     BusApp.getPosManager().setBasePrice(PraseLine.getMorePayPrice(null, true, true));
-                    BusApp.getPosManager().setDirection("0001");
+//                    BusApp.getPosManager().setDirection("0001");
                 }
             } catch (Exception e) {
                 BusApp.getPosManager().setBasePrice(0);
-                MiLog.i("设置基础票价报错", e.getMessage());
+                MiLog.i("错误：", "设置基础票价报错：" + e.getMessage());
             }
         } catch (UnsupportedEncodingException e) {
-            Log.i("文件   票价 错误", e.getMessage());
+            Log.i("错误", "文件/票价错误" + e.getMessage());
         }
     }
 
@@ -146,7 +150,7 @@ public class PraseLine {
                 String stationStr = rules[i].substring(4);
                 try {
                     byte[] stationBytes = stationStr.getBytes("GBK");
-                    MiLog.i("站点", stationStr + "        长度=" + stationBytes.length);
+                    MiLog.i("参数配置", "站点：" + stationStr + "        长度=" + stationBytes.length);
                     for (int j = 0; j < stationNames.size(); j++) {
                         try {
                             if (j < stationNames.size()) {
@@ -154,17 +158,17 @@ public class PraseLine {
                                 int end = j * 10 + 10;
 //                                stationNames.get(j).setStationName(stations.substring(start, end));
                                 byte[] station = new byte[10];
-                                MiLog.i("站点", "当前起始位置：" + start);
+                                MiLog.i("参数配置", "站点 当前起始位置：" + start);
                                 if (end > stationBytes.length) {
                                     station = new byte[stationBytes.length - start];
                                 }
                                 arraycopy(stationBytes, start, station, 0, station.length);
                                 String stationName = new String(station, "GBK");
-                                MiLog.i("站点", "当前站点名：" + stationName);
+                                MiLog.i("参数配置", " 站点 当前站点名：" + stationName);
                                 stationNames.get(j).setStationName(stationName);
                             }
                         } catch (Exception e) {
-                            MiLog.i("线路文件 站点名匹配错误", "当前坐标j=" + j + "当前文件长度：" + rules[i].substring(4).length());
+                            MiLog.i("错误", "线路文件 站点名匹配错误   当前坐标j=" + j + "当前文件长度：" + rules[i].substring(4).length());
                         }
                     }
 
@@ -294,7 +298,7 @@ public class PraseLine {
                     priceIndex += stationNames.size() - i + k + 1;
                 }
                 try {
-                    Log.i("价格规则", (priceIndex + j - i) + "");
+                    Log.i("价格规则", stationPayPrice.toString());
 //                    if (i == j) {
 //                        stationPayPrice.price = 0;
 //                        stationPayPrices.add(stationPayPrice);
@@ -451,110 +455,122 @@ public class PraseLine {
         try {
             CommonSharedPreferences.put("black", file.getName());
             byte[] csn = FileUtils.readFile(file);
-            int i = 0;
+            praseCsnByte(csn, file.getName());
+        } catch (Exception e) {
+            MiLog.i("黑名单解析失败", "");
+        }
+    }
+
+    public static void praseCsnByte(byte[] csn, String fileName) {
+        int i = 0;
 //            //文件明
 //            byte[] Status = new byte[18];
 //            arraycopy(csn, i, Status, 0, Status.length);
 //            i += Status.length;
 //            String fileName = (String) FileUtils.byte2Parm(Status, Type.HEX);
 
-            //文件头信息
-            byte[] Head = new byte[9];
-            arraycopy(csn, i, Head, 0, Head.length);
-            i += Head.length;
-            String head = new String(Head);
+        //文件头信息
+        byte[] Head = new byte[9];
+        arraycopy(csn, i, Head, 0, Head.length);
+        i += Head.length;
+        String head = new String(Head);
 
-            List<BlackList> addblackLists = new ArrayList<>();
-            List<BlackList> refuseblackLists = new ArrayList<>();
-            int index = 0;
-            while (index <= 1000) {
-                index++;
-                try {
-                    BlackList blackList = new BlackList();
-                    byte[] BlackStart = new byte[10];
-                    arraycopy(csn, i, BlackStart, 0, BlackStart.length);
-                    String blackStart = FileUtils.bytesToHexString(BlackStart);
-                    if (blackStart.startsWith("ffff")) {
-                        break;
-                    }
-                    i += BlackStart.length;
-                    blackList.setCardStart(blackStart);
-
-                    byte[] BlackEnd = new byte[10];
-                    arraycopy(csn, i, BlackEnd, 0, BlackEnd.length);
-                    i += BlackEnd.length;
-                    String blackEnd = FileUtils.bytesToHexString(BlackEnd);
-                    blackList.setCardEnd(blackEnd);
-
-                    byte[] Tag = new byte[1];
-                    arraycopy(csn, i, Tag, 0, Tag.length);
-                    i += Tag.length;
-                    String tag = FileUtils.bytesToHexString(Tag);
-                    blackList.setType(tag);
-
-                    if (tag.equals("00")) {
-                        refuseblackLists.add(blackList);
-                    } else {
-                        addblackLists.add(blackList);
-                    }
-                } catch (Exception e) {
-                    MiLog.i("黑名单批量解析", e.getMessage());
-                }
-            }
-
-            if (file.getName().contains("_")) {
-                DBManagerZB.insertBlackList(addblackLists);
-                DBManagerZB.deleteBlackList(refuseblackLists);
-            } else {
-                getDaoSession().getBlackListDao().deleteAll();
-                DBManagerZB.insertBlackList(addblackLists);
-            }
-
-
-            List<Black> addblacks = new ArrayList<>();
-            List<Black> refuseblacks = new ArrayList<>();
-            int blackNum = 0;
-            while (blackNum <= 100000) {
-                index++;
-                try {
-                    Black black = new Black();
-                    byte[] BlackNo = new byte[10];
-                    arraycopy(csn, i, BlackNo, 0, BlackNo.length);
-                    String blackStart = FileUtils.bytesToHexString(BlackNo);
-                    i += BlackNo.length;
-                    black.setCardNum(blackStart);
-
-
-                    byte[] Tag = new byte[1];
-                    arraycopy(csn, i, Tag, 0, Tag.length);
-                    i += Tag.length;
-                    String tag = FileUtils.bytesToHexString(Tag);
-                    black.setType(tag);
-
-                    if (tag.equals("00")) {
-                        refuseblacks.add(black);
-                    } else {
-                        addblacks.add(black);
-                    }
-
-                    if (blackStart.contains("50004005")) {
-                        MiLog.i("找到一个黑名单卡", blackStart);
-                    }
-                } catch (Exception e) {
-                    MiLog.i("黑名单单个解析", e.getMessage());
+        List<BlackList> addblackLists = new ArrayList<>();
+        List<BlackList> refuseblackLists = new ArrayList<>();
+        int index = 0;
+        while (index <= 1000) {
+            index++;
+            try {
+                BlackList blackList = new BlackList();
+                byte[] BlackStart = new byte[10];
+                arraycopy(csn, i, BlackStart, 0, BlackStart.length);
+                String blackStart = FileUtils.bytesToHexString(BlackStart);
+                if (blackStart.startsWith("ffff")) {
                     break;
                 }
-            }
-            if (file.getName().contains("_")) {
-                DBManagerZB.insertBlack(addblacks);
-                DBManagerZB.deleteBlack(refuseblacks);
-            } else {
-                getDaoSession().getBlackDao().deleteAll();
-                DBManagerZB.insertBlack(addblacks);
-            }
-        } catch (Exception e) {
+                i += BlackStart.length;
+                blackList.setCardStart(blackStart);
 
+                byte[] BlackEnd = new byte[10];
+                arraycopy(csn, i, BlackEnd, 0, BlackEnd.length);
+                i += BlackEnd.length;
+                String blackEnd = FileUtils.bytesToHexString(BlackEnd);
+                blackList.setCardEnd(blackEnd);
+
+                Log.i("批量黑名单", "blackStart=" + blackStart + "     blackEnd= " + blackEnd);
+                byte[] Tag = new byte[1];
+                arraycopy(csn, i, Tag, 0, Tag.length);
+                i += Tag.length;
+                String tag = FileUtils.bytesToHexString(Tag);
+                blackList.setType(tag);
+
+                if (tag.equals("00")) {
+                    refuseblackLists.add(blackList);
+                } else {
+                    addblackLists.add(blackList);
+                }
+            } catch (Exception e) {
+                Log.i("黑名单批量解析", e.getMessage());
+            }
         }
+
+        if (fileName.contains("_")) {
+            DBManagerZB.insertBlackList(addblackLists);
+            DBManagerZB.deleteBlackList(refuseblackLists);
+        } else {
+            getDaoSession().getBlackListDao().deleteAll();
+            DBManagerZB.insertBlackList(addblackLists);
+            Log.i("黑名单批量解析", "全量删除");
+        }
+
+
+        List<Black> addblacks = new ArrayList<>();
+        List<Black> refuseblacks = new ArrayList<>();
+        int blackNum = 0;
+        while (blackNum <= 100000) {
+            index++;
+            try {
+                Black black = new Black();
+                byte[] BlackNo = new byte[10];
+                arraycopy(csn, i, BlackNo, 0, BlackNo.length);
+                String blackStart = FileUtils.bytesToHexString(BlackNo);
+                i += BlackNo.length;
+                black.setCardNum(blackStart);
+
+                Log.i("当前黑名单", "blackStart=" + blackStart + "   ");
+                if (blackStart.startsWith("2550") && blackStart.endsWith("0005")) {
+                    Log.i("黑名单", "blackStart=" + blackStart);
+                }
+
+                byte[] Tag = new byte[1];
+                arraycopy(csn, i, Tag, 0, Tag.length);
+                i += Tag.length;
+                String tag = FileUtils.bytesToHexString(Tag);
+                black.setType(tag);
+
+                if (tag.equals("00")) {
+                    refuseblacks.add(black);
+                } else {
+                    addblacks.add(black);
+                }
+
+                if (blackStart.contains("50004005")) {
+                    Log.i("找到一个黑名单卡", blackStart + "      " + addblacks.size() + "       " + refuseblacks.size());
+                }
+            } catch (Exception e) {
+                Log.i("黑名单单个解析", e.getMessage() + "      " + addblacks.size() + "       " + refuseblacks.size());
+                break;
+            }
+        }
+        if (fileName.contains("_")) {
+            DBManagerZB.insertBlack(addblacks);
+            DBManagerZB.deleteBlack(refuseblacks);
+        } else {
+            getDaoSession().getBlackDao().deleteAll();
+            DBManagerZB.insertBlack(addblacks);
+            Log.i("黑名单批量解析", "全量删除");
+        }
+
     }
 
 
@@ -704,7 +720,30 @@ public class PraseLine {
                             isSameDiraction = Integer.parseInt(cardDir) == nowDir;//非同一个方向
                             isLimitTime = System.currentTimeMillis() - DateUtil.getDateLong(cardInfoEntity.getnewCPUMorePriceInfo().getBoarding_time(), "yyyyMMddHHmmss") > 5 * 60 * 60 * 1000;//间隔时间超过两小时
                             isFiveMin = System.currentTimeMillis() - DateUtil.getDateLong(cardInfoEntity.getnewCPUMorePriceInfo().getBoarding_time(), "yyyyMMddHHmmss") > 10 * 60 * 1000;//间隔时间超过10
+
                             isSameLine = nowLine.equals(cardLine);
+                        } else if (cardInfoEntity.selete_aid.equals("01")) {
+                            if (cardInfoEntity.getFile1AJTBInfoEntity().getTransaction_status_1a().equals("00")) {//已完成
+                                String nowLine = BusApp.getPosManager().getLineNo().substring(2);
+                                String cardBus = cardInfoEntity.getFile1AJTBInfoEntity().getBoarding_vehicle_number_1a();
+                                String cardDir = cardInfoEntity.getFile1AJTBInfoEntity().getDirection_identity_1a();
+                                String cardLine = cardInfoEntity.getFile1AJTBInfoEntity().getBoarding_line_number_1a();
+                                isSameBus = FileUtils.formatHexStringToByteString(6, nowBus).equals(cardBus);//表示非同一辆车
+                                isSameDiraction = Integer.parseInt(cardDir) == nowDir;//非同一个方向
+                                isLimitTime = System.currentTimeMillis() - DateUtil.getDateLong(cardInfoEntity.getFile1AJTBInfoEntity().getAlight_time_1a(), "yyyyMMddHHmmss") > 5 * 60 * 60 * 1000;//间隔时间超过两小时
+                                isFiveMin = System.currentTimeMillis() - DateUtil.getDateLong(cardInfoEntity.getFile1AJTBInfoEntity().getAlight_time_1a(), "yyyyMMddHHmmss") > 10 * 60 * 1000;//间隔时间超过10分钟
+                                isSameLine = nowLine.equals(cardLine);
+                            } else {
+                                String nowLine = BusApp.getPosManager().getLineNo().substring(2);
+                                String cardBus = cardInfoEntity.getFile1AJTBInfoEntity().getBoarding_vehicle_number_1a();
+                                String cardDir = cardInfoEntity.getFile1AJTBInfoEntity().getDirection_identity_1a();
+                                String cardLine = cardInfoEntity.getFile1AJTBInfoEntity().getBoarding_line_number_1a();
+                                isSameBus = FileUtils.formatHexStringToByteString(6, nowBus).equals(cardBus);//表示非同一辆车
+                                isSameDiraction = Integer.parseInt(cardDir) == nowDir;//非同一个方向
+                                isLimitTime = System.currentTimeMillis() - DateUtil.getDateLong(cardInfoEntity.getFile1AJTBInfoEntity().getBoarding_time_1a(), "yyyyMMddHHmmss") > 5 * 60 * 60 * 1000;//间隔时间超过两小时
+                                isFiveMin = System.currentTimeMillis() - DateUtil.getDateLong(cardInfoEntity.getFile1AJTBInfoEntity().getBoarding_time_1a(), "yyyyMMddHHmmss") > 10 * 60 * 1000;//间隔时间超过10分钟
+                                isSameLine = nowLine.equals(cardLine);
+                            }
                         } else {
                             String nowLine = BusApp.getPosManager().getM1Line();
                             String cardBus = cardInfoEntity.getMorePriceInfo().getVehicle_number();
@@ -724,7 +763,7 @@ public class PraseLine {
                     int nowStation = BusApp.getPosManager().getStationID();
 
 
-                    if (!isSameBus || isLimitTime || !isSameLine) {
+                    if (!isSameBus || isLimitTime || !isSameLine) {// 非同车  时间限制之外  非同线路
                         if (cardInfoEntity.getComplete_mark().equals("01")) {//表示交易未完成 当前为补票
                             cardInfoEntity.setComplete_mark("00");
                             cardInfoEntity.setTranseType(3);
@@ -748,6 +787,7 @@ public class PraseLine {
                     } else {
                         cardInfoEntity.setTranseType(2);
 //                        isFiveMin = true;
+                        //超过5分钟  同方向  同站点
                         if (!isFiveMin && isSameDiraction && cardInfoEntity.getBoarding_site_indexInt() == BusApp.getPosManager().getStationID()) {
                             cardInfoEntity.setFull_fare(fullPrice);
                             cardInfoEntity.setPre_preferential_amount(0);
@@ -808,6 +848,41 @@ public class PraseLine {
             cardInfoEntity.getnewCPUMorePriceInfo().setDriver_number(BusApp.getPosManager().getDriverNo());
             cardInfoEntity.getnewCPUMorePriceInfo().setPose_id(BusApp.getPosManager().getM1psam());
             cardInfoEntity.getnewCPUMorePriceInfo().setFull_fare(fullPrice);
+        } else if (cardInfoEntity.selete_aid.equals("01")) {
+            cardInfoEntity.getFile1AJTBInfoEntity().setTrade_serial_number_1a(BusApp.getPosManager().getmchTrxId() + "");
+            if (cardInfoEntity.getTranseType() == 1) {//上车
+                cardInfoEntity.getFile1AJTBInfoEntity().setBoarding_city_code_1a("0000");
+                cardInfoEntity.getFile1AJTBInfoEntity().setAlight_city_code_1a("4530");
+                cardInfoEntity.getFile1AJTBInfoEntity().setBoarding_mark_1a(FileUtils.hexStringFromatByF(8, "13664530", false));
+                cardInfoEntity.getFile1AJTBInfoEntity().setAlight_mark_1a("00000000");
+                cardInfoEntity.getFile1AJTBInfoEntity().setBoarding_the_site_1a(BusApp.getPosManager().getStationID());
+                cardInfoEntity.getFile1AJTBInfoEntity().setAlight_the_site_1a("00");
+                cardInfoEntity.getFile1AJTBInfoEntity().setBoarding_terminal_number_1a(BusApp.getPosManager().getJTBpsam());
+                cardInfoEntity.getFile1AJTBInfoEntity().setAlight_terminal_number_1a("00000000");
+                cardInfoEntity.getFile1AJTBInfoEntity().setBoarding_time_1a(DateUtil.getCurrentDate2());
+                cardInfoEntity.getFile1AJTBInfoEntity().setAlight_time_1a("0");
+                cardInfoEntity.getFile1AJTBInfoEntity().setBoarding_max_amount_1a(fullPrice);
+                String nowLineDir = FileUtils.formatHexStringToByteString(1, BusApp.getPosManager().getDirection());
+                cardInfoEntity.getFile1AJTBInfoEntity().setDirection_identity_1a(nowLineDir.equals("01") ? "00" : "01");
+                cardInfoEntity.getFile1AJTBInfoEntity().setBoarding_line_number_1a(BusApp.getPosManager().getLineNo().substring(2, 6));
+                cardInfoEntity.getFile1AJTBInfoEntity().setBoarding_vehicle_number_1a(BusApp.getPosManager().getBusNo());
+            } else {//下车
+                cardInfoEntity.getFile1AJTBInfoEntity().setBoarding_city_code_1a("0000");
+                cardInfoEntity.getFile1AJTBInfoEntity().setAlight_city_code_1a("4530");
+                cardInfoEntity.getFile1AJTBInfoEntity().setBoarding_mark_1a("00000000");
+                cardInfoEntity.getFile1AJTBInfoEntity().setAlight_mark_1a(FileUtils.hexStringFromatByF(8, "13664530", false));
+                cardInfoEntity.getFile1AJTBInfoEntity().setBoarding_the_site_1a("00");
+                cardInfoEntity.getFile1AJTBInfoEntity().setAlight_the_site_1a(BusApp.getPosManager().getStationID());
+                cardInfoEntity.getFile1AJTBInfoEntity().setBoarding_terminal_number_1a("00000000");
+                cardInfoEntity.getFile1AJTBInfoEntity().setAlight_terminal_number_1a(BusApp.getPosManager().getJTBpsam());
+                cardInfoEntity.getFile1AJTBInfoEntity().setBoarding_time_1a("0");
+                cardInfoEntity.getFile1AJTBInfoEntity().setAlight_time_1a(DateUtil.getCurrentDate2());
+                cardInfoEntity.getFile1AJTBInfoEntity().setBoarding_max_amount_1a(fullPrice);
+                String nowLineDir = FileUtils.formatHexStringToByteString(1, BusApp.getPosManager().getDirection());
+                cardInfoEntity.getFile1AJTBInfoEntity().setDirection_identity_1a(nowLineDir.equals("01") ? "00" : "01");
+                cardInfoEntity.getFile1AJTBInfoEntity().setBoarding_line_number_1a(BusApp.getPosManager().getLineNo().substring(2, 6));
+                cardInfoEntity.getFile1AJTBInfoEntity().setBoarding_vehicle_number_1a(BusApp.getPosManager().getBusNo());
+            }
         } else {
             cardInfoEntity.getMorePriceInfo().setDriver_direction(BusApp.getPosManager().getDirection());
             cardInfoEntity.getMorePriceInfo().setVehicle_number(BusApp.getPosManager().getBusNo());
@@ -831,5 +906,51 @@ public class PraseLine {
         }
     }
 
+    //白名单解析
+    public static void praseUsr(File file) {
 
+        try {
+            CommonSharedPreferences.put("black", file.getName());
+            byte[] csn = FileUtils.readFile(file);
+            praseUsrByte(csn, file.getName());
+        } catch (Exception e) {
+            MiLog.i("流程", "白名单解析失败");
+        }
+    }
+
+    //白名单
+    public static void praseUsrByte(byte[] csn, String name) {
+        try {
+            String csnStr = new String(csn);
+
+            String[] usrInfo = csnStr.split("=");
+            String head = usrInfo[0];
+            String style = head.substring(4, 5);
+            String content = usrInfo[1];
+
+            String[] usrs = content.split("\\t");
+
+            List<Whitelist> whitelists = new ArrayList<>();
+            for (int i = 0; i < usrs.length; i++) {
+                try {
+                    Whitelist whitelist = new Whitelist();
+                    whitelist.setUser(usrs[i].substring(0, 6));
+                    whitelist.setCardno(usrs[i].substring(6, 6 + 9));
+                    whitelist.setDeadCardno(usrs[i].substring(6 + 9, 6 + 9 + 16));
+                    whitelist.setLevel(usrs[i].substring(6 + 9 + 16, 6 + 9 + 16 + 1));
+                    whitelist.setPassword(usrs[i].substring(6 + 9 + 16 + 1, 6 + 9 + 16 + 1 + 6));
+                    Log.i("流程", "单个白名单：" + whitelist.toString());
+                    whitelists.add(whitelist);
+                } catch (Exception e) {
+                    MiLog.i("流程", "白名单单个解析失败：" + usrs[i]);
+                }
+            }
+            if (style.equals("0")) {
+                DBManagerZB.deleteWhite();
+            }
+            DBManagerZB.insertWhite(whitelists);
+        } catch (Exception e) {
+            MiLog.i("流程", "白名单解析失败");
+        }
+    }
 }

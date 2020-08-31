@@ -34,6 +34,8 @@ public class ParamShowInfo {
     String jtbtradenum;
     String jtbtradepay;
     String conductorno;//乘务员号
+    String keyborad;//键盘无线模块
+    String mykeyborad;//卡机当前模块
 
     public String getDriver_no() {
         return driver_no;
@@ -297,5 +299,21 @@ public class ParamShowInfo {
 
     public void setConductorno(String conductorno) {
         this.conductorno = conductorno;
+    }
+
+    public String getKeyborad() {
+        return keyborad;
+    }
+
+    public void setKeyborad(String keyborad) {
+        this.keyborad = keyborad;
+    }
+
+    public String getMykeyborad() {
+        return mykeyborad;
+    }
+
+    public void setMykeyborad(String mykeyborad) {
+        this.mykeyborad = mykeyborad;
     }
 }

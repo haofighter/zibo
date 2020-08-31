@@ -1,5 +1,8 @@
 package com.szxb.zibo.db.bean;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 /**
  * 作者: TangRen on 2017/12/17
  * 包名：com.czgj.entity.scan
@@ -7,7 +10,7 @@ package com.szxb.zibo.db.bean;
  * FTP 信息
  */
 
-public class FTPEntity {
+public class FTPEntity implements Parcelable {
 
     /**
      * i : ip
@@ -27,6 +30,38 @@ public class FTPEntity {
         this.u = u;
         this.psw = psw;
     }
+
+    protected FTPEntity(Parcel in) {
+        i = in.readString();
+        p = in.readInt();
+        u = in.readString();
+        psw = in.readString();
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(i);
+        dest.writeInt(p);
+        dest.writeString(u);
+        dest.writeString(psw);
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    public static final Creator<FTPEntity> CREATOR = new Creator<FTPEntity>() {
+        @Override
+        public FTPEntity createFromParcel(Parcel in) {
+            return new FTPEntity(in);
+        }
+
+        @Override
+        public FTPEntity[] newArray(int size) {
+            return new FTPEntity[size];
+        }
+    };
 
     public String getI() {
         return i;

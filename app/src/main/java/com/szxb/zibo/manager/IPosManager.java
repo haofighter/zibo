@@ -56,7 +56,7 @@ public interface IPosManager {
     /**
      * @param stationName 站点名
      */
-    void setStationName(String stationName);
+//    void setStationName(String stationName);
 
     String getStationName();
 

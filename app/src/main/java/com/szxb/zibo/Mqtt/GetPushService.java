@@ -128,9 +128,9 @@ public class GetPushService extends Service {
                 @Override
                 public void messageArrived(String topicName, final MqttMessage message) {
                     try {
-                        Log.i("mqtt 接收数据", "" + new String(message.getPayload()));
+                        Log.i("mqtt", " 接收数据" + new String(message.getPayload()));
                     } catch (Exception e) {
-                        MiLog.i("mqtt  错误", "解析错误" + e.getMessage() + "     " + new String(message.getPayload()));
+                        MiLog.i("错误", "mqtt 解析错误" + e.getMessage() + "     " + new String(message.getPayload()));
                     }
                 }
             });

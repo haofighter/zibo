@@ -25,11 +25,11 @@ public class StationPayPrice {
     @Override
     public String toString() {
         return "StationPayPrice{" +
-                "priceTypeNum='" + priceTypeNum + '\'' +
-                ", up=" + up +
-                ", down=" + down +
-                ", price=" + price +
-                '}'+"\n";
+                "上下行='" + priceTypeNum + '\'' +
+                ", 上车站=" + up +
+                ", 下车站=" + down +
+                ", 价格=" + price +
+                '}' + "\n";
     }
 
     public String getPriceTypeNum() {

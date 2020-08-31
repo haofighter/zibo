@@ -32,90 +32,38 @@ public class SoundPoolUtil {
 
     private static Context mContext;
 
-    private static int sounds[] = new int[]{
+    public static int sounds[] = new int[]{
             R.raw.shangban,
-            R.raw.shangche,
             R.raw.xiaban,
-            R.raw.xiache,
             R.raw.erweimamiyaoguoqi,
             R.raw.erweimaguoqi,
             R.raw.erweimageshicuowu,
             R.raw.erweimachongfushiyong,
-            R.raw.youhuika,
             R.raw.yuebuzu,
-            R.raw.guanaika,
             R.raw.rongjunka,
-            R.raw.shuakayichangshaohouchongshua,
-            R.raw.shuakachenggong,
             R.raw.heimingdanka,
-            R.raw.feifaka,
             R.raw.yinhangshanfuka,
-            R.raw.cheliangshezhika,
             R.raw.qingchongshua,
-            R.raw.qingtoubi,
             R.raw.qingnianshen,
             R.raw.qingchongzhi,
-            R.raw.qingjiaohui,
-            R.raw.shezhika,
             R.raw.laonianka,
             R.raw.xianluka,
-            R.raw.qiandaochenggong,
-            R.raw.qiantuichenggong,
-            R.raw.piaojiaka,
             R.raw.aixinka,
-            R.raw.ceshika,
-            R.raw.cikawuxiao,
             R.raw.cikayiguoyouxiaoqi,
-            R.raw.cikabunengdairenchengche,
-            R.raw.weiqiyong,
             R.raw.zanshibunengshiyong,
-            R.raw.putongka,
-            R.raw.guashika,
-            R.raw.nihap,
             R.raw.xueshengka,
             R.raw.shixiaoka,
             R.raw.yuangongka,
             R.raw.sijika,
-            R.raw.sijixiaban,
-            R.raw.sijishangban,
-            R.raw.kaweiqiyong,
-            R.raw.danbieduchaoxian,
             R.raw.scan_success,
-            R.raw.ic_base,
-            R.raw.feibaimingdanka,
-            R.raw.ec_balance,
             R.raw.ec_fee,
             R.raw.ic_invalid,
             R.raw.ec_re_qr_code,
-            R.raw.ic_base,
             R.raw.wuxiaoma,
             R.raw.qingshuaxinchongsao,
             R.raw.zanshibunengshiyongcifangshijiaoyi,
-            R.raw.wuxiaoka,
             R.raw.xitongyichang,
             R.raw.didi,
-            R.raw.shoupiaoyuanka,
-            R.raw.yiyuan,
-            R.raw.eryuan,
-            R.raw.sanyuan,
-            R.raw.siyuan,
-            R.raw.wuyuan,
-            R.raw.liuyuan,
-            R.raw.qiyuan,
-            R.raw.bayuan,
-            R.raw.jiuyuan,
-            R.raw.shiyuan,
-            R.raw.shiyiyuan,
-            R.raw.shieryuan,
-            R.raw.shisanyuan,
-            R.raw.shisiyuan,
-            R.raw.shiwuyuan,
-            R.raw.shiliuyuan,
-            R.raw.shiqiyuan,
-            R.raw.shibayuan,
-            R.raw.shijiuyuan,
-            R.raw.ershiyuan,
-            R.raw.mianfeika,
             R.raw.caijika,
             R.raw.qiandianka,
             R.raw.jianceka,
@@ -123,7 +71,6 @@ public class SoundPoolUtil {
             R.raw.chengxuxiazaishouquanka,
             R.raw.chuzucheshujucaijika,
             R.raw.jiayouka,
-            R.raw.jichaka,
             R.raw.wuchangxianxueka,
             R.raw.dang,
             R.raw.dangdang,
@@ -133,6 +80,14 @@ public class SoundPoolUtil {
             R.raw.bupiao,
             R.raw.sijiweishangban,
             R.raw.qingxiacheqingchongzhi,
+            R.raw.xueshenkaqingxiache,
+            R.raw.laoniankaqingxiache,
+            R.raw.aixinkaqingxiache,
+            R.raw.rongjunkaqinngxiache,
+            R.raw.xueshengkaqingshangche,
+            R.raw.laoniankaqingshangche,
+            R.raw.aixinkaqingshangche,
+            R.raw.rongjunkaqingshangche
     };
 
     static Queue<Integer> soundQueue = new LinkedList<>();
@@ -160,7 +115,7 @@ public class SoundPoolUtil {
                         lastSoundTime = System.currentTimeMillis();
                     }
                 } catch (Exception e) {
-                    Log.i("调用声音报错了", e.getMessage());
+                    Log.i("错误", "调用声音报错了："+e.getMessage());
                 }
             }
         }, 1, diractVoiceTime, TimeUnit.MILLISECONDS);
@@ -180,18 +135,15 @@ public class SoundPoolUtil {
      */
     public synchronized static void play(int soundID) {
         long time = System.currentTimeMillis() - lastSoundTime;
-        MiLog.i("语音", soundID+"     添加语音  距上一次语音间隔=" + time + "   队列中的语音数：" + soundQueue.size());
         //判断最后一次添加语音时 语音是否播报完成
         if (time < ((soundQueue.size() + 1) * diractVoiceTime)) {
             soundQueue.add(soundID);
-            MiLog.i("语音", "添加至队列");
         } else {
             if (soundQueue.isEmpty()) {
                 sound(soundID);
             } else {
                 soundQueue.add(soundID);
             }
-            MiLog.i("语音", "直接播报:" + soundID);
         }
         lastSoundTime = System.currentTimeMillis();
     }

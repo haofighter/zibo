@@ -1,49 +1,61 @@
-  //---------------------------------------------------------寻卡错误码
-   e_search_error =     0x01,//寻卡失败
-   e_rats_error =      0x02,//rats失败
-   e_aid_error =      0x03, //aid选择失败
-   e_ppse_error =      0x04,//PPSE错误
-   //----------------------------------------------------------消费错误码
-   e_card_error =      0x0A, //不是同一唯一标识
-   e_consume_parameter_error =  0x0B, //第一字节卡种类错误
-   //----------
-  //------------------------------------------------M1卡
-  e_validation_0_error    = 0x10,  //读取扇区0失败
-  e_validation_1_error    = 0x11,  //读取扇区1失败
-  e_validation_2_error    = 0x12,  //读取扇区2失败
-  e_validation_3_error    = 0x13,  //读取扇区3失败
-  e_validation_4_error    = 0x14,  //读取扇区4失败
-  e_validation_5_error    = 0x15,  //读取扇区5失败
-  e_validation_6_error    = 0x16,  //读取扇区6失败
-  e_validation_7_error    = 0x17,  //读取扇区7失败
-  e_validation_8_error    = 0x18,  //读取扇区8失败
-  e_validation_9_error    = 0x19,  //读取扇区9失败
-  e_validation_10_error    = 0x1A,  //读取扇区10失败
-  e_validation_11_error    = 0x1B,  //读取扇区11失败
-  e_validation_12_error    = 0x1C,  //读取扇区12失败
-  e_m1_psam_dir_error    = 0x21,  //读取psam卡目录失败
-  e_m1_amount_error    = 0x22,  //下发交易金额过大失败
-  e_m1_validation_6_error   = 0x23,  //验证扇区6失败
-  e_verify_6_error    = 0x24,  //扇区6数据校验值错误
-  e_reset_24_25_error    = 0x25,  //扇区6数据恢复错误
-  e_write_24_error    = 0x26,  //写扇区6数据错误
-  e_write_25_error    = 0x27,  //写扇区6数据错误
+//---------------------------------------------------------寻卡错误码
+e_search_error=0x01,//寻卡失败
+e_rats_error=0x02,//rats失败
+e_aid_error=0x03,//aid选择失败
+e_ppse_error=0x04,//PPSE错误
+//----------------------------------------------------------消费错误码
+e_card_error=0x0A,//不是同一唯一标识
+e_consume_parameter_error=0x0B,//第一字节卡种类错误
+//----------
+//------------------------------------------------M1卡
+e_validation_0_error=0x10,//读取扇区0失败
+e_validation_1_error=0x11,//读取扇区1失败
+e_validation_2_error=0x12,//读取扇区2失败
+e_validation_3_error=0x13,//读取扇区3失败
+e_validation_4_error=0x14,//读取扇区4失败
+e_validation_5_error=0x15,//读取扇区5失败
+e_validation_6_error=0x16,//读取扇区6失败
+e_validation_7_error=0x17,//读取扇区7失败
+e_validation_8_error=0x18,//读取扇区8失败
+e_validation_9_error=0x19,//读取扇区9失败
+e_validation_10_error=0x1A,//读取扇区10失败
+e_validation_11_error=0x1B,//读取扇区11失败
+e_validation_12_error=0x1C,//读取扇区12失败
+e_m1_psam_dir_error=0x21,//读取psam卡目录失败
+e_m1_amount_error=0x22,//下发交易金额过大失败
+e_m1_validation_6_error=0x23,//验证扇区6失败
+e_verify_6_error=0x24,//扇区6数据校验值错误
+e_reset_24_25_error=0x25,//扇区6数据恢复错误
+e_write_24_error=0x26,//写扇区6数据错误
+e_write_25_error=0x27,//写扇区6数据错误
 
-  e_m1_validation_2_error   = 0x28,  //验证扇区2失败
-  e_verify_2_error    = 0x29,  //扇区2数据校验值错误
-  e_reset_9_10_error    = 0x2A,  //扇区2数据恢复错误
-  e_consume_error     = 0x2B,  //消费失败,第9块正本扣款返回失败
-  e_consume_restore_error   = 0x2C,  //副本更新失败
-  e_consume_read_9_error   = 0x2D,  //消费后读取块9失败
-  e_m1_psam_tac_init_error  = 0x2E,  //psam卡算TAC初始化失败
-  e_m1_psam_tac_error    = 0x2F,  //psam卡算TAC失败
+e_m1_validation_2_error=0x28,//验证扇区2失败
+e_verify_2_error=0x29,//扇区2数据校验值错误
+e_reset_9_10_error=0x2A,//扇区2数据恢复错误
+e_consume_error=0x2B,//消费失败,第9块正本扣款返回失败
+e_consume_restore_error=0x2C,//副本更新失败
+e_consume_read_9_error=0x2D,//消费后读取块9失败
+e_m1_psam_tac_init_error=0x2E,//psam卡算TAC初始化失败
+e_m1_psam_tac_error=0x2F,//psam卡算TAC失败
 
- //----------------------------------------------------住建部本地卡
- e_zjb_15_error     = 0x31,  //15文件读取失败
- e_zjb_selete_ZBGGQB_error  = 0x32,  //选择ZBGGQB目录失败
- e_zjb_18_error     = 0x33,  //18文件读取失败
- e_zjb_get_balance_error   = 0x34,  //获取余额失败
+//----------------------------------------------------住建部本地卡
+e_zjb_15_error=0x31,//15文件读取失败
+e_zjb_selete_ZBGGQB_error=0x32,//选择ZBGGQB目录失败
+e_zjb_18_error=0x33,//18文件读取失败
+e_zjb_get_balance_error=0x34,//获取余额失败
 
- e_zjb_consume_init_error =   0x3A,   //消费初始化失败
- e_zjb_psam_dir_error =    0x3B,  //PSAM卡选择目录失败
- e_zjb_psam_mac1_error =   0x3C
+e_zjb_consume_init_error=0x3A,//消费初始化失败
+e_zjb_psam_dir_error=0x3B,//PSAM卡选择目录失败
+e_zjb_psam_mac1_error=0x3C
+
+
+1234080aaabb0002000030063030303030300000000007010acfc2d0d0372020202020000000000000000000000000000000000000000000000050b2
+1234080AAABB000B000030063031303034380000000010010AB9F9D7AFD0C2B4E52020000000000000000000000000000000000000000000000190a4
+
+
+0B08AABB000D000030063031303034380000000006010AB6ABB6A5B4E5202020200000000000000000000000000000000000000000000001F452
+
+[StationDivide{priceTypeNum='0001', pirceAdd='["0000000001","0000000002","0000000003","0000000004","0000000005","0000000006","0000000007","0000000008","0000000009","0000000010","0000000011","0000000012","0000000013","0000000014","0000000015"]'}, StationDivide{priceTypeNum='0002', pirceAdd='["0000000001","0000000002","0000000003","0000000004","0000000005","0000000006","0000000007","0000000008","0000000009","0000000010","0000000011","0000000012","0000000013","0000000014","0000000015"]'}]
+
+
+

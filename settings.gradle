@@ -1,1 +1,1 @@
-include ':app', 'lib', ':java8583'
+include ':app', 'lib', ':java8583', ':install'

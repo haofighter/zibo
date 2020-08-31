@@ -32,7 +32,7 @@ public class Util {
             }
         } catch (IOException e) {
             e.printStackTrace();
-            MiLog.i("Util", "Util(readAssetsFile.java:212)读取本地配置文件异常>>" + e.toString());
+            MiLog.i("错误", "Util(readAssetsFile.java:212)读取本地配置文件异常>>" + e.toString());
         }
         return builder.toString();
     }

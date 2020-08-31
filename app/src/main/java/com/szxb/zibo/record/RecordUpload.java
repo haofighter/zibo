@@ -48,7 +48,7 @@ public class RecordUpload {
             xdRecord.setRecordBigType("1f");
             xdRecord.setRecordSmallType("01");
         }
-        if(xdRecord.getTradeNum().equals("00000000")){
+        if (xdRecord.getTradeNum().equals("00000000")) {
             xdRecord.setTradeNum(BusApp.getPosManager().getmchTrxId());
         }
         xdRecord.setIndustryType("01");
@@ -88,12 +88,12 @@ public class RecordUpload {
     public static void upLoadCardRecord() throws Exception {
         XdRecord xdRecord = DBManagerZB.checkRecordNoUp();
         if (xdRecord != null) {
-            MiLog.i("上送记录",xdRecord.getStatus());
+            MiLog.i("记录", "上送：" + xdRecord.getStatus());
             uploadRecord(xdRecord, false);
         }
         XdRecord xdRecordErr = DBManagerZB.checkRecordNoUpErr();
         if (xdRecordErr != null) {
-            MiLog.i("上送记录",xdRecordErr.getStatus());
+            MiLog.i("记录", "上送：" + xdRecordErr.getStatus());
             uploadRecord(xdRecordErr, false);
         }
     }
@@ -109,7 +109,7 @@ public class RecordUpload {
      * @param isDriver 是否为管理卡
      */
     public static void uploadRecord(final XdRecord xdRecord, final boolean isDriver) {
-        MiLog.i("刷卡", "上传记录："+xdRecord.getStatus());
+        MiLog.i("刷卡", "上传记录：" + xdRecord.getStatus());
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -127,19 +127,19 @@ public class RecordUpload {
                     }
                     macRequest.setDefineRequestBodyForJson(RequestParam.getRequestParam(posInfoDate, "2"));
                     Long time = System.currentTimeMillis();
-                    MiLog.i("uploadRecord", time + "请求"+ RequestParam.getRequestParam(posInfoDate, "2"));
+                    MiLog.i("记录", "uploadRecord：" + time + "请求" + RequestParam.getRequestParam(posInfoDate, "2"));
                     Response<JSONObject> execute = SyncRequestExecutor.INSTANCE.execute(macRequest);
                     JSONObject json = execute.get();
                     String result = "";
                     if (json != null) {
                         result = json.toString();
                     }
-                    MiLog.i("uploadRecord",  time + "返回" + result);
+                    MiLog.i("记录", "uploadRecord：" + time + "返回" + result);
                     if (result.contains("请求成功")) {
                         DBManagerZB.updateXdRecord(xdRecord);
                     }
                 } catch (Exception e) {
-                    MiLog.i("", "");
+                    MiLog.i("错误", "记录uploadRecord：" + e.getMessage());
                 }
             }
         }).start();

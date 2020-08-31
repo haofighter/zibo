@@ -140,7 +140,6 @@ public class GPSEvent {
                 GPSEntity gpsEntity = new GPSEntity(location.getLocTypeDescription(), location.getLatitude(),
                         location.getLongitude(), location.getRadius());
 
-                Log.w("GPS定位成功", "站点坐标：lat：" + location.getLatitude() + ",lon=" + location.getLongitude() + "  定位类型" + location.getLocType() + "定位类型：  " + location.getSatelliteNumber());
 
                 //用于设置百度定位识别的卫星数
                 if (location.getLocType() != 161) {
@@ -178,14 +177,11 @@ public class GPSEvent {
                 LatLng gp2 = new LatLng(Util.get6Double(gpsEntity.getLatitude()), Util.get6Double(gpsEntity.getLongitude()));
                 double length1 = DistanceUtil.getDistance(gp1, gp2);
 
-                Log.i("站点距离", length1 + ""+"   stationName.getLat()="+stationName.getLat()+"       stationName.getLon()="+stationName.getLon()+"         "+stationName.getStationNo());
                 //定位在站点附近50m即为到达此站点
                 if (length1 < 50) {
                     if (BusApp.getPosManager().getStationID() != stationName.getStationNoInt()) {
-                        BusApp.getPosManager().setStationName(stationName.getStationName());
                         BusApp.getPosManager().setStationID(stationName.getStationNoInt());
                         BusApp.getPosManager().setBasePrice(PraseLine.getMorePayPrice(null, true, true));
-                        Log.i("站点定位", stationName.toString());
                         SoundPoolUtil.play(VoiceConfig.didi);
                         if (stationName.getStationNoInt() == DBManagerZB.checkStationMax(BusApp.getPosManager().getDirection()).getStationNoInt()) {//表示到了终点
                             BusApp.getPosManager().setDirection(BusApp.getPosManager().getDirection().endsWith("0001") ? "0002" : "0001");
@@ -193,10 +189,9 @@ public class GPSEvent {
                             double[] firstStation = GPSToBaidu.wgs2bd(Util.get6Double(stationNameFrist.getLat()), Util.get6Double(stationNameFrist.getLon()));
                             gpsEntity.setLatitude(firstStation[0]);
                             gpsEntity.setLongitude(firstStation[1]);
-                            BusApp.getPosManager().setStationName(stationName.getStationName());
+//                            BusApp.getPosManager().setStationName(stationName.getStationName());
                             Calculation(gpsEntity);//切换方向后重新定位站点
                         } else {
-                            Rx.getInstance().sendMessage("station", false);//与键盘进行通讯
                         }
                     }
                 }

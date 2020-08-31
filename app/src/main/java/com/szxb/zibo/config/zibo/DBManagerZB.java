@@ -4,8 +4,10 @@ import android.util.Log;
 
 import com.hao.lib.Util.FileUtils;
 import com.hao.lib.Util.MiLog;
+import com.szxb.zibo.base.BusApp;
 import com.szxb.zibo.config.haikou.Black;
 import com.szxb.zibo.config.haikou.BlackList;
+import com.szxb.zibo.config.haikou.Whitelist;
 import com.szxb.zibo.config.zibo.line.CardPlan;
 import com.szxb.zibo.config.zibo.line.CardType;
 import com.szxb.zibo.config.zibo.line.FareRulePlan;
@@ -26,6 +28,7 @@ import com.szxb.zibo.db.dao.StationNameDao;
 import com.szxb.zibo.db.dao.StationPayPriceDao;
 import com.szxb.zibo.db.dao.UnionPayEntityDao;
 import com.szxb.zibo.db.dao.XdRecordDao;
+import com.szxb.zibo.db.dao.ZBLineInfoDao;
 import com.szxb.zibo.db.manage.DBCore;
 import com.szxb.zibo.manager.PosManager;
 import com.szxb.zibo.moudle.function.gps.ColletGpsInfo;
@@ -47,10 +50,10 @@ public class DBManagerZB {
     public static void saveAppParamInfo(AppParamInfo runParam) {
         runParam.setRunId(1);
         getDaoSession().getAppParamInfoDao().insertOrReplaceInTx(runParam);
+        BusApp.getInstance().saveBackeUp();//保存基本配置
     }
 
     public static AppParamInfo checkAppParamInfo() {
-        MiLog.i("运行数据查询","查询");
         AppParamInfo appParamInfo = getDaoSession().getAppParamInfoDao().queryBuilder().limit(1).unique();
         if (appParamInfo == null) {
             appParamInfo = new AppParamInfo();
@@ -72,6 +75,10 @@ public class DBManagerZB {
 
     public static List<ZBLineInfo> getAllLineInfo() {
         return getDaoSession().getZBLineInfoDao().queryBuilder().list();
+    }
+
+    public static ZBLineInfo checkedLineInfo(String line) {
+        return getDaoSession().getZBLineInfoDao().queryBuilder().where(ZBLineInfoDao.Properties.Routeno.eq(line)).limit(1).unique();
     }
 
 
@@ -147,18 +154,20 @@ public class DBManagerZB {
 
     public static List<PublicKey> getTXPublicKey(String tag, int valueof) {
         String publicCreatTag = "";
-        if (tag.equals(PosManager.TX_PUB)) {
+        if (tag.equals(PosManager.TX_PUB)) {//微信公钥
             publicCreatTag = "7778707562";
-        } else if (tag.equals(PosManager.TX_MAC)) {
+        } else if (tag.equals(PosManager.TX_MAC)) {//微信MAC密钥
             publicCreatTag = "77786D6163";
-        } else if (tag.equals(PosManager.ALI_PUB)) {
+        } else if (tag.equals(PosManager.ALI_PUB)) {//支付宝公钥
             publicCreatTag = "7A66627075";
         } else if (tag.equals(PosManager.JTB_PUB)) {
             publicCreatTag = "51524D4F54 ";
         } else if (tag.equals(PosManager.DG_PUB)) {
             publicCreatTag = "5152444754";
-        } else if (tag.equals(PosManager.FR_PUB)) {
+        } else if (tag.equals(PosManager.FR_PUB)) {//自建码公钥
             publicCreatTag = "6A74627075";
+        } else if (tag.equals(PosManager.CL_PUB)) {//城联二维码公钥
+            publicCreatTag = "636C707562";
         }
         if (valueof == -1) {
             return getDaoSession().getPublicKeyDao().queryBuilder().where(PublicKeyDao.Properties.PublicCreatTag.eq(publicCreatTag)).list();
@@ -223,6 +232,22 @@ public class DBManagerZB {
      */
     public static List<StationName> checkStation(String priceTypeNum) {
         return DBCore.getDaoSession().getStationNameDao().queryBuilder().where(StationNameDao.Properties.PriceTypeNum.eq(priceTypeNum)).list();
+    }
+
+    /**
+     * 通过上下行标示
+     *
+     * @param priceTypeNum 上下行标示（消费点划分编号）
+     * @return
+     */
+    public static StationName checkStation(String priceTypeNum, int id) {
+        String nid = "";
+        if (id < 10) {
+            nid += "0" + id;
+        } else {
+            nid = "" + id;
+        }
+        return DBCore.getDaoSession().getStationNameDao().queryBuilder().where(StationNameDao.Properties.PriceTypeNum.eq(priceTypeNum), StationNameDao.Properties.StationNo.eq(nid)).limit(1).unique();
     }
 
     /**
@@ -383,7 +408,7 @@ public class DBManagerZB {
                 XdRecordDao.Properties.UseCardnum.eq(cardNo),
                 XdRecordDao.Properties.Status.eq("00"),
                 XdRecordDao.Properties.PayType.notEq("dd"),
-                XdRecordDao.Properties.InCardStatus.in("00", "01","02")
+                XdRecordDao.Properties.InCardStatus.in("00", "01", "02")
         ).orderDesc(XdRecordDao.Properties.CreatTime).limit(1).unique();
     }
 
@@ -449,5 +474,16 @@ public class DBManagerZB {
 
     public static long checkUnUp() {
         return DBCore.getDaoSession().getXdRecordDao().queryBuilder().where(XdRecordDao.Properties.UpdateFlag.eq("0")).count();
+    }
+
+
+    //插入单个黑名单
+    public static void insertWhite(List<Whitelist> whitelists) {
+        getDaoSession().getWhitelistDao().insertOrReplaceInTx(whitelists);
+    }
+
+    //删除单个黑名单
+    public static void deleteWhite() {
+        getDaoSession().getWhitelistDao().deleteAll();
     }
 }

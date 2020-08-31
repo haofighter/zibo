@@ -15,6 +15,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.google.gson.Gson;
 import com.hao.lib.Util.FileUtils;
 import com.hao.lib.Util.MiLog;
 import com.hao.lib.base.Rx.Rx;
@@ -27,13 +28,18 @@ import com.szxb.zibo.cmd.DoCmd;
 import com.szxb.zibo.cmd.comThread;
 import com.szxb.zibo.cmd.devCmd;
 import com.szxb.zibo.config.haikou.ConfigContext;
+import com.szxb.zibo.config.zibo.DBManagerZB;
 import com.szxb.zibo.config.zibo.InitConfigZB;
+import com.szxb.zibo.manager.PosManager;
 import com.szxb.zibo.moudle.function.location.GPSEvent;
 import com.szxb.zibo.moudle.zibo.Main2Activity;
 import com.szxb.zibo.moudle.zibo.SelectLineActivity;
+import com.szxb.zibo.record.AppParamInfo;
 import com.szxb.zibo.runTool.RunSettiing;
 import com.szxb.zibo.util.BusToast;
 import com.szxb.zibo.util.DateUtil;
+import com.szxb.zibo.util.MMKVManager;
+import com.tencent.mmkv.MMKV;
 
 import java.io.File;
 
@@ -44,6 +50,7 @@ import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function5;
 import io.reactivex.functions.Function6;
 import io.reactivex.functions.Function7;
+import io.reactivex.functions.Function8;
 import io.reactivex.schedulers.Schedulers;
 
 import static com.szxb.zibo.config.zibo.InitConfigZB.uploadFile;
@@ -65,14 +72,34 @@ public class InitActiivty extends AppCompatActivity implements RxMessage {
 //        if (BusApp.getPosManager().getNeedIntallApk()) {
 //            BusApp.getInstance().installApk();
 //        }
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                uploadFile(FileUtils.readFile(new File(Environment.getExternalStorageDirectory().toString() + "/log.zip")), "zip");
+//        new Thread(new Runnable() {
+//            @Override
+//            public void run() {
+//                uploadFile(FileUtils.readFile(new File(Environment.getExternalStorageDirectory().toString() + "/log.zip")), "zip");
+//
+//            }
+//        }).start();
 
+        checkedConfig();
+
+    }
+
+    private void checkedConfig() {
+        try {
+            AppParamInfo appParamInfo = DBManagerZB.checkAppParamInfo();
+            MiLog.i("参数配置", "检查运行参数 开机检查：" + new Gson().toJson(DBManagerZB.checkAppParamInfo()));
+            if (!appParamInfo.checked()) {//如果当前的运行配置缺少参数  检查保存的
+                String string = (String) MMKVManager.getInstance().get("appRunInfo", String.class);
+                PosManager posManager = new Gson().fromJson(string, PosManager.class);
+                if (posManager != null) {
+                    posManager.setLinver("00000000000000");
+                    BusApp.setManager(posManager);
+                    MiLog.i("流程", "获取并设置备份数据");
+                }
             }
-        }).start();
-
+        } catch (Exception e) {
+            MiLog.i("错误", "开机检查配置报错    " + e.getMessage());
+        }
     }
 
     Handler handler = new Handler() {
@@ -97,10 +124,11 @@ public class InitActiivty extends AppCompatActivity implements RxMessage {
     private void startInit() {
 //        PraseLine.praseLine(new File("/storage/sdcard0/20190816141533 (1).far"));
 
-        Disposable subscribe = Observable.zip(InitConfigZB.uninstall(), InitConfigZB.initBin(), InitConfigZB.initK21Thread(), InitConfigZB.initUnionParam(), InitConfigZB.sendPosInfo(),
-                InitConfigZB.initInstallApk(), InitConfigZB.initLine(), new Function7<Boolean, Boolean, Boolean, Boolean, Boolean, Boolean, Boolean, Object>() {
+        Disposable subscribe = Observable.zip(InitConfigZB.uninstall(), InitConfigZB.initBin(), InitConfigZB.updateKeyBroad(), InitConfigZB.initK21Thread(), InitConfigZB.initUnionParam(), InitConfigZB.sendPosInfo(),
+                InitConfigZB.initInstallApk(), InitConfigZB.initLine(), new Function8<Boolean, Boolean, Boolean, Boolean, Boolean, Boolean, Boolean, Boolean, Object>() {
                     @Override
-                    public Object apply(Boolean aBoolean, Boolean aBoolean2, Boolean aBoolean3, Boolean aBoolean4, Boolean a, Boolean aBoolean6, Boolean aBoolean7) throws Exception {
+                    public Object apply(Boolean aBoolean, Boolean aBoolean2, Boolean aBoolean3, Boolean aBoolean4, Boolean a, Boolean aBoolean6, Boolean aBoolean7, Boolean aBoolean8) throws Exception {
+                        MiLog.clear(3);
                         return true;
                     }
                 })

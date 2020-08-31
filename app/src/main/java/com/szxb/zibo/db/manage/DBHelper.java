@@ -1,9 +1,7 @@
 package com.szxb.zibo.db.manage;
 
 import android.content.Context;
-import android.database.sqlite.SQLiteDatabase;
 import com.github.yuweiguocn.library.greendao.MigrationHelper;
-import com.szxb.zibo.config.zibo.line.ZBLineInfo;
 import com.szxb.zibo.db.dao.AppParamInfoDao;
 import com.szxb.zibo.db.dao.BasicFareDao;
 import com.szxb.zibo.db.dao.BlackDao;
@@ -44,9 +42,11 @@ public class DBHelper extends DaoMaster.OpenHelper {
         update(db, oldVersion, newVersion);
     }
 
+
     private void update(Database db, int oldVersion, int newVersion) {
         //把需要管理的数据库表DAO作为最后一个参数传入到方法中
-        MigrationHelper.migrate(db, new MigrationHelper.ReCreateAllTableListener() {
+        MigrationHelper.migrate(
+                db, new MigrationHelper.ReCreateAllTableListener() {
                     @Override
                     public void onCreateAllTables(Database db, boolean ifNotExists) {
                         DaoMaster.createAllTables(db, ifNotExists);

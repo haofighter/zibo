@@ -1,13 +1,17 @@
 package com.szxb.zibo.manager;
 
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.example.zhoukai.modemtooltest.ModemToolTest;
 import com.google.gson.Gson;
 import com.hao.lib.Util.FileUtils;
 import com.hao.lib.Util.MiLog;
+import com.hao.lib.base.Rx.Rx;
 import com.szxb.zibo.base.BusApp;
 import com.szxb.zibo.config.zibo.DBManagerZB;
+import com.szxb.zibo.config.zibo.line.StationName;
+import com.szxb.zibo.config.zibo.line.ZBLineInfo;
 import com.szxb.zibo.db.bean.ConfigParam;
 import com.szxb.zibo.db.bean.FTPEntity;
 import com.szxb.zibo.moudle.function.location.GPSEvent;
@@ -25,10 +29,17 @@ public class PosManager implements IPosManager, IAddRess, ISwitch {
     public static final String JTB_PUB = "JTB_PUB";
     public static final String DG_PUB = "DG_PUB";
     public static final String FR_PUB = "FR_PUB";
+    public static final String CL_PUB = "CL_PUB";
+
 
     private String lineType = "O";//当前使用的线路的类型  O 一票制  P 前后门刷卡分段 X 阶梯性分段
-    private String m1psam;
-    private String cpupsam;
+    private String m1psam = "000000000000";
+    private String cpupsam = "000000000000";
+    private String jtbpsam = "000000000000";
+    private long posManagerSetTime;//配置更新时间
+    private String keybroadAddress = "1234";//键盘地址
+    private String myselfkeybroadAddress = "5678";//键盘地址
+    private String myselfkeybroadAddressCache = "5678";//键盘地址
 
     /**
      * 操作状态 主要针对 多票和分段
@@ -38,7 +49,7 @@ public class PosManager implements IPosManager, IAddRess, ISwitch {
     /**
      * 当前卡机的状态
      */
-    private int posUpDate; //0 上下车机  1 上车机  2 下车机
+    private int posUpDate = 1; //0 上下车机  1 上车机  2 下车机
 
     /**
      * 路线名
@@ -84,7 +95,7 @@ public class PosManager implements IPosManager, IAddRess, ISwitch {
     /**
      * 车牌号
      */
-    private String bus_no="000000";
+    private String bus_no = "000000";
 
 
     /**
@@ -99,7 +110,7 @@ public class PosManager implements IPosManager, IAddRess, ISwitch {
     /**
      * 司机号
      */
-    private String driverNo="00000000";
+    private String driverNo = "00000000";
 
     /**
      * 语音文件版本
@@ -212,7 +223,7 @@ public class PosManager implements IPosManager, IAddRess, ISwitch {
 
         } catch (Exception e) {
             e.printStackTrace();
-            MiLog.i("PosManager", "PosManager(run.java:229)参数加载失败>>>>异常>>" + e.toString());
+            MiLog.i("错误", "PosManager(run.java:229)参数加载失败>>>>异常>>" + e.toString());
         }
     }
 
@@ -246,8 +257,10 @@ public class PosManager implements IPosManager, IAddRess, ISwitch {
         stationName = FetchAppConfig.getStationName();
         stationID = FetchAppConfig.getStationID();
         direction = FetchAppConfig.getDirection();
-
+        keybroadAddress = (String) CommonSharedPreferences.get("keybroadAddress", "0000");
+        myselfkeybroadAddress = (String) CommonSharedPreferences.get("myselfkeybroadAddress", "0001");
         AppParamInfo appParamInfo = DBManagerZB.checkAppParamInfo();
+        posUpDate = (int) CommonSharedPreferences.get("posUpDate", 1);
         bus_no = appParamInfo.getBusNo();
         driverNo = appParamInfo.getDriverNo();
         lineNo = appParamInfo.getLinNo();
@@ -271,7 +284,7 @@ public class PosManager implements IPosManager, IAddRess, ISwitch {
         ftpPsw = configBean.getPsw();
         isSuppKeyBoard = configBean.isIs_supp_key_board();
         ftpEntity = new FTPEntity(ftpIP, ftpPort, ftpUser, ftpPsw);
-        MiLog.i("PosManager", "PosManager(config.java:308)" + ftpEntity);
+        MiLog.i("配置参数", "PosManager(config.java:308)" + ftpEntity);
     }
 
     private void initSn() {
@@ -299,6 +312,7 @@ public class PosManager implements IPosManager, IAddRess, ISwitch {
         AppParamInfo appParamInfo = DBManagerZB.checkAppParamInfo();
         appParamInfo.setLinName(var1);
         DBManagerZB.saveAppParamInfo(appParamInfo);
+        setPosManagerSetTime(System.currentTimeMillis());
     }
 
     @Override
@@ -325,6 +339,16 @@ public class PosManager implements IPosManager, IAddRess, ISwitch {
         return link_number;
     }
 
+    public String getKeybroadAddress() {
+        return keybroadAddress;
+    }
+
+    public void setKeybroadAddress(String keybroadAddress) {
+        keybroadAddress = FileUtils.formatHexStringToByteString(2, keybroadAddress);
+        CommonSharedPreferences.put("keybroadAddress", keybroadAddress);
+        this.keybroadAddress = keybroadAddress;
+    }
+
     public String getM1Line() {
         String link_number = lineNo;
         if (link_number.length() == 6) {
@@ -347,8 +371,15 @@ public class PosManager implements IPosManager, IAddRess, ISwitch {
         this.lineNo = var1;
         AppParamInfo appParamInfo = DBManagerZB.checkAppParamInfo();
         appParamInfo.setLinNo(var1);
+        ZBLineInfo zbLineInfo = DBManagerZB.checkedLineInfo(var1);
+
+        if (zbLineInfo != null) {
+            Log.i("线路设置", zbLineInfo.getRoutename());
+            appParamInfo.setLinName(zbLineInfo.getRoutename());
+        }
         DBManagerZB.saveAppParamInfo(appParamInfo);
         CommonSharedPreferences.put("line_no", var1);
+        setPosManagerSetTime(System.currentTimeMillis());
     }
 
     @Override
@@ -394,9 +425,13 @@ public class PosManager implements IPosManager, IAddRess, ISwitch {
     @Override
     public void setBusNo(String bus_no) {
         this.bus_no = bus_no;
+        if (bus_no.length() >= 6) {
+            myselfkeybroadAddress = FileUtils.formatHexStringToByteString(2, bus_no.substring(2));
+        }
         AppParamInfo appParamInfo = DBManagerZB.checkAppParamInfo();
         appParamInfo.setBusNo(bus_no);
         DBManagerZB.saveAppParamInfo(appParamInfo);
+        setPosManagerSetTime(System.currentTimeMillis());
     }
 
 
@@ -427,6 +462,7 @@ public class PosManager implements IPosManager, IAddRess, ISwitch {
         AppParamInfo appParamInfo = DBManagerZB.checkAppParamInfo();
         appParamInfo.setDriverNo(driverNo);
         DBManagerZB.saveAppParamInfo(appParamInfo);
+        setPosManagerSetTime(System.currentTimeMillis());
     }
 
     @Override
@@ -464,26 +500,39 @@ public class PosManager implements IPosManager, IAddRess, ISwitch {
 
     @Override
     public void setDirection(String direction) {
+        if (direction.equals("0000")) {
+            direction = "0001";
+        }
         this.direction = FileUtils.formatHexStringToByteString(2, direction);
         CommonSharedPreferences.put("direction", this.direction);
     }
 
     @Override
     public String getDirection() {
+        if (direction.equals("0000")) {
+            direction = "0001";
+        }
         return direction;
     }
 
-    @Override
-    public void setStationName(String stationName) {
-        if (!TextUtils.equals(this.stationName, stationName)) {
-            CommonSharedPreferences.put("stationName", stationName);
-        }
-        this.stationName = stationName;
-    }
+//    @Override
+//    public void setStationName(String stationName) {
+//        if (!TextUtils.equals(this.stationName, stationName)) {
+//            CommonSharedPreferences.put("stationName", stationName);
+//        }
+//
+//        this.stationName = stationName;
+//    }
 
     @Override
     public String getStationName() {
-        return stationName;
+        StationName stationName = DBManagerZB.checkStation(BusApp.getPosManager().getDirection(), stationID);
+        if (stationName != null) {
+            return stationName.getStationName();
+        } else {
+            Log.i("站点名", "未查询到数据" + BusApp.getPosManager().getDirection() + "      " + "   " + stationID);
+        }
+        return "";
     }
 
     @Override
@@ -587,10 +636,12 @@ public class PosManager implements IPosManager, IAddRess, ISwitch {
     @Override
     public void setFTP(FTPEntity ftp) {
         this.ftpEntity = ftp;
-        CommonSharedPreferences.put("ftp_ip", ftp.getI());
-        CommonSharedPreferences.put("ftp_user", ftp.getU());
-        CommonSharedPreferences.put("ftp_psw", ftp.getPsw());
-        CommonSharedPreferences.put("ftp_port", ftp.getP());
+        if (ftp != null) {
+            CommonSharedPreferences.put("ftp_ip", ftp.getI());
+            CommonSharedPreferences.put("ftp_user", ftp.getU());
+            CommonSharedPreferences.put("ftp_psw", ftp.getPsw());
+            CommonSharedPreferences.put("ftp_port", ftp.getP());
+        }
     }
 
     @Override
@@ -818,16 +869,27 @@ public class PosManager implements IPosManager, IAddRess, ISwitch {
         this.m1psam = m1psam;
     }
 
+    public void setJTBpsam(String jtbpsam) {
+        this.jtbpsam = jtbpsam;
+    }
+
     public void setCpupsam(String cpupsam) {
         this.cpupsam = cpupsam;
     }
 
     public String getM1psam() {
+        if (m1psam == null || m1psam.equals("")) {
+            m1psam = "000000000000";
+        }
         return m1psam;
     }
 
     public String getCpupsam() {
         return cpupsam;
+    }
+
+    public String getJTBpsam() {
+        return jtbpsam;
     }
 
     public String getLineType() {
@@ -865,6 +927,94 @@ public class PosManager implements IPosManager, IAddRess, ISwitch {
     //设置辅助安装的apk名称
     public void setInstallApk(String installApk) {
         CommonSharedPreferences.put("installapk", installApk);
+    }
+
+    public void setPosManagerSetTime(long posManagerSetTime) {
+        this.posManagerSetTime = posManagerSetTime;
+    }
+
+    public int getPosUpDate() {
+        return posUpDate;
+    }
+
+    public void setPosUpDate(int posUpDate) {
+        CommonSharedPreferences.put("posUpDate", posUpDate);
+        this.posUpDate = posUpDate;
+    }
+
+    public void init(PosManager manager) {
+        setLineType();
+        setM1psam(manager.m1psam);
+        setCpupsam(manager.cpupsam);
+        setPosManagerSetTime(manager.posManagerSetTime);
+        setOperate(manager.operate);
+        setPosUpDate(manager.posUpDate);
+        setLineName(manager.lineName);
+        setLineNo(manager.lineNo);
+        setDirection(manager.direction);
+        setStationID(manager.stationID);
+        setBasePrice(manager.basePrice);
+        setCityCode(manager.cityCode);
+        setBusNo(manager.bus_no);
+        setSignTime(manager.signTime);
+        setCompanyID(manager.companyID);
+        setDriverNo(manager.driverNo);
+        setWavVer(manager.wavVer);
+        setCsnVer(manager.csnVer);
+        setWhlVer(manager.whlVer);
+        setFarver("00000000000000");
+        setParver(manager.parver);
+        setUsrver(manager.usrver);
+        setLinver(manager.Linver);
+        setUnitno(manager.unitno);
+        setMchID(manager.mchID);
+        setPub_ver(manager.pub_ver);
+        setCert_ver(manager.cert_ver);
+        setXml_ver(manager.xml_ver);
+        system_ver = (manager.system_ver);
+        setLib_ver(manager.lib_ver);
+        setUms_terminal_no(manager.ums_terminal_no);
+        setUms_tenant_no(manager.ums_tenant_no);
+        setUms_key_ver(manager.ums_key_ver);
+        setBlk_ver(manager.blk_ver);
+        setFtpIp(manager.ftpIP);
+        setPort(manager.ftpPort);
+        setFtpUser(manager.ftpUser);
+        setFtpPsw(manager.ftpPsw);
+        setFTP(manager.ftpEntity);
+        setLastVersion(manager.lastVersion);
+        binName = (manager.binName);
+        isSuppScanPay = (manager.isSuppScanPay);
+        isSuppUnionPay = (manager.isSuppUnionPay);
+        isSuppIcPay = (manager.isSuppIcPay);
+        isSuppKeyBoard = (manager.isSuppKeyBoard);
+        numSeq = (manager.numSeq);
+        setLocation(manager.location);
+        setType(manager.type);
+        windowDirection = (manager.windowDirection);
+        setPsamNo(manager.psamNo);
+        setConductor(manager.conductor);
+        setMainPSAM(manager.mainPSAM);
+        GPSStatus = manager.GPSStatus;
+    }
+
+
+    public String getMyselfkeybroadAddress() {
+        return myselfkeybroadAddress;
+    }
+
+    public void setMyselfkeybroadAddress(String myselfkeybroadAddress) {
+        myselfkeybroadAddress = FileUtils.formatHexStringToByteString(2, myselfkeybroadAddress);
+        CommonSharedPreferences.put("myselfkeybroadAddress", myselfkeybroadAddress);
+        this.myselfkeybroadAddress = myselfkeybroadAddress;
+    }
+
+    public String getMyselfkeybroadAddressCache() {
+        return myselfkeybroadAddressCache;
+    }
+
+    public void setMyselfkeybroadAddressCache(String myselfkeybroadAddressCache) {
+        this.myselfkeybroadAddressCache = myselfkeybroadAddressCache;
     }
 }
 

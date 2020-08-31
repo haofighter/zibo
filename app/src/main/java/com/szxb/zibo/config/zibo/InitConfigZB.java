@@ -6,9 +6,11 @@ import android.content.res.AssetManager;
 import android.os.Build;
 import android.os.Environment;
 import android.os.Message;
+import android.os.SystemClock;
 import android.support.annotation.RequiresApi;
 import android.text.TextUtils;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.alibaba.fastjson.JSONObject;
 import com.google.gson.Gson;
@@ -24,6 +26,7 @@ import com.szxb.jni.SerialCom;
 import com.szxb.jni.Ymodem;
 import com.szxb.zibo.BuildConfig;
 import com.szxb.zibo.base.BusApp;
+import com.szxb.zibo.base.Task;
 import com.szxb.zibo.cmd.DoCmd;
 import com.szxb.zibo.cmd.comThread;
 import com.szxb.zibo.cmd.devCmd;
@@ -38,6 +41,7 @@ import com.szxb.zibo.moudle.function.location.GPSToBaidu;
 import com.szxb.zibo.moudle.function.unionpay.UnionPay;
 import com.szxb.zibo.moudle.function.unionpay.config.UnionConfig;
 import com.szxb.zibo.moudle.function.unionpay.config.UnionPayManager;
+import com.szxb.zibo.moudle.function.unionpay.unionutil.HexUtil;
 import com.szxb.zibo.net.JsonRequest;
 import com.szxb.zibo.net.NetUrl;
 import com.szxb.zibo.net.bean.HeartBean;
@@ -51,6 +55,7 @@ import com.szxb.zibo.util.DateUtil;
 import com.szxb.zibo.util.Util;
 import com.szxb.zibo.util.sp.CommonSharedPreferences;
 import com.yanzhenjie.nohttp.FileBinary;
+import com.yanzhenjie.nohttp.HandlerDelivery;
 import com.yanzhenjie.nohttp.Headers;
 import com.yanzhenjie.nohttp.NoHttp;
 import com.yanzhenjie.nohttp.OnUploadListener;
@@ -73,11 +78,13 @@ import org.csource.fastdfs.TrackerServer;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
@@ -123,7 +130,6 @@ public class InitConfigZB {
         });
 
     }
-
 
     //加载bin文件
     public static Observable<Boolean> initBin() {
@@ -352,6 +358,19 @@ public class InitConfigZB {
                                 PraseLine.praseCsn(new File(filePath));
                             }
                         }, 0, TimeUnit.SECONDS);
+                    } else if (filePath.endsWith("usr")) {//线路
+                        MiLog.i("流程", "白名单：" + filePath + "    " + (urls[1].replace("/", "")));
+                        String whiteVer = urls[1].replace("/", "");
+                        if (whiteVer.split("_").length > 1) {
+                            whiteVer = whiteVer.split("_")[1];
+                        }
+                        BusApp.getPosManager().setUsrver(whiteVer);
+                        Executors.newScheduledThreadPool(1).schedule(new Runnable() {
+                            @Override
+                            public void run() {
+                                PraseLine.praseUsr(new File(filePath));
+                            }
+                        }, 0, TimeUnit.SECONDS);
                     } else if (filePath.endsWith("apk")) {//下载APK
                         try {
                             MiLog.i("流程", "下载APK：" + filePath);
@@ -388,8 +407,7 @@ public class InitConfigZB {
                     Log.i("下载", "onCancel");
                 }
             });
-        } catch (
-                Exception e) {
+        } catch (Exception e) {
             MiLog.i("错误", "下载错误：" + e.getMessage());
         }
 
@@ -401,8 +419,10 @@ public class InitConfigZB {
             if (execute.isSucceed()) {
                 String resultStr = execute.get().toJSONString();
                 Result result = new Gson().fromJson(resultStr, Result.class);
+                MiLog.i("心跳", "上送返回result：" + resultStr);
                 if (result.getResult_code().equals("0")) {
-                    if (result.getTrans_data().getRequest_code().equals("ums_info")) {//银联参数
+
+                    if (("ums_info").equals(result.getTrans_data().getRequest_code())) {//银联参数
                         String union = result.getTrans_data().getRequest_content().getUms_tenant_no() + "-"
                                 + result.getTrans_data().getRequest_content().getKek() + "-"
                                 + result.getTrans_data().getRequest_content().getUms_terminal_no();
@@ -412,7 +432,7 @@ public class InitConfigZB {
                         regeistUnion(union);
                         downLoadResponse("1", result.getTrans_data().getTask_no());//确认下载任务
                         sendInfoToServer(INFO_UP);
-                    } else if (result.getTrans_data().getRequest_code().equals("up_log")) {//银联参数
+                    } else if ("up_log".equals(result.getTrans_data().getRequest_code())) {//银联参数
 
                         FileUtils.copyDir(
                                 "data/data/" + BusApp.getInstance().getPackageName(),
@@ -422,6 +442,7 @@ public class InitConfigZB {
                         ZipUtils.doCompress(Environment.getExternalStorageDirectory().toString() + "/log/", Environment.getExternalStorageDirectory().toString() + "/log.zip");
                         String[] path = uploadFile(FileUtils.readFile(new File(Environment.getExternalStorageDirectory().toString() + "/log.zip")), "zip");
 
+                        Log.i("请求", "日志上送地址：" + path.toString());
                         if (path != null && path.length >= 2) {
                             PosDownLoadReseponseDate.PosUploadInfoDate posUploadInfoDate = new PosDownLoadReseponseDate.PosUploadInfoDate();
                             posUploadInfoDate.setFile_name(DateUtil.getCurrentDate2() + ".zip");
@@ -445,7 +466,7 @@ public class InitConfigZB {
                 Log.i("请求", "心跳失败");
             }
         } catch (Exception e) {
-            MiLog.i("心跳", "心跳上送失败");
+            MiLog.i("心跳", "心跳上送失败:" + e.getMessage());
         }
     }
 
@@ -543,7 +564,7 @@ public class InitConfigZB {
                     return;
                 }
 
-                MiLog.i("银联参数", unionStr);
+                MiLog.i("参数配置", "银联参数：" + unionStr);
                 try {
                     regeistUnion(unionStr);
                     MiLog.i("流程", "银联签到");
@@ -618,7 +639,6 @@ public class InitConfigZB {
         });
     }
 
-
     //将超过5000条的数据 转换成文件进行储存
     public static Observable<Boolean> initLine() {
         return Observable.create(new ObservableOnSubscribe<Boolean>() {
@@ -635,6 +655,51 @@ public class InitConfigZB {
         });
     }
 
+    //更新键盘程序
+    public static Observable<Boolean> updateKeyBroad() {
+        return Observable.create(new ObservableOnSubscribe<Boolean>() {
+            @Override
+            public void subscribe(ObservableEmitter<Boolean> subscriber) throws Exception {
+                boolean backStatus = false;
+                Message message = new Message();
+                message.what = 99;
+                try {
+//                    MiLog.i("流程", "开始更新");
+//                    String binName = "Buskeyboard.hex";
+//                    message.obj = binName;
+//                    InputStream stream = BusApp.getInstance().getAssets().open(binName);
+//                    int available = stream.available();
+//                    int len = 0;
+//                    int maxLen = 48;
+//                    double j = available / (double) maxLen;
+//                    int count = (int) Math.ceil(j);
+//
+//                    MiLog.i("流程", "总包数："+count);
+//                    byte[] startData = FileUtils.int2byte2(available);
+//
+//                    stream.close();
+//                    message.obj = "键盘bin更新出错\n版本" + message.obj;
+//                    subscriber.onNext(false);
+                } catch (Exception e) {
+                    message.obj = "键盘bin更新出错\n版本" + message.obj;
+                    subscriber.onNext(false);
+                }
+                BusApp.getInstance().getHandler().sendMessage(message);
+                subscriber.onNext(backStatus);
+            }
+        });
+    }
+
+    /**
+     * 发送串口数据
+     *
+     * @param msg      类型
+     * @param writeBuf buf
+     * @param nSendLen 长度
+     */
+    public static void sendSerialData(String msg, byte[] writeBuf, int nSendLen) {
+        SerialCom.SerialComWrite(writeBuf, nSendLen);
+    }
 
     public static Observable<Boolean> initInstallApk() {
         return Observable.create(new ObservableOnSubscribe<Boolean>() {
@@ -665,13 +730,11 @@ public class InitConfigZB {
         });
     }
 
-
     public static void addstation() {
         try {
             if (BusApp.getPosManager().getLineType().equals("O")) {
                 return;
             }
-
 
             List<StationName> stationNames = DBManagerZB.checkStation(BusApp.getPosManager().getDirection());
 
@@ -688,15 +751,14 @@ public class InitConfigZB {
             gpsEntity.setLatitude(add[0]);
             gpsEntity.setLongitude(add[1]);
 
-            MiLog.i("转换的站点坐标", "stationName：lat=" + stationName.getLat() + "  lon=" + stationName.getLon());
-            MiLog.i("转换完成的站点坐标", "stationName：lat=" + add[0] + "  lon=" + add[1]);
+            MiLog.i("参数配置", "转换的站点坐标  stationName：lat=" + stationName.getLat() + "  lon=" + stationName.getLon());
+            MiLog.i("参数配置", " 转换完成的站点坐标   stationName：lat=" + add[0] + "  lon=" + add[1]);
 
             GPSEvent.Calculation(gpsEntity);
         } catch (Exception e) {
-            MiLog.i("切换站错误", e.getMessage());
+            MiLog.i("错误", "切换站错误：" + e.getMessage());
         }
     }
-
 
     public static void refuseStation() {
         try {
@@ -721,17 +783,16 @@ public class InitConfigZB {
 //            gpsEntity.setLatitude(36.8041744259);
 //            gpsEntity.setLongitude(118.0584396479);
 
-            MiLog.i("转换的站点坐标", "stationName：lat=" + stationName.getLat() + "  lon=" + stationName.getLon());
+            MiLog.i("参数配置", " 转换的站点坐标   stationName：lat=" + stationName.getLat() + "  lon=" + stationName.getLon());
 //            MiLog.i("转换完成的站点坐标", "stationName：lat=" + add[0] + "  lon=" + add[1]);
 
             GPSEvent.Calculation(gpsEntity);
         } catch (Exception e) {
-            MiLog.i("切换站错误", e.getMessage());
+            MiLog.i("错误", "切换站错误：" + e.getMessage());
         }
     }
 
-
-//    public static void uploadeFile(File file, String url) {
+    //    public static void uploadeFile(File file, String url) {
 //        RequestQueue requestQueue = NoHttp.newRequestQueue();
 //        Request<String> request = NoHttp.createStringRequest(url, RequestMethod.POST);
 //        FileBinary binary = new FileBinary(file, "log");
@@ -783,30 +844,15 @@ public class InitConfigZB {
 //            }
 //        });
 //    }
-
-
     public static String[] uploadFile(byte[] file, String extName) {
         try {
 
-            //network_timeout = 30
-            //charset = UTF-8
-            //http.tracker_http_port = 8080
-            //http.anti_steal_token = no
-            //http.secret_key = FastDFS1234567890
-            //
-            //tracker_server = 10.0.11.243:22122
-            //tracker_server = 10.0.11.244:22122
-            //
-            //connection_pool.enabled = true
-            //connection_pool.max_count_per_entry = 500
-            //connection_pool.max_idle_time = 3600
-            //connection_pool.max_wait_time_in_ms = 1000
             String config = "connect_timeout_in_seconds=5\n" +
                     "network_timeout = 30\n" +
                     "charset = UTF-8\n" +
                     "connect_timeout = 2\n" +
                     "http.anti_steal_token = no\n" +
-                    "http.tracker_http_port = 8080\n" +
+                    "http.tracker_http_port = 80\n" +
                     "\n" +
 //                    "http.secret_key = FastDFS1234567890\n" +
 //                    "tracker_server = 139.9.113.219:10065\n" +
@@ -817,12 +863,12 @@ public class InitConfigZB {
                     "connection_pool.max_idle_time = 3600\n" +
                     "connection_pool.max_wait_time_in_ms = 1000";
 
-
             FileUtils.saveStrToFile(config, new File(Environment.getExternalStorageDirectory().toString() + "/config.pro"));
             // 初始化文件资源
             ClientGlobal.init(Environment.getExternalStorageDirectory().toString() + "/config.pro");
             // 链接FastDFS服务器，创建tracker和Stroage
-            TrackerClient trackerClient = new TrackerClient(ClientGlobal.g_tracker_group);
+//            TrackerClient trackerClient = new TrackerClient(ClientGlobal.g_tracker_group);
+            FastFTSTrakerClient trackerClient = new FastFTSTrakerClient(ClientGlobal.g_tracker_group);
 
             TrackerServer trackerServer = trackerClient.getConnection();
             NameValuePair nvp[] = new NameValuePair[]{new NameValuePair("zip", DateUtil.getCurrentDate2()),};
@@ -837,7 +883,6 @@ public class InitConfigZB {
 
             return storageClient.upload_file(file, extName, nvp);
         } catch (Exception e) {
-
             MiLog.i("上传日志失败", e.getMessage());
             e.printStackTrace();
         }

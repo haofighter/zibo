@@ -133,7 +133,6 @@ public class AppUtil {
         final List<ResolveInfo> apps = packageManager.queryIntentActivities(mainIntent, 0);
         for (int i = 0; i < apps.size(); i++) {
             String name = apps.get(i).activityInfo.packageName;
-            MiLog.i("包名", name);
             if (name.equals(appName)) {
                 return true;
             }

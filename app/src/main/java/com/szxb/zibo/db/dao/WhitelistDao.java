@@ -25,9 +25,11 @@ public class WhitelistDao extends AbstractDao<Whitelist, Long> {
      */
     public static class Properties {
         public final static Property Id = new Property(0, Long.class, "id", true, "_id");
-        public final static Property OrganizationCode = new Property(1, String.class, "organizationCode", false, "ORGANIZATION_CODE");
-        public final static Property PAN = new Property(2, String.class, "PAN", false, "PAN");
-        public final static Property Description = new Property(3, String.class, "description", false, "DESCRIPTION");
+        public final static Property User = new Property(1, String.class, "user", false, "USER");
+        public final static Property Cardno = new Property(2, String.class, "cardno", false, "CARDNO");
+        public final static Property DeadCardno = new Property(3, String.class, "deadCardno", false, "DEAD_CARDNO");
+        public final static Property Level = new Property(4, String.class, "level", false, "LEVEL");
+        public final static Property Password = new Property(5, String.class, "password", false, "PASSWORD");
     }
 
 
@@ -44,9 +46,11 @@ public class WhitelistDao extends AbstractDao<Whitelist, Long> {
         String constraint = ifNotExists? "IF NOT EXISTS ": "";
         db.execSQL("CREATE TABLE " + constraint + "\"WHITELIST\" (" + //
                 "\"_id\" INTEGER PRIMARY KEY AUTOINCREMENT ," + // 0: id
-                "\"ORGANIZATION_CODE\" TEXT," + // 1: organizationCode
-                "\"PAN\" TEXT UNIQUE ," + // 2: PAN
-                "\"DESCRIPTION\" TEXT);"); // 3: description
+                "\"USER\" TEXT," + // 1: user
+                "\"CARDNO\" TEXT UNIQUE ," + // 2: cardno
+                "\"DEAD_CARDNO\" TEXT," + // 3: deadCardno
+                "\"LEVEL\" TEXT," + // 4: level
+                "\"PASSWORD\" TEXT);"); // 5: password
     }
 
     /** Drops the underlying database table. */
@@ -64,19 +68,29 @@ public class WhitelistDao extends AbstractDao<Whitelist, Long> {
             stmt.bindLong(1, id);
         }
  
-        String organizationCode = entity.getOrganizationCode();
-        if (organizationCode != null) {
-            stmt.bindString(2, organizationCode);
+        String user = entity.getUser();
+        if (user != null) {
+            stmt.bindString(2, user);
         }
  
-        String PAN = entity.getPAN();
-        if (PAN != null) {
-            stmt.bindString(3, PAN);
+        String cardno = entity.getCardno();
+        if (cardno != null) {
+            stmt.bindString(3, cardno);
         }
  
-        String description = entity.getDescription();
-        if (description != null) {
-            stmt.bindString(4, description);
+        String deadCardno = entity.getDeadCardno();
+        if (deadCardno != null) {
+            stmt.bindString(4, deadCardno);
+        }
+ 
+        String level = entity.getLevel();
+        if (level != null) {
+            stmt.bindString(5, level);
+        }
+ 
+        String password = entity.getPassword();
+        if (password != null) {
+            stmt.bindString(6, password);
         }
     }
 
@@ -89,19 +103,29 @@ public class WhitelistDao extends AbstractDao<Whitelist, Long> {
             stmt.bindLong(1, id);
         }
  
-        String organizationCode = entity.getOrganizationCode();
-        if (organizationCode != null) {
-            stmt.bindString(2, organizationCode);
+        String user = entity.getUser();
+        if (user != null) {
+            stmt.bindString(2, user);
         }
  
-        String PAN = entity.getPAN();
-        if (PAN != null) {
-            stmt.bindString(3, PAN);
+        String cardno = entity.getCardno();
+        if (cardno != null) {
+            stmt.bindString(3, cardno);
         }
  
-        String description = entity.getDescription();
-        if (description != null) {
-            stmt.bindString(4, description);
+        String deadCardno = entity.getDeadCardno();
+        if (deadCardno != null) {
+            stmt.bindString(4, deadCardno);
+        }
+ 
+        String level = entity.getLevel();
+        if (level != null) {
+            stmt.bindString(5, level);
+        }
+ 
+        String password = entity.getPassword();
+        if (password != null) {
+            stmt.bindString(6, password);
         }
     }
 
@@ -114,9 +138,11 @@ public class WhitelistDao extends AbstractDao<Whitelist, Long> {
     public Whitelist readEntity(Cursor cursor, int offset) {
         Whitelist entity = new Whitelist( //
             cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0), // id
-            cursor.isNull(offset + 1) ? null : cursor.getString(offset + 1), // organizationCode
-            cursor.isNull(offset + 2) ? null : cursor.getString(offset + 2), // PAN
-            cursor.isNull(offset + 3) ? null : cursor.getString(offset + 3) // description
+            cursor.isNull(offset + 1) ? null : cursor.getString(offset + 1), // user
+            cursor.isNull(offset + 2) ? null : cursor.getString(offset + 2), // cardno
+            cursor.isNull(offset + 3) ? null : cursor.getString(offset + 3), // deadCardno
+            cursor.isNull(offset + 4) ? null : cursor.getString(offset + 4), // level
+            cursor.isNull(offset + 5) ? null : cursor.getString(offset + 5) // password
         );
         return entity;
     }
@@ -124,9 +150,11 @@ public class WhitelistDao extends AbstractDao<Whitelist, Long> {
     @Override
     public void readEntity(Cursor cursor, Whitelist entity, int offset) {
         entity.setId(cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0));
-        entity.setOrganizationCode(cursor.isNull(offset + 1) ? null : cursor.getString(offset + 1));
-        entity.setPAN(cursor.isNull(offset + 2) ? null : cursor.getString(offset + 2));
-        entity.setDescription(cursor.isNull(offset + 3) ? null : cursor.getString(offset + 3));
+        entity.setUser(cursor.isNull(offset + 1) ? null : cursor.getString(offset + 1));
+        entity.setCardno(cursor.isNull(offset + 2) ? null : cursor.getString(offset + 2));
+        entity.setDeadCardno(cursor.isNull(offset + 3) ? null : cursor.getString(offset + 3));
+        entity.setLevel(cursor.isNull(offset + 4) ? null : cursor.getString(offset + 4));
+        entity.setPassword(cursor.isNull(offset + 5) ? null : cursor.getString(offset + 5));
      }
     
     @Override

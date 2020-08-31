@@ -9,6 +9,7 @@ import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.support.multidex.MultiDex;
@@ -16,7 +17,8 @@ import android.telephony.TelephonyManager;
 import android.util.Log;
 
 import com.baidu.mapapi.SDKInitializer;
-import com.bluering.sdk.qrcode.jtb.JTBQRCodeSDK;
+import com.google.gson.Gson;
+import com.hao.lib.Util.FileUtils;
 import com.hao.lib.Util.MiLog;
 import com.hao.lib.base.MI2App;
 import com.lilei.tool.tool.IToolInterface;
@@ -24,10 +26,16 @@ import com.szxb.zibo.BuildConfig;
 import com.szxb.zibo.Mqtt.GetPushService;
 import com.szxb.zibo.config.haikou.AppBuildConfig;
 import com.szxb.zibo.config.haikou.AppPreload;
+import com.szxb.zibo.config.zibo.DBManagerZB;
 import com.szxb.zibo.config.zibo.InitConfigZB;
+import com.szxb.zibo.config.zibo.line.PraseLine;
+import com.szxb.zibo.db.bean.FTPEntity;
 import com.szxb.zibo.db.manage.DBCore;
 import com.szxb.zibo.manager.PosManager;
+import com.szxb.zibo.record.AppParamInfo;
+import com.szxb.zibo.record.XdRecord;
 import com.szxb.zibo.util.BusToast;
+import com.szxb.zibo.util.MMKVManager;
 import com.szxb.zibo.util.apkmanage.ApkUtilImpl;
 import com.szxb.zibo.util.apkmanage.IApkUtil;
 import com.szxb.zibo.voice.SoundPoolUtil;
@@ -44,6 +52,7 @@ public class BusApp extends MI2App {
     public static final String CPU_CARD = "03";
     public static final String M1_CARD = "04";
     public static final String NEW_CPU_CARD = "02";
+    public static final String JTB_CARD = "01";
     static BusApp instance;
     private static PosManager manager;
     private static int city = BuildConfig.CITY;
@@ -73,27 +82,33 @@ public class BusApp extends MI2App {
 
     @Override
     public void onCreate() {
+        DBCore.init(this);
+        String path = Environment.getExternalStorageDirectory() + "/config";
+        MMKVManager.getInstance(path);
         String processName = getProcessName(this, android.os.Process.myPid());
         if (processName != null && processName.endsWith("remote")) {
             return;
         }
         super.onCreate();
         instance = this;
-        manager = new PosManager();
-        MiLog.i("流程", "开机启动  app进入"+getPakageVersion());
+        getPosManager();
+        MiLog.i("流程", "开机启动  app进入" + getPakageVersion());
         try {
             initConfig();
             manager.loadFromPrefs(city, binName);
-            if (JTBQRCodeSDK.initSDK("/data/data/com.szxb.zibo/")) {
-                MiLog.i("交通部", "初始化成功    版本号：" + JTBQRCodeSDK.getSDKVer());
-            } else {
-                MiLog.i("交通部", "初始化失败");
-            }
-            MiLog.clear(3);
         } catch (Exception e) {
             Log.i("流程错误", "app");
         }
+//        byte[] csn = FileUtils.readAssetsFileTobyte("20200529030000.csn", this);
+//        PraseLine.praseCsnByte(csn,"20200529030000.csn");
+//        DBManagerZB.checkedBlack("2550000000000005");
+
+//        XdRecord xdRecord=new XdRecord();
+//        xdRecord.praseDate("0200011F010101FDFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF303430303338FFFFFFFF303031343736010000000000000000FFFFFFFF51364239413154323138313630313930370020095539255002000762000000000000000405960000000000000042455420200723080805CE02000000000000F4010000120C0000E00000000000000000002550000000000001000201000000001551092020072308080500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000FF1");
+
+
         startHeart();
+
     }
 
     Handler handler;
@@ -112,6 +127,7 @@ public class BusApp extends MI2App {
             public void run() {
                 try {
                     InitConfigZB.sendHeart();
+                    MiLog.i("参数配置", "检查运行参数 心跳检查：" + new Gson().toJson(DBManagerZB.checkAppParamInfo()));
                 } catch (Exception e) {
                 }
 
@@ -127,6 +143,10 @@ public class BusApp extends MI2App {
         return manager;
     }
 
+    public static void setManager(PosManager manager) {
+        BusApp.manager.init(manager);
+    }
+
     @Override
     protected void attachBaseContext(Context base) {
         super.attachBaseContext(base);
@@ -138,8 +158,8 @@ public class BusApp extends MI2App {
     }
 
     private void initConfig() {
+
         SDKInitializer.initialize(this);
-        DBCore.init(this);
         Log.i("流程", "数据库初始化成功");
         AppBuildConfig.createConfig(BuildConfig.CITY);
         SoundPoolUtil.init(this);
@@ -274,5 +294,18 @@ public class BusApp extends MI2App {
             }
         }
         return null;
+    }
+
+
+    public void saveBackeUp() {
+        AppParamInfo appParamInfo = DBManagerZB.checkAppParamInfo();
+        if (appParamInfo.checked()) {
+            try {
+                MMKVManager.getInstance().put("appRunInfo", new Gson().toJson(BusApp.getPosManager()));
+                MiLog.i("流程", "保存备份数据");
+            } catch (Exception e) {
+                e.getMessage();
+            }
+        }
     }
 }

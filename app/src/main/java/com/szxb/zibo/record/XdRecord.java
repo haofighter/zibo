@@ -31,6 +31,7 @@ public class XdRecord {
      */
     @Unique
     private String recordTag;
+
     public void setRecordTag(String recordTag) {
         this.recordTag = recordTag;
     }
@@ -46,8 +47,6 @@ public class XdRecord {
     public void setRecordLenth(String recordLenth) {
         this.recordLenth = FileUtils.formatHexStringToByteString(1, recordLenth);
     }
-
-
 
 
     /**
@@ -195,7 +194,7 @@ public class XdRecord {
     }
 
     public void setStationNum(String stationNum) {
-        this.stationNum = FileUtils.formatHexStringToByteString(1,stationNum);
+        this.stationNum = FileUtils.formatHexStringToByteString(1, stationNum);
     }
 
     private String longitude;
@@ -297,14 +296,14 @@ public class XdRecord {
     public void setTradeNum(int tradeNum) {
         String str = (String) FileUtils.byte2Parm(FileUtils.int2byte(tradeNum), Type.HEX);
         this.tradeNum = FileUtils.formatHexStringToByteString(4, str);
-        MiLog.i("刷卡", "终端交易序号"+tradeNum + "");
+        MiLog.i("刷卡", "终端交易序号" + tradeNum + "");
     }
 
     public String getTradeNum() {
         return tradeNum;
     }
 
-    private String tradePay;
+    private String tradePay = "0000";
 
     /**
      * 交易金额  4
@@ -331,7 +330,7 @@ public class XdRecord {
     }
 
     public void setTradePayNum(String tradePayNum) {
-        this.tradePayNum = FileUtils.formatHexStringToByteString(4,tradePayNum);
+        this.tradePayNum = FileUtils.formatHexStringToByteString(4, tradePayNum);
     }
 
 
@@ -436,7 +435,7 @@ public class XdRecord {
     private String direction;
 
     /**
-         * 上下行  1HEX  0x01上行 0x02下行 0x00一票
+     * 上下行  1HEX  0x01上行 0x02下行 0x00一票
      */
 
 
@@ -624,7 +623,7 @@ public class XdRecord {
 
     public void setStatus(String status) {
         this.status = status;
-        this.updateFlag="0";
+        this.updateFlag = "0";
     }
 
     /**
@@ -672,6 +671,49 @@ public class XdRecord {
     String lastTradeCount;
 
 
+    public  void praseDate(String str) {
+        int i = 0;
+        recordLenth = str.substring(0, i = +2);
+        recordVersion = str.substring(i, i += 4);
+        recordBigType = str.substring(i, i += 2);
+        recordSmallType = str.substring(i, i += 2);
+        tradeType = str.substring(i, i += 2);
+        industryType = str.substring(i, i += 2);
+        payType = str.substring(i, i += 2);
+        merchantNum = str.substring(i, i += 20);
+        companyNum = str.substring(i, i += 20);
+        unionNum = str.substring(i, i += 20);
+        lineNum = str.substring(i, i += 20);
+        carNum = str.substring(i, i += 20);
+        stationNum = str.substring(i, i += 2);
+        longitude = str.substring(i, i += 8);
+        latitude = str.substring(i, i += 8);
+        posSn = str.substring(i, i += 40);
+        mainPSAM = str.substring(i, i += 12);
+        tradePSAM = str.substring(i, i += 12);
+        driverNum = str.substring(i, i += 20);
+        useCardnum = str.substring(i, i += 20);
+        tradeTime = str.substring(i, i += 14);
+        tradeNum = str.substring(i, i += 8);
+        tradePay = str.substring(i, i += 8);
+        tradePayNum = str.substring(i, i += 8);
+        tradeDiscount = str.substring(i, i += 8);
+        cardTradeCount = str.substring(i, i += 4);
+        cardTradeTAC = str.substring(i, i += 8);
+        samTradeCount = str.substring(i, i += 8);
+        cityCode = str.substring(i, i += 4);
+        creatCardMechanism = str.substring(i, i += 10);
+        mainCardType = str.substring(i, i += 2);
+        childCardType = str.substring(i, i += 2);
+        direction = str.substring(i, i += 2);
+        inCardStatus = str.substring(i, i += 2);
+        beforTradePosSn = str.substring(i, i += 12);
+        beforTradeType = str.substring(i, i += 2);
+        beforTradeTime = str.substring(i, i += 14);
+        beforTradePrice = str.substring(i, i += 8);
+
+        Log.i("解析完成","");
+    }
 
 
     public String fromateString(boolean isDriver) {
@@ -955,8 +997,6 @@ public class XdRecord {
         return recordTag;
     }
 
-
-
     public void setExtraDateLenth(String extraDateLenth) {
         this.extraDateLenth = extraDateLenth;
     }
@@ -1014,15 +1054,15 @@ public class XdRecord {
 
     @Generated(hash = 2106004647)
     public XdRecord(String recordTag, String recordLenth, String flag, String recordVersion, String recordBigType,
-            String recordSmallType, String tradeType, String industryType, String payType, String merchantNum, String companyNum,
-            String unionNum, String lineNum, String carNum, String stationNum, String longitude, String latitude, String posSn,
-            String mainPSAM, String tradePSAM, String driverNum, String useCardnum, String tradeTime, String tradeNum,
-            String tradePay, String tradePayNum, String tradeDiscount, String cardTradeCount, String cardTradeTAC,
-            String samTradeCount, String cityCode, String creatCardMechanism, String mainCardType, String childCardType,
-            String direction, String inCardStatus, String beforTradePosSn, String beforTradeType, String beforTradeTime,
-            String beforTradePrice, String changeLineNum, String changePosSn, String changeNearTime, String changePayPrice,
-            String extraDateLenth, String extraDate, String newExtraDate, long creatTime, String updateFlag, String qrCode,
-            String status, long balance, int voiceType, String payCommand, String lastTradeCount) {
+                    String recordSmallType, String tradeType, String industryType, String payType, String merchantNum, String companyNum,
+                    String unionNum, String lineNum, String carNum, String stationNum, String longitude, String latitude, String posSn,
+                    String mainPSAM, String tradePSAM, String driverNum, String useCardnum, String tradeTime, String tradeNum,
+                    String tradePay, String tradePayNum, String tradeDiscount, String cardTradeCount, String cardTradeTAC,
+                    String samTradeCount, String cityCode, String creatCardMechanism, String mainCardType, String childCardType,
+                    String direction, String inCardStatus, String beforTradePosSn, String beforTradeType, String beforTradeTime,
+                    String beforTradePrice, String changeLineNum, String changePosSn, String changeNearTime, String changePayPrice,
+                    String extraDateLenth, String extraDate, String newExtraDate, long creatTime, String updateFlag, String qrCode,
+                    String status, long balance, int voiceType, String payCommand, String lastTradeCount) {
         this.recordTag = recordTag;
         this.recordLenth = recordLenth;
         this.flag = flag;
@@ -1089,7 +1129,7 @@ public class XdRecord {
         String str = (String) FileUtils.byte2Parm(FileUtils.int2byte2(tradeCount), Type.HEX);
         this.lastTradeCount = FileUtils.formatHexStringToByteString(2, str);
 //        this.lastTradeCount = FileUtils.formatHexStringToByteString(2, FileUtils.getSHByte(lastTradeCount));
-        MiLog.i("刷卡", "刷卡前卡交易序号："+FileUtils.getSHByte(lastTradeCount));
+        MiLog.i("刷卡", "刷卡前卡交易序号：" + FileUtils.getSHByte(lastTradeCount));
     }
 
     public String getNewExtraDate() {

@@ -14,22 +14,57 @@ import org.greenrobot.greendao.annotation.Unique;
 public class Whitelist {
     @Id(autoincrement = true)
     private Long id;
-    private String organizationCode;
+    String user;
     @Unique
-    private String PAN;
-    private String description;
+    String cardno;
+    String deadCardno;
+    String level;
+    String password;
 
-    @Generated(hash = 516782703)
-    public Whitelist(Long id, String organizationCode, String PAN,
-                     String description) {
+    @Generated(hash = 1516590987)
+    public Whitelist(Long id, String user, String cardno, String deadCardno,
+            String level, String password) {
         this.id = id;
-        this.organizationCode = organizationCode;
-        this.PAN = PAN;
-        this.description = description;
+        this.user = user;
+        this.cardno = cardno;
+        this.deadCardno = deadCardno;
+        this.level = level;
+        this.password = password;
     }
 
     @Generated(hash = 683262075)
     public Whitelist() {
+    }
+
+    public void setUser(String user) {
+        this.user = user;
+    }
+
+    public void setCardno(String cardno) {
+        this.cardno = cardno;
+    }
+
+    public void setDeadCardno(String deadCardno) {
+        this.deadCardno = deadCardno;
+    }
+
+    public void setLevel(String level) {
+        this.level = level;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    @Override
+    public String toString() {
+        return "Whitelist{" +
+                ", user='" + user + '\'' +
+                ", cardno='" + cardno + '\'' +
+                ", deadCardno='" + deadCardno + '\'' +
+                ", level='" + level + '\'' +
+                ", password='" + password + '\'' +
+                '}';
     }
 
     public Long getId() {
@@ -40,28 +75,23 @@ public class Whitelist {
         this.id = id;
     }
 
-    public String getOrganizationCode() {
-        return this.organizationCode;
+    public String getUser() {
+        return this.user;
     }
 
-    public void setOrganizationCode(String organizationCode) {
-        this.organizationCode = organizationCode;
+    public String getCardno() {
+        return this.cardno;
     }
 
-    public String getPAN() {
-        return this.PAN;
+    public String getDeadCardno() {
+        return this.deadCardno;
     }
 
-    public void setPAN(String PAN) {
-        this.PAN = PAN;
+    public String getLevel() {
+        return this.level;
     }
 
-    public String getDescription() {
-        return this.description;
+    public String getPassword() {
+        return this.password;
     }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
 }

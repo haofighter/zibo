@@ -7,8 +7,10 @@ import com.hao.lib.Util.FileUtils;
 import com.hao.lib.Util.MiLog;
 import com.hao.lib.Util.ThreadUtils;
 
+import com.hao.lib.Util.ToastUtils;
 import com.hao.lib.base.Rx.Rx;
 import com.hao.lib.base.Rx.RxMessage;
+import com.szxb.zibo.BuildConfig;
 import com.szxb.zibo.base.BusApp;
 import com.szxb.zibo.cmd.DoCmd;
 import com.szxb.zibo.cmd.devCmd;
@@ -20,6 +22,9 @@ import com.szxb.zibo.config.zibo.line.PraseLine;
 import com.szxb.zibo.moudle.function.card.CPU.File05NewCPUInfoEntity;
 import com.szxb.zibo.moudle.function.card.CPU.File15NewCPUInfoEntity;
 import com.szxb.zibo.moudle.function.card.CPU.FileCpuPay;
+import com.szxb.zibo.moudle.function.card.JTB.File1AJTBInfoEntity;
+import com.szxb.zibo.moudle.function.card.JTB.File1EJTBInfoEntity;
+import com.szxb.zibo.moudle.function.card.JTB.FileJTBPay;
 import com.szxb.zibo.moudle.function.card.M1.FileM1Pay;
 import com.szxb.zibo.record.RecordUpload;
 import com.szxb.zibo.record.XdRecord;
@@ -35,12 +40,13 @@ import java.util.List;
 import java.util.concurrent.Executors;
 
 import static com.szxb.zibo.base.BusApp.CPU_CARD;
+import static com.szxb.zibo.base.BusApp.JTB_CARD;
 import static com.szxb.zibo.base.BusApp.M1_CARD;
 import static com.szxb.zibo.base.BusApp.NEW_CPU_CARD;
 import static java.lang.System.arraycopy;
 
 public class PraseCard {
-    public static   String lastCardUseCardno=null;
+    public static String lastCardUseCardno = null;
 
     //过期后能使用的卡片
     static List<String> spCard = new ArrayList<String>() {
@@ -55,63 +61,63 @@ public class PraseCard {
         }
     };
 
-    static List<String> errCard = new ArrayList<String>() {
-        @Override
-        public boolean contains(Object o) {
-            for (int i = 0; i < size(); i++) {
-                if (get(i).equals(o)) {
-                    return true;
-                }
-            }
-            return super.contains(o);
-        }
-    };
+//    static List<String> errCard = new ArrayList<String>() {
+//        @Override
+//        public boolean contains(Object o) {
+//            for (int i = 0; i < size(); i++) {
+//                if (get(i).equals(o)) {
+//                    return true;
+//                }
+//            }
+//            return super.contains(o);
+//        }
+//    };
 
     private static void initSpCard() {
         spCard.add("02");
     }
 
-    private static void initErrCard() {
-        errCard.add("2b");
-        errCard.add("2c");
-        errCard.add("2d");
-        errCard.add("2e");
-        errCard.add("2f");
-        errCard.add("32");
-        errCard.add("3a");
-        errCard.add("3d");
-        errCard.add("3e");
-        errCard.add("3f");
-        errCard.add("66");
-        errCard.add("67");
-        errCard.add("68");
-        errCard.add("24");
-        errCard.add("26");
-        errCard.add("27");
-        errCard.add("28");
-        errCard.add("42");
-        errCard.add("41");
-        errCard.add("43");
-        errCard.add("45");//多票区域数据写入异常
-    }
+//    private static void initErrCard() {
+//        errCard.add("2b");
+//        errCard.add("2c");
+//        errCard.add("2d");
+//        errCard.add("2e");
+//        errCard.add("2f");
+//        errCard.add("32");
+//        errCard.add("3a");
+//        errCard.add("3d");
+//        errCard.add("3e");
+//        errCard.add("3f");
+//        errCard.add("66");
+//        errCard.add("67");
+//        errCard.add("68");
+//        errCard.add("24");
+//        errCard.add("26");
+//        errCard.add("27");
+//        errCard.add("28");
+//        errCard.add("42");
+//        errCard.add("41");
+//        errCard.add("43");
+//        errCard.add("45");//多票区域数据写入异常
+//    }
 
     public static void praseCardDate(byte[] bytes) {
         try {
             initSpCard();
-            initErrCard();
+//            initErrCard();
             price = 0;//初始化消费价格  防止受到前一次刷卡影响
             //卡解析
             CardInfoEntity cardInfoEntity = new CardInfoEntity();
 
 //            MiLog.i("刷卡", FileUtils.bytesToHexString(bytes));
 
-//            bytes = FileUtils.hexStringToBytes("0000002020010715412604002c26de0608000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000425500001300782317fae8c1f010303e82014070920200708000000002550000114070910000000000000000000020088000027100000000000000000000000009e16000061e9ffff9e16000009f609f69e16000061e9ffff9e16000009f609f6000607a50102d0000f01020018e718e7000607a50102d0000f01020018e718e7000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010406000101c20119042515442218e700152925500100490100040433ffffff");
+//            bytes = FileUtils.hexStringToBytes("000000202008241604110800a74f42f720107880a00220900051d240f9a74f42f700000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002000025500000000000002550000100000132070320191204000000000000000001201912042022120400000000000000000025500001ffff0101255025500001000001322019120420991231070300000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000062e00002800fc010100002020082115082340999800000000000012345667670028640000000000000000000000000000c000000000000000092550010021812020082115082300006a830000000000000000000000000000000000000000000000");
 //            解析卡 如果00 则表示解析成功
             if (!cardInfoEntity.putDate(bytes).equals("00")) {
                 MiLog.i("刷卡", "卡解析失败");
                 return;
             }
-            lastCardUseCardno=cardInfoEntity.getVehicle_number();
+            lastCardUseCardno = cardInfoEntity.getVehicle_number();
 
             //判断卡片是否能够使用  稽查卡查询不到相应的规则无法在管理卡前判断
             if (!cardInfoEntity.cardType.equals("11") && !cardCanUse(cardInfoEntity)) {
@@ -127,6 +133,8 @@ public class PraseCard {
             XdRecord xdRecord = checkMac(cardInfoEntity);
             if (xdRecord == null) {
                 return;
+            } else {
+                MiLog.i("刷卡", "校验有存疑数据  记录标示:" + xdRecord.getRecordTag());
             }
 
             if (cardInfoEntity.status.equals("00")) {
@@ -160,6 +168,8 @@ public class PraseCard {
                 }
                 break;
             case "11"://数据采集卡
+
+
                 if (!BusApp.getPosManager().getDriverNo().equals("00000000")) {
                     XdRecord xdRecord = new XdRecord();
                     xdRecord.setRecordVersion("0005");
@@ -231,18 +241,22 @@ public class PraseCard {
         byte[] uid = FileUtils.hex2byte(cardInfoEntity.uid);
         arraycopy(uid, 0, pay, i, uid.length);
         i += uid.length;
-        String transTime=DateUtil.getCurrentDate2();
+        String transTime = DateUtil.getCurrentDate2();
         cardInfoEntity.setTranseTime(transTime);
         MiLog.i("刷卡", "刷卡交易时间：" + cardInfoEntity.getTranseTime());
         if (TextUtils.equals(cardInfoEntity.selete_aid, "02")) {
-            if (isBlack || cardInfoEntity.cardNo.equals("2550000000000005")) {
+            if (isBlack) {
                 SoundPoolUtil.play(VoiceConfig.heimingdanka);
                 BusToast.showToast("黑名单卡", false);
                 Rx.getInstance().sendMessage("lockNewCpu");
                 return;
             }
-
-            price = PraseLine.getCardPayPrice(cardInfoEntity, cardInfoEntity.cardType, cardInfoEntity.childCardType);
+            int payPrice = Integer.parseInt(FileUtils.getSHByte(xdRecord.getTradePay()), 16);
+            if (payPrice != 0) {
+                price = payPrice;
+            } else {
+                price = PraseLine.getCardPayPrice(cardInfoEntity, cardInfoEntity.cardType, cardInfoEntity.childCardType);
+            }
             if (price == -1) {
                 SoundPoolUtil.play(VoiceConfig.zanshibunengshiyong);
                 BusToast.showToast("暂不支持此卡上车", false);
@@ -264,26 +278,35 @@ public class PraseCard {
                 return;
             }
 
-            xdRecord.setTradeTime(transTime);
-            xdRecord.setLastTradeCount(cardInfoEntity.file18NewCPUInfoEntity.getTransaction_number_18());
-            FileCpuPay fileCpuPay = new FileCpuPay();
-            fileCpuPay.setSelete_aid(cardInfoEntity.selete_aid);
-            fileCpuPay.setUid(cardInfoEntity.uid);
-            fileCpuPay.setTransaction_amount(price);
-            fileCpuPay.setTransaction_time(cardInfoEntity.getTranseTime());
-            fileCpuPay.setMark_update_1C("01");
-            cardInfoEntity.getnewCPUMorePriceInfo().setBoarding_time(cardInfoEntity.transeTime);
-            fileCpuPay.setFile17NewCPUInfoEntity(cardInfoEntity.getnewCPUMorePriceInfo());
+            xdRecord.setLastTradeCount(cardInfoEntity.getFile18NewCPUInfoEntity().getTransaction_number_18());
+            if (xdRecord.getPayCommand() == null || xdRecord.getPayCommand().equals("")) {
+                xdRecord.setTradeTime(transTime);
+                xdRecord.setLastTradeCount(cardInfoEntity.file18NewCPUInfoEntity.getTransaction_number_18());
+                FileCpuPay fileCpuPay = new FileCpuPay();
+                fileCpuPay.setSelete_aid(cardInfoEntity.selete_aid);
+                fileCpuPay.setUid(cardInfoEntity.uid);
+                fileCpuPay.setTransaction_amount(price);
+                fileCpuPay.setTransaction_time(cardInfoEntity.getTranseTime());
+                fileCpuPay.setMark_update_1C("01");
+                cardInfoEntity.getnewCPUMorePriceInfo().setBoarding_time(cardInfoEntity.transeTime);
+                fileCpuPay.setFile17NewCPUInfoEntity(cardInfoEntity.getnewCPUMorePriceInfo());
 
 
 //            // 用于测试老年卡补票失败 的情况
 //            cardInfoEntity.getnewCPUMorePriceInfo().setFull_fare(Integer.parseInt("ffff",16));
 //            fileCpuPay.setFile17NewCPUInfoEntity(cardInfoEntity.getnewCPUMorePriceInfo());
 
-            byte[] fileCpuPaybyte = FileUtils.hex2byte(fileCpuPay.toNewCpuString());
-            xdRecord.setPayCommand(FileUtils.bytesToHexString(fileCpuPaybyte));
-            arraycopy(fileCpuPaybyte, 0, pay, 0, fileCpuPaybyte.length);
-
+                byte[] fileCpuPaybyte = FileUtils.hex2byte(fileCpuPay.toNewCpuString());
+                xdRecord.setPayCommand(FileUtils.bytesToHexString(fileCpuPaybyte));
+                arraycopy(fileCpuPaybyte, 0, pay, 0, fileCpuPaybyte.length);
+            } else {
+                MiLog.i("刷卡", "02  校验  进行数据恢复");
+                byte[] fileCpuPaybyte = FileUtils.hex2byte(xdRecord.getPayCommand());
+                byte[] mark_update = new byte[]{0x00};
+                arraycopy(fileCpuPaybyte, 16, mark_update, 0, mark_update.length);
+                xdRecord.setPayCommand(FileUtils.bytesToHexString(fileCpuPaybyte));
+                arraycopy(fileCpuPaybyte, 0, pay, 0, fileCpuPaybyte.length);
+            }
         } else if (TextUtils.equals(cardInfoEntity.selete_aid, "03")) {//CPU卡
             if (isBlack) {
                 SoundPoolUtil.play(VoiceConfig.heimingdanka);
@@ -291,7 +314,15 @@ public class PraseCard {
                 return;
             }
 
-            price = PraseLine.getCardPayPrice(cardInfoEntity, "65", "01");
+            int payPrice = Integer.parseInt(FileUtils.getSHByte(xdRecord.getTradePay()), 16);
+
+            if (payPrice != 0) {
+                price = payPrice;
+            } else {
+                price = PraseLine.getCardPayPrice(cardInfoEntity, "65", "01");
+            }
+
+
             if (price == -1) {
                 SoundPoolUtil.play(VoiceConfig.zanshibunengshiyong);
                 BusToast.showToast("暂不支持此卡上车", false);
@@ -367,6 +398,7 @@ public class PraseCard {
                 return;
             }
 
+
             MiLog.i("刷卡", "卡类型：" + cardInfoEntity.cardType + "      " + cardInfoEntity.childCardType);
             FileM1Pay fileM1Pay = new FileM1Pay();
 
@@ -431,6 +463,11 @@ public class PraseCard {
 //                cardInfoEntity.getMorePriceInfo().setFull_fare(Integer.parseInt("ffff",16));
 //                fileM1Pay.setFile1CLocalInfoEntity(cardInfoEntity.getMorePriceInfo());
 
+//                if (xdRecord != null && "42".equals(xdRecord.getStatus())) {
+//                    fileM1Pay.setMark_update_9("01");
+//                    fileM1Pay.setMark_update_24("01");
+//                }
+
                 byte[] fileM1Paybyte = FileUtils.hex2byte(fileM1Pay.toString());
                 arraycopy(fileM1Paybyte, 0, pay, i, fileM1Paybyte.length);
                 xdRecord.setPayCommand(FileUtils.bytesToHexString(pay));
@@ -446,11 +483,113 @@ public class PraseCard {
                 arraycopy(fileM1Paybyte, 0, pay, i, fileM1Paybyte.length);
                 xdRecord.setPayCommand(FileUtils.bytesToHexString(pay));
             }
+        } else if (TextUtils.equals(cardInfoEntity.selete_aid, "01")) {//交通部卡
+            if (isBlack) {
+                SoundPoolUtil.play(VoiceConfig.heimingdanka);
+                BusToast.showToast("黑名单卡", false);
+                return;
+            }
+
+            int payPrice = Integer.parseInt(FileUtils.getSHByte(xdRecord.getTradePay()), 16);
+
+            if (payPrice != 0) {
+                price = payPrice;
+            } else {
+                price = PraseLine.getCardPayPrice(cardInfoEntity, cardInfoEntity.cardType, cardInfoEntity.childCardType);
+            }
+
+            if (price == -1) {
+                SoundPoolUtil.play(VoiceConfig.zanshibunengshiyong);
+                BusToast.showToast("暂不支持此卡上车", false);
+                return;
+            } else if (price == -2) {
+                SoundPoolUtil.play(VoiceConfig.yuebuzu);
+                BusToast.showToast("余额不足\n余额:" + FileUtils.fen2Yuan(cardInfoEntity.getBalance()) + "元", false);
+                return;
+            } else if (price < 0) {
+                SoundPoolUtil.play(VoiceConfig.cuowu);
+                BusToast.showToast("获取票价错误", false);
+                return;
+            }
+
+
+            if (cardInfoEntity.getBalance() < price) {
+                BusToast.showToast("余额不足\n余额:" + FileUtils.fen2Yuan(cardInfoEntity.getBalance()) + "元", false);
+                SoundPoolUtil.play(VoiceConfig.yuebuzu);
+                return;
+            }
+
+
+            xdRecord.setLastTradeCount(cardInfoEntity.file18JTBInfoEntity.getTransaction_number_18());
+            if (xdRecord.getPayCommand() == null || xdRecord.getPayCommand().equals("")) {
+                xdRecord.setTradeTime(transTime);
+                FileJTBPay fileJTBPay = new FileJTBPay();
+                File1EJTBInfoEntity file1EJTBInfoEntity = cardInfoEntity.getFile1EJTBInfoEntity();
+                file1EJTBInfoEntity.setTransaction_type_1e("09");
+                file1EJTBInfoEntity.setTerminal_number_1e(BusApp.getPosManager().getPsamNo());
+                file1EJTBInfoEntity.setTrade_serial_number_1e(BusApp.getPosManager().getmchTrxId() + "");
+                file1EJTBInfoEntity.setTransaction_amount_1e(price);
+                file1EJTBInfoEntity.setTransaction_balance_1e((int) (cardInfoEntity.getBalance() - price));
+                file1EJTBInfoEntity.setTransaction_time_1e(DateUtil.getCurrentDate2());
+                file1EJTBInfoEntity.setTransaction_city_code_1e("4530");
+                file1EJTBInfoEntity.setInstitutional_identity_1e(FileUtils.hexStringFromatByF(8, "13664530", false));
+                fileJTBPay.setFile1EJTBInfoEntity(file1EJTBInfoEntity);
+                File1AJTBInfoEntity file1AJTBInfoEntity = cardInfoEntity.getFile1AJTBInfoEntity();
+                String reserved_1a = "";
+                if (BusApp.getPosManager().getLineNo().length() >= 2) {
+                    reserved_1a += BusApp.getPosManager().getLineNo().substring(0, 2);
+                } else {
+                    reserved_1a += "00";
+                }
+
+                if (BusApp.getPosManager().getDriverNo().length() >= 6) {
+                    reserved_1a += BusApp.getPosManager().getLineNo().substring(0, 6);
+                } else {
+                    reserved_1a += "000000";
+                }
+
+                if (BusApp.getPosManager().getDriverNo().length() > 2) {
+                    reserved_1a += FileUtils.formatHexStringToByteString(2, FileUtils.bytesToHexString(FileUtils.int2byte2(cardInfoEntity.getBalance())));
+                } else {
+                    reserved_1a += "0000";
+                }
+
+                file1AJTBInfoEntity.setReserved_1a(reserved_1a);//线路编号第一字节+司机编号(3字节)+优惠前金额(2字节)
+                fileJTBPay.setFile1AJTBInfoEntity(file1AJTBInfoEntity);
+                if (cardInfoEntity.transeType == 3 || BusApp.getPosManager().getLineType().endsWith("P")) {//如果是补票交易 需要对多票区域进行更新
+                    fileJTBPay.setUpdata_1A("01");// 01更新
+                } else {
+                    fileJTBPay.setUpdata_1A("00");//00不更新
+                }
+//                cardInfoEntity.getMorePriceInfo().setBoarding_time(cardInfoEntity.transeTime);
+//                fileCpuPay.setFile1CLocalInfoEntity(cardInfoEntity.getMorePriceInfo());
+
+
+//                // 用于测试老年卡补票失败 的情况
+//                cardInfoEntity.getMorePriceInfo().setFull_fare(Integer.parseInt("ffff",16));
+//                fileCpuPay.setFile1CLocalInfoEntity(cardInfoEntity.getMorePriceInfo());
+                String payDate = fileJTBPay.getPayDate();
+                if (!payDate.contains("null")) {
+                    byte[] fileCpuPaybyte = FileUtils.hex2byte(payDate);
+                    xdRecord.setPayCommand(FileUtils.bytesToHexString(fileCpuPaybyte));
+                    arraycopy(fileCpuPaybyte, 0, pay, i, fileCpuPaybyte.length);
+                } else {
+                    BusToast.showToast("刷卡数据异常：" + payDate, false);
+                }
+            } else {
+                MiLog.i("刷卡", "03  校验  进行数据恢复");
+                byte[] fileCpuPaybyte = FileUtils.hex2byte(xdRecord.getPayCommand());
+                byte[] mark_update = new byte[]{0x00};
+                arraycopy(fileCpuPaybyte, 16, mark_update, 0, mark_update.length);
+                xdRecord.setPayCommand(FileUtils.bytesToHexString(fileCpuPaybyte));
+                arraycopy(fileCpuPaybyte, 0, pay, 0, fileCpuPaybyte.length);
+            }
         }
 
         Executors.newSingleThreadExecutor().submit(new Runnable() {
             @Override
             public void run() {
+                MiLog.i("刷卡", "刷卡消费发送" + FileUtils.bytesToHexString(pay));
                 devCmd de = DoCmd.getPayRecord(pay);
                 MiLog.i("刷卡", "刷卡消费返回" + FileUtils.bytesToHexString(de.getDataBuf()));
                 try {
@@ -458,12 +597,18 @@ public class PraseCard {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
+
+//                devCmd devCmd = new devCmd();
+//                devCmd.setDataBuf(FileUtils.hexStringToBytes("6200000000000000000000000000000000000000000000000000000000000000000000000000e75a42f725500001000001310702000000000000000000"));
+//                devCmd.setnRecvLen(devCmd.getDataBuf().length);
+//                payResponse(devCmd, cardInfoEntity, price, xdRecord);
             }
         });
     }
 
+
     //消费返回数据
-    public static void payResponse(devCmd devCmd, CardInfoEntity cardInfoEntity, int price, XdRecord newXdRecord) throws Exception {
+    public static void payResponse(devCmd devCmd, CardInfoEntity cardInfoEntity, int price, XdRecord newXdRecord) {
         try {
             byte[] resultDate = devCmd.getDataBuf();
 
@@ -485,7 +630,22 @@ public class PraseCard {
                 }
             }
 
-            if (errCard.contains(praseConsumCard.status)) {
+//            if (errCard.contains(praseConsumCard.status)) {
+//                XdRecord xdRecord = DBManagerZB.checkRecordNearNow(cardInfoEntity.cardNo);
+//                if (xdRecord != null) {
+//                    newXdRecord.setStatus(praseConsumCard.status);
+//                }
+//                newXdRecord.setPayType("DD");
+//                initConsumCardToRecord(cardInfoEntity, praseConsumCard, newXdRecord);
+//                saveRecord(cardInfoEntity, price, newXdRecord, false);
+//                MiLog.i("刷卡", "错误记录保存：" + praseConsumCard.status);
+//                BusToast.showToast("刷卡失败【" + praseConsumCard.getStatus() + "】", false);
+//                showErr(praseConsumCard.getSw());
+//            } else
+            if (!TextUtils.equals(praseConsumCard.getStatus(), "00")) {
+//                BusToast.showToast("刷卡失败【" + praseConsumCard.getStatus() + "】", false);
+//                showErr(praseConsumCard.getSw());
+
                 XdRecord xdRecord = DBManagerZB.checkRecordNearNow(cardInfoEntity.cardNo);
                 if (xdRecord != null) {
                     newXdRecord.setStatus(praseConsumCard.status);
@@ -494,9 +654,6 @@ public class PraseCard {
                 initConsumCardToRecord(cardInfoEntity, praseConsumCard, newXdRecord);
                 saveRecord(cardInfoEntity, price, newXdRecord, false);
                 MiLog.i("刷卡", "错误记录保存：" + praseConsumCard.status);
-                BusToast.showToast("刷卡失败【" + praseConsumCard.getStatus() + "】", false);
-                showErr(praseConsumCard.getSw());
-            } else if (!TextUtils.equals(praseConsumCard.getStatus(), "00")) {
                 BusToast.showToast("刷卡失败【" + praseConsumCard.getStatus() + "】", false);
                 showErr(praseConsumCard.getSw());
             } else {
@@ -581,10 +738,26 @@ public class PraseCard {
         }
 
 
-
         if (BusApp.getPosManager().getLineType().equals("P")) {
             if (xdRecord.getInCardStatus().equals("01")) {//上车
-                SoundPoolUtil.play(VoiceConfig.qingshangche);
+                switch (cardInfoEntity.cardType) {
+                    case "02"://学生卡
+                        SoundPoolUtil.play(VoiceConfig.xueshengkaqingshangche);
+                        break;
+                    case "03"://老年卡
+                        if (cardInfoEntity.childCardType.endsWith("01")) {
+                            SoundPoolUtil.play(VoiceConfig.aixinkaqingshangche);
+                        } else {
+                            SoundPoolUtil.play(VoiceConfig.laoniankaqingshangche);
+                        }
+                        break;
+                    case "04"://免费卡(荣军卡)
+                        SoundPoolUtil.play(VoiceConfig.rongjunkaqingshangche);
+                        break;
+                    default:
+                        SoundPoolUtil.play(VoiceConfig.qingshangche);
+                        break;
+                }
                 return;
             } else if (xdRecord.getInCardStatus().equals("02")) {//下车
                 if (fareRulePlan != null && Integer.parseInt(fareRulePlan.getFareRulePrice()) != 0) {
@@ -593,14 +766,31 @@ public class PraseCard {
                         return;
                     }
                 }
-                SoundPoolUtil.play(VoiceConfig.qingxiache);
+                switch (cardInfoEntity.cardType) {
+                    case "02"://学生卡
+                        SoundPoolUtil.play(VoiceConfig.xueshenkaqingxiache);
+                        break;
+                    case "03"://老年卡
+                        if (cardInfoEntity.childCardType.endsWith("01")) {
+                            SoundPoolUtil.play(VoiceConfig.aixinkaqingxiache);
+                        } else {
+                            SoundPoolUtil.play(VoiceConfig.laoniankaqingxiache);
+                        }
+                        break;
+                    case "04"://免费卡(荣军卡)
+                        SoundPoolUtil.play(VoiceConfig.rongjunkaqinngxiache);
+                        break;
+                    default:
+                        SoundPoolUtil.play(VoiceConfig.qingxiache);
+                        break;
+                }
                 return;
             } else if (xdRecord.getInCardStatus().equals("03")) {//补票
                 SoundPoolUtil.play(VoiceConfig.bupiao);
                 return;
             } else if (xdRecord.getInCardStatus().equals("00")) {//单票
 
-            } else {//未知¬
+            } else {//未知
                 SoundPoolUtil.play(VoiceConfig.qingchongshua);
                 return;
             }
@@ -793,18 +983,30 @@ public class PraseCard {
             xdRecord.setBeforTradeTime(cardInfoEntity.fileM1InfoEntity.getBlock_1C1D().getBoarding_time());
             xdRecord.setBeforTradePrice(cardInfoEntity.fileM1InfoEntity.getBlock_18().transaction_money);
             xdRecord.setTradePSAM(BusApp.getPosManager().getM1psam());
+        } else if (cardInfoEntity.selete_aid.equals(JTB_CARD)) {
+//          xdRecord.setSamTradeCount(praseConsumCard.fileCpuPayResult.getTAC());//TODO sam卡交易序号
+            xdRecord.setCreatCardMechanism(cardInfoEntity.file15JTBInfoEntity.getCard_issuer());//TODO 发卡机构代码
+            xdRecord.setMainCardType(cardInfoEntity.realCardType);//TODO 主卡类型
+            xdRecord.setChildCardType(cardInfoEntity.realChildCardType);//TODO 子卡类型
+//            xdRecord.setBeforTradePosSn(cardInfoEntity.fileM1InfoEntity.getBlock_1C1D().getVehicle_number());
+//            xdRecord.setBeforTradeType(cardInfoEntity.fileM1InfoEntity.getBlock_18().transaction_type);
+//            xdRecord.setBeforTradeTime(cardInfoEntity.fileM1InfoEntity.getBlock_1C1D().getBoarding_time());
+//            xdRecord.setBeforTradePrice(cardInfoEntity.fileM1InfoEntity.getBlock_18().transaction_money);
+            //TODO 填充上次交易信息
+            xdRecord.setTradePSAM(BusApp.getPosManager().getJTBpsam());
         }
 
-        if(cardInfoEntity.getTranseType()==3){
-            if(lastCardUseCardno!=null) {
+        if (cardInfoEntity.getTranseType() == 3) {
+            if (lastCardUseCardno != null) {
                 xdRecord.setCarNum(lastCardUseCardno);
-            }else{
+            } else {
                 xdRecord.setCarNum(BusApp.getPosManager().getBusNo());
             }
-        }else{
+        } else {
             xdRecord.setCarNum(BusApp.getPosManager().getBusNo());
         }
 
+        Log.i("刷卡", "校验  保存数据记录标示：" + xdRecord.getRecordTag());
         RecordUpload.saveRecord(xdRecord, isneedUp, false);
     }
 
@@ -838,7 +1040,7 @@ public class PraseCard {
                 } else {
                     if (xdRecord != null) {
                         if (System.currentTimeMillis() - xdRecord.getCreatTime() < 2 * 1000) {
-                            MiLog.i("刷卡","刷卡限制  重复刷卡限制：2s内");
+                            MiLog.i("刷卡", "刷卡限制  重复刷卡限制：2s内");
                             return false;
                         } else if (System.currentTimeMillis() - xdRecord.getCreatTime() >= 2 * 1000 && System.currentTimeMillis() - xdRecord.getCreatTime() < limitTime * 1000) {
                             MiLog.i("刷卡", "刷卡限制  重复刷卡限制：" + limitTime + "    " + xdRecord.getPayType());
@@ -879,89 +1081,251 @@ public class PraseCard {
     private static XdRecord checkMac(CardInfoEntity cardInfoEntity) {
         XdRecord xdRecord = DBManagerZB.checkRecordNearNow(cardInfoEntity.cardNo);
         XdRecord newxdRecord = new XdRecord();
-        //可通过余额和交易时间来判定卡片是否交易成功
-        //CPU 18文件交易时间  M1
-        if (xdRecord != null) {
-            newxdRecord.setCardTradeCount(FileUtils.getSHByte(xdRecord.getCardTradeCount()));
-            newxdRecord.setLastTradeCount(FileUtils.getSHByte(xdRecord.getLastTradeCount()));
-            newxdRecord.setRecordTag(xdRecord.getRecordTag());
-            newxdRecord.setTradeNum(xdRecord.getTradeNum());
-            newxdRecord.setTradeTime(xdRecord.getTradeTime());
-            cardInfoEntity.setTranseType(xdRecord.getVoiceType());
-            int payPrice = Integer.parseInt(FileUtils.getSHByte(xdRecord.getTradePay()), 16);
-            MiLog.i("刷卡", "校验mac  有错误记录  记录创建时间：" + xdRecord.getTradeTime() + "         记录标示：" + xdRecord.getRecordTag() + "   错误码：" + xdRecord.getStatus()
-                    + "\n" + "记录中的上次余额：" + xdRecord.getBalance() + "   卡中的当前余额：" + cardInfoEntity.getBalance());
-            String tradeTime = xdRecord.getTradeTime();
-            //如果产生0元消费 或消费失败
-            if (xdRecord.getBalance() == cardInfoEntity.getBalance()) {
-                if (payPrice == 0) {
-                    MiLog.i("刷卡", "校验   校验mac 03  0元消费");
-                    if (cardInfoEntity.selete_aid.equals("03")) {
-                        String cardTime = cardInfoEntity.file18LocalInfoEntity.transaction_time;//单票消费时间
-                        String cardMoreTime = cardInfoEntity.file1CLocalInfoEntity.getBoarding_time();//多票消费时间
-                        if (cardTime.equals(tradeTime)) {//表示进行了免费交易
-                            MiLog.i("刷卡", "校验   校验mac 03  开始校验 发送校验命令");
-                            Rx.getInstance().sendMessage("checkMac", new Object[]{cardInfoEntity, xdRecord});//发送命令校准记录
-                            return null;
-                        } else {//交易失败
-                            MiLog.i("刷卡", "校验mac 03  交易失败");
-                            return newxdRecord;
+        try {
+            //可通过余额和交易时间来判定卡片是否交易成功
+            //CPU 18文件交易时间  M1
+            if (xdRecord != null) {
+                newxdRecord.setCardTradeCount(FileUtils.getSHByte(xdRecord.getCardTradeCount()));
+                newxdRecord.setLastTradeCount(FileUtils.getSHByte(xdRecord.getLastTradeCount()));
+                newxdRecord.setRecordTag(xdRecord.getRecordTag());
+                newxdRecord.setTradeNum(xdRecord.getTradeNum());
+                newxdRecord.setTradeTime(xdRecord.getTradeTime());
+                cardInfoEntity.setTranseType(xdRecord.getVoiceType());
+                int payPrice = Integer.parseInt(FileUtils.getSHByte(xdRecord.getTradePay()), 16);
+                MiLog.i("刷卡", "校验记录标示：" + xdRecord.getRecordTag() + "   错误码：" + xdRecord.getStatus()
+                        + "\n" + "记录中的上次余额：" + xdRecord.getBalance() + "   卡中的当前余额：" + cardInfoEntity.getBalance()
+                        + "\n" + xdRecord.getInCardStatus());
+                String tradeTime = xdRecord.getTradeTime();
+                String xdRecordcarNo = xdRecord.getCarNum();
+                //如果产生0元消费 或消费失败
+                if (xdRecord.getBalance() == cardInfoEntity.getBalance()) {
+                    if (payPrice == 0) { //如果票价为0 且未进行扣费 需要进一步判定数据是否写入
+                        MiLog.i("刷卡", "校验   上次刷卡卡中余额与本次刷卡余额相同，0元消费或消费失败");
+                        if (cardInfoEntity.selete_aid.equals("03")) {
+                            if (cardInfoEntity.file1CLocalInfoEntity == null || cardInfoEntity.file1CLocalInfoEntity.getBoarding_time() == null || cardInfoEntity.file18LocalInfoEntity == null) {//多票信息区域数据空 直接判定为交易失败
+                                return newxdRecord;
+                            }
+                            String cardTime = cardInfoEntity.file18LocalInfoEntity.transaction_time;//单票消费时间
+                            String cardMoreTime = cardInfoEntity.file1CLocalInfoEntity.getBoarding_time();//多票消费时间
+                            String cardNo = FileUtils.hexStringFromatByF(10, FileUtils.asciiToHex(cardInfoEntity.file1CLocalInfoEntity.getVehicle_number()), true);
+                            MiLog.i("刷卡", "03 校验  单票交易时间：" + cardTime + "      多票交易时间：" + cardMoreTime + "     记录交易时间：" + tradeTime);
+                            if (cardTime.equals(tradeTime) || cardMoreTime.equals(tradeTime)) {//表示进行了免费交易
+                                if (cardTime.equals(tradeTime) && xdRecordcarNo.equals(cardNo)) {
+                                    MiLog.i("刷卡", "03 校验  时间相同,车辆号相同,记录完整,消费成功");
+                                    showVoice(cardInfoEntity, xdRecord);
+                                    xdRecord.setStatus("00");
+                                    xdRecord.setPayType("FD");
+                                    xdRecord.setTradeDiscount(cardInfoEntity.getBalance());
+                                    MiLog.i("刷卡", "03 无扣费数据  多票区域数据写入成功 完成");
+                                    saveRecord(cardInfoEntity, payPrice, xdRecord);
+                                    Rx.getInstance().sendMessage("checkMac", new Object[]{cardInfoEntity, xdRecord});//发送命令校准记录
+                                    return null;
+                                } else {
+                                    MiLog.i("刷卡", "03 校验  无扣费数据  多票区域数据未写入成功 数据重置");
+                                    return xdRecord;
+                                }
+                            } else {//交易失败
+                                MiLog.i("刷卡", "03 校验  交易失败，返回03卡片新建的保存了消费时间和金额的记录");
+                                return newxdRecord;
+                            }
+                        } else if (cardInfoEntity.selete_aid.equals("02")) {
+                            if (cardInfoEntity.file17NewCPUInfoEntity == null || cardInfoEntity.file17NewCPUInfoEntity.getBoarding_time() == null || cardInfoEntity.file10NewCPUInfoEntity == null) {//多票信息区域数据空 直接判定为交易失败
+                                return newxdRecord;
+                            }
+                            String cardTime = cardInfoEntity.file18NewCPUInfoEntity.getTransaction_time();
+                            String cardMoreTime = cardInfoEntity.file17NewCPUInfoEntity.getBoarding_time();//多票消费时间
+                            String carNo = FileUtils.hexStringFromatByF(10, FileUtils.asciiToHex(cardInfoEntity.file17NewCPUInfoEntity.getVehicle_number()), true);
+                            if (cardTime.equals(tradeTime) || cardMoreTime.equals(tradeTime)) {//表示进行了免费交易
+                                if (cardTime.equals(tradeTime) && xdRecordcarNo.equals(carNo)) {
+                                    MiLog.i("刷卡", "03 校验  时间相同,车辆号相同,记录完整,消费成功");
+                                    showVoice(cardInfoEntity, xdRecord);
+                                    xdRecord.setStatus("00");
+                                    xdRecord.setPayType("FD");
+                                    xdRecord.setTradeDiscount(cardInfoEntity.getBalance());
+                                    MiLog.i("刷卡", "03 无扣费数据  多票区域数据写入成功 完成");
+                                    saveRecord(cardInfoEntity, payPrice, xdRecord);
+                                    Rx.getInstance().sendMessage("checkMac", new Object[]{cardInfoEntity, xdRecord});//发送命令校准记录
+                                    return null;
+                                } else {
+                                    MiLog.i("刷卡", "03 校验  无扣费数据  多票区域数据未写入成功 数据重置");
+                                    return xdRecord;
+                                }
+                            } else {//交易失败
+                                MiLog.i("刷卡", "校验 交易失败，返回02类型卡片的消费信息");
+                                return newxdRecord;
+                            }
+                        } else if (cardInfoEntity.selete_aid.equals("04")) {
+                            if (BusApp.getPosManager().getLineType().endsWith("P")) {
+                                String cardTime = cardInfoEntity.fileM1InfoEntity.getBlock_1C1D().getBoarding_time();
+                                String carNo = FileUtils.hexStringFromatByF(10, FileUtils.asciiToHex(cardInfoEntity.fileM1InfoEntity.getBlock_1C1D().getVehicle_number()), true);
+                                MiLog.i("刷卡", "校验  多票时间：" + cardTime + "    记录时间：" + tradeTime);
+                                if (cardTime.equals(tradeTime) && xdRecordcarNo.equals(carNo)) {
+                                    MiLog.i("刷卡", "校验  时间相同,车辆号相同,记录完整,消费成功");
+                                    showVoice(cardInfoEntity, xdRecord);
+                                    xdRecord.setStatus("00");
+                                    xdRecord.setPayType("FD");
+                                    xdRecord.setTradeDiscount(cardInfoEntity.getBalance());
+                                    MiLog.i("刷卡", "无扣费数据  多票区域数据写入成功 完成");
+                                    saveRecord(cardInfoEntity, payPrice, xdRecord);
+                                    BusToast.showToast("\n校验扣款：" + FileUtils.fen2Yuan(payPrice) + "元\n余额：" +
+                                            FileUtils.fen2Yuan(cardInfoEntity.getBalance()) + "元", true);
+                                    return null;
+                                } else {
+                                    MiLog.i("刷卡", "校验  无扣费数据  多票区域数据未写入成功 数据重置");
+                                    return xdRecord;
+                                }
+                            } else {
+                                MiLog.i("刷卡", "校验   校验mac 03  有价格消费 失败");
+                                return newxdRecord;
+                            }
+                        } else if (cardInfoEntity.selete_aid.equals("01")) {
+                            if (xdRecord.getInCardStatus().equals("01")) {//  0x01上车(多票二维码统一传01) 0x02下车 0x00一票
+                                if (cardInfoEntity.getFile1AJTBInfoEntity().getBoarding_time_1a().equals(tradeTime)) {
+                                    showVoice(cardInfoEntity, xdRecord);
+                                    xdRecord.setStatus("00");
+                                    xdRecord.setPayType("FD");
+                                    xdRecord.setTradeDiscount(cardInfoEntity.getBalance());
+                                    MiLog.i("刷卡", "01 上车无扣费数据  多票区域数据写入成功 完成");
+                                    saveRecord(cardInfoEntity, payPrice, xdRecord);
+                                    BusToast.showToast("\n校验扣款：" + FileUtils.fen2Yuan(payPrice) + "元\n余额：" +
+                                            FileUtils.fen2Yuan(cardInfoEntity.getBalance()) + "元", true);
+                                    return null;
+                                }
+                            } else if (xdRecord.getInCardStatus().equals("02")) {
+                                if (cardInfoEntity.getFile1AJTBInfoEntity().getAlight_time_1a().equals(tradeTime)) {
+                                    showVoice(cardInfoEntity, xdRecord);
+                                    xdRecord.setStatus("00");
+                                    xdRecord.setPayType("FD");
+                                    xdRecord.setTradeDiscount(cardInfoEntity.getBalance());
+                                    MiLog.i("刷卡", "01 下车无扣费数据  多票区域数据写入成功 完成");
+                                    saveRecord(cardInfoEntity, payPrice, xdRecord);
+                                    BusToast.showToast("\n校验扣款：" + FileUtils.fen2Yuan(payPrice) + "元\n余额：" +
+                                            FileUtils.fen2Yuan(cardInfoEntity.getBalance()) + "元", true);
+                                    return null;
+                                }
+                            } else if (xdRecord.getInCardStatus().equals("00")) {
+                                if (cardInfoEntity.getFile1EJTBInfoEntity().getTransaction_time_1e().equals(tradeTime)) {
+                                    showVoice(cardInfoEntity, xdRecord);
+                                    xdRecord.setStatus("00");
+                                    xdRecord.setPayType("FD");
+                                    xdRecord.setTradeDiscount(cardInfoEntity.getBalance());
+                                    MiLog.i("刷卡", "01 单票无扣费数据  多票区域数据写入成功 完成");
+                                    saveRecord(cardInfoEntity, payPrice, xdRecord);
+                                    BusToast.showToast("\n校验扣款：" + FileUtils.fen2Yuan(payPrice) + "元\n余额：" +
+                                            FileUtils.fen2Yuan(cardInfoEntity.getBalance()) + "元", true);
+                                    return null;
+                                }
+                            }
                         }
-                    } else if (cardInfoEntity.selete_aid.equals("02")) {
-                        String cardTime = cardInfoEntity.file18NewCPUInfoEntity.getTransaction_time();
-                        if (cardTime.equals(tradeTime)) {//表示进行了免费交易
-                            MiLog.i("刷卡", "校验mac  02 开始校验  发送校验命令");
-                            Rx.getInstance().sendMessage("checkMac", new Object[]{cardInfoEntity, xdRecord});//发送命令校准记录
-                            return null;
-                        } else {//交易失败
-                            MiLog.i("刷卡", "校验mac 02  交易失败");
-                            return newxdRecord;
-                        }
-                    } else if (cardInfoEntity.selete_aid.equals("04")) {
-                        if (BusApp.getPosManager().getLineType().endsWith("P")) {
-                            String cardTime = cardInfoEntity.fileM1InfoEntity.getBlock_1C1D().getBoarding_time();
-                            MiLog.i("刷卡", "校验  多票时间：" + cardTime + "    记录时间：" + tradeTime);
-                            if (cardTime.equals(tradeTime)) {
-                                MiLog.i("刷卡", "校验  无扣费数据  多票区域数据写入成功 完成");
+                    } else {//表示有票价 且未进行扣费 直接重新进行消费
+                        newxdRecord.setTradePay(xdRecord.getTradePay());
+                        MiLog.i("刷卡", "校验  校验mac  有票价但未扣费 交易失败" + "   交易序号：" + newxdRecord.getRecordTag() + "   票价：" + newxdRecord.getTradePay());
+                        return newxdRecord;
+                    }
+                } else { //表示有扣费
+                    MiLog.i("刷卡", "校验  两次刷卡的余额有差距");
+                    if (BusApp.getPosManager().getLineType().endsWith("P")) { //如果是多票 则需要对卡数据进行纠正
+                        if (cardInfoEntity.selete_aid.equals("04")) {
+                            String cardNo = FileUtils.hexStringFromatByF(10, FileUtils.asciiToHex(cardInfoEntity.fileM1InfoEntity.getBlock_1C1D().getVehicle_number()), true);
+                            if (cardInfoEntity.fileM1InfoEntity.getBlock_1C1D().getBoarding_time().equals(tradeTime) && xdRecordcarNo.equals(cardNo)) {
+                                MiLog.i("刷卡", "校验   有扣费数据  多票区域数据写入成功  完成");
+                                long pay = xdRecord.getBalance() - cardInfoEntity.getBalance();
                                 showVoice(cardInfoEntity, xdRecord);
                                 xdRecord.setStatus("00");
                                 xdRecord.setPayType("FD");
                                 xdRecord.setTradeDiscount(cardInfoEntity.getBalance());
-                                MiLog.i("刷卡", "无扣费数据  多票区域数据写入成功 完成");
-                                saveRecord(cardInfoEntity, payPrice, xdRecord);
-                                BusToast.showToast("\n校验扣款：" + FileUtils.fen2Yuan(payPrice) + "元\n余额：" +
+                                saveRecord(cardInfoEntity, pay, xdRecord);
+                                BusToast.showToast("\n校验扣款：" + FileUtils.fen2Yuan(pay) + "元\n余额：" +
                                         FileUtils.fen2Yuan(cardInfoEntity.getBalance()) + "元", true);
                                 return null;
                             } else {
-                                MiLog.i("刷卡", "校验  无扣费数据  多票区域数据未写入成功 数据重置");
+                                MiLog.i("刷卡", "校验 多票区域数据确实  需要重新写入数据  返回带有命令的记录");
+                                return xdRecord;
                             }
-                        } else {
-                            MiLog.i("刷卡", "校验   校验mac 03  有价格消费 失败");
-                            return newxdRecord;
+                        } else if (cardInfoEntity.selete_aid.equals("03")) {
+                            String cardNo = FileUtils.hexStringFromatByF(10, FileUtils.asciiToHex(cardInfoEntity.file1CLocalInfoEntity.getVehicle_number()), true);
+                            if (cardInfoEntity.file1CLocalInfoEntity.getBoarding_time().equals(tradeTime) && xdRecordcarNo.equals(cardNo)) {
+                                MiLog.i("刷卡", "03校验   有扣费数据  多票区域数据写入成功  完成");
+                                long pay = xdRecord.getBalance() - cardInfoEntity.getBalance();
+                                showVoice(cardInfoEntity, xdRecord);
+                                xdRecord.setStatus("00");
+                                xdRecord.setPayType("FD");
+                                xdRecord.setTradeDiscount(cardInfoEntity.getBalance());
+                                saveRecord(cardInfoEntity, pay, xdRecord);
+                                BusToast.showToast("\n校验扣款：" + FileUtils.fen2Yuan(pay) + "元\n余额：" +
+                                        FileUtils.fen2Yuan(cardInfoEntity.getBalance()) + "元", true);
+                                return null;
+                            } else {
+                                MiLog.i("刷卡", "03校验 多票区域数据确实  需要重新写入数据  返回带有命令的记录");
+                                return xdRecord;
+                            }
+                        } else if (cardInfoEntity.selete_aid.equals("01")) {
+                            if (xdRecord.getInCardStatus().equals("01")) {//  0x01上车(多票二维码统一传01) 0x02下车 0x00一票
+                                if (cardInfoEntity.getFile1AJTBInfoEntity().getBoarding_time_1a().equals(tradeTime)) {
+                                    showVoice(cardInfoEntity, xdRecord);
+                                    xdRecord.setStatus("00");
+                                    xdRecord.setPayType("FD");
+                                    xdRecord.setTradeDiscount(cardInfoEntity.getBalance());
+                                    MiLog.i("刷卡", "01 上车无扣费数据  多票区域数据写入成功 完成");
+                                    saveRecord(cardInfoEntity, payPrice, xdRecord);
+                                    BusToast.showToast("\n校验扣款：" + FileUtils.fen2Yuan(payPrice) + "元\n余额：" +
+                                            FileUtils.fen2Yuan(cardInfoEntity.getBalance()) + "元", true);
+                                    return null;
+                                }
+                            } else if (xdRecord.getInCardStatus().equals("02")) {
+                                if (cardInfoEntity.getFile1AJTBInfoEntity().getAlight_time_1a().equals(tradeTime)) {
+                                    showVoice(cardInfoEntity, xdRecord);
+                                    xdRecord.setStatus("00");
+                                    xdRecord.setPayType("FD");
+                                    xdRecord.setTradeDiscount(cardInfoEntity.getBalance());
+                                    MiLog.i("刷卡", "01 下车无扣费数据  多票区域数据写入成功 完成");
+                                    saveRecord(cardInfoEntity, payPrice, xdRecord);
+                                    BusToast.showToast("\n校验扣款：" + FileUtils.fen2Yuan(payPrice) + "元\n余额：" +
+                                            FileUtils.fen2Yuan(cardInfoEntity.getBalance()) + "元", true);
+                                    return null;
+                                }
+                            } else if (xdRecord.getInCardStatus().equals("00")) {
+                                if (cardInfoEntity.getFile1EJTBInfoEntity().getTransaction_time_1e().equals(tradeTime)) {
+                                    showVoice(cardInfoEntity, xdRecord);
+                                    xdRecord.setStatus("00");
+                                    xdRecord.setPayType("FD");
+                                    xdRecord.setTradeDiscount(cardInfoEntity.getBalance());
+                                    MiLog.i("刷卡", "01 单票无扣费数据  多票区域数据写入成功 完成");
+                                    saveRecord(cardInfoEntity, payPrice, xdRecord);
+                                    BusToast.showToast("\n校验扣款：" + FileUtils.fen2Yuan(payPrice) + "元\n余额：" +
+                                            FileUtils.fen2Yuan(cardInfoEntity.getBalance()) + "元", true);
+                                    return null;
+                                }
+                            }
+                        } else if (cardInfoEntity.selete_aid.equals("02")) {
+                            String cardTime = cardInfoEntity.file18NewCPUInfoEntity.getTransaction_time();
+                            String cardMoreTime = cardInfoEntity.file17NewCPUInfoEntity.getBoarding_time();//多票消费时间
+                            String carNo = FileUtils.hexStringFromatByF(10, FileUtils.asciiToHex(cardInfoEntity.file17NewCPUInfoEntity.getVehicle_number()), true);
+                            if (cardTime.equals(tradeTime) || cardMoreTime.equals(tradeTime)) {//表示进行免费交易
+                                if (cardMoreTime.equals(tradeTime) && xdRecordcarNo.equals(carNo)) {
+                                    MiLog.i("刷卡", "01 校验  时间相同,车辆号相同,记录完整,消费成功");
+                                    showVoice(cardInfoEntity, xdRecord);
+                                    xdRecord.setStatus("00");
+                                    xdRecord.setPayType("FD");
+                                    xdRecord.setTradeDiscount(cardInfoEntity.getBalance());
+                                    MiLog.i("刷卡", "01 无扣费数据  多票区域数据写入成功 完成");
+                                    saveRecord(cardInfoEntity, payPrice, xdRecord);
+                                    Rx.getInstance().sendMessage("checkMac", new Object[]{cardInfoEntity, xdRecord});//发送命令校准记录
+                                    return null;
+                                } else {
+                                    MiLog.i("刷卡", "01 校验  无扣费数据  多票区域数据未写入成功 数据重置");
+                                    return xdRecord;
+                                }
+                            } else {//交易失败
+                                MiLog.i("刷卡", "校验 交易失败，返回02类型卡片的消费信息");
+                                return newxdRecord;
+                            }
+
+                        } else if (cardInfoEntity.selete_aid.equals("02")) {
+                            MiLog.i("刷卡", "校验  开始校验  发送校验命令");
+                            Rx.getInstance().sendMessage("checkMac", new Object[]{cardInfoEntity, xdRecord});//发送命令校准记录
                         }
-                    }
-                } else {
-                    MiLog.i("刷卡", "校验  校验mac  有票价但未扣费 交易失败" + "   交易序号：" + newxdRecord.getCardTradeCount());
-                    return newxdRecord;
-                }
-            } else {
-                if (cardInfoEntity.selete_aid.equals("04")) {
-                    if (BusApp.getPosManager().getLineType().endsWith("P")) {//如果是多票 则需要对卡数据进行纠正
-                        if (cardInfoEntity.fileM1InfoEntity.getBlock_1C1D().getBoarding_time().equals(cardInfoEntity.transeTime)) {
-                            MiLog.i("刷卡", "校验   有扣费数据  多票区域数据写入成功  完成");
-                            long pay = xdRecord.getBalance() - cardInfoEntity.getBalance();
-                            showVoice(cardInfoEntity, xdRecord);
-                            xdRecord.setStatus("00");
-                            xdRecord.setPayType("FD");
-                            xdRecord.setTradeDiscount(cardInfoEntity.getBalance());
-                            saveRecord(cardInfoEntity, pay, xdRecord);
-                            BusToast.showToast("\n校验扣款：" + FileUtils.fen2Yuan(pay) + "元\n余额：" +
-                                    FileUtils.fen2Yuan(cardInfoEntity.getBalance()) + "元", true);
-                            return null;
-                        } else {
-                            MiLog.i("刷卡", "校验   多票区域数据写入失败 需要重新写入 需要重置数据");
-                            return xdRecord;
-                        }
+
                     } else {
                         MiLog.i("刷卡", "校验  单票校验 刷卡金额消费成功 完成" + xdRecord.getTradeTime());
                         long pay = xdRecord.getBalance() - cardInfoEntity.getBalance();
@@ -974,19 +1338,17 @@ public class PraseCard {
                                 FileUtils.fen2Yuan(cardInfoEntity.getBalance()) + "元", true);
                         return null;
                     }
-                } else {
-                    MiLog.i("刷卡", "校验  开始校验  发送校验命令");
-                    Rx.getInstance().sendMessage("checkMac", new Object[]{cardInfoEntity, xdRecord});//发送命令校准记录
                 }
-                return null;
             }
-        } else {
+        } catch (Exception e) {
+            MiLog.i("刷卡", "错误 重新消费");
             return newxdRecord;
         }
         return newxdRecord;
     }
 
-    public static void checkMacBack(@Nullable devCmd checkMac, CardInfoEntity cardInfoEntity, XdRecord xdRecord) {
+    public static void checkMacBack(@Nullable devCmd checkMac, CardInfoEntity
+            cardInfoEntity, XdRecord xdRecord) {
         MiLog.i("刷卡", "校验mac");
         try {
             int i = 0;
@@ -1027,11 +1389,14 @@ public class PraseCard {
                 xdRecord.setTradeTime(cardInfoEntity.file18NewCPUInfoEntity.getTransaction_time());
 //                xdRecord.setCardTradeCount(cardInfoEntity.file18NewCPUInfoEntity.getTransaction_number_18());
                 pay = Integer.parseInt(cardInfoEntity.file18NewCPUInfoEntity.getTransaction_amount(), 16);
+            } else if (cardInfoEntity.selete_aid.equals("01")) {
+                xdRecord.setTradeTime(cardInfoEntity.getFile1EJTBInfoEntity().getTransaction_time_1e());
+                pay = Integer.parseInt(cardInfoEntity.getFile1EJTBInfoEntity().getTransaction_amount_1e(), 16);
             }
             xdRecord.setTradeDiscount(cardInfoEntity.getBalance());
             DBManagerZB.saveRecord(xdRecord);
             showVoice(cardInfoEntity, xdRecord);
-            MiLog.i("刷卡", "获取tac完成   保存记录成功");
+            MiLog.i("刷卡", "校验获取tac完成   保存记录成功  记录标示：" + xdRecord.getRecordTag());
             BusToast.showToast("\n本次扣款：" + FileUtils.fen2Yuan(pay) + "元\n余额：" +
                     FileUtils.fen2Yuan(cardInfoEntity.getBalance()) + "元", true);
         } catch (Exception e) {

@@ -1,6 +1,5 @@
 package com.szxb.zibo.moudle.function.gps;
 
-import com.baidu.mapapi.model.LatLng;
 import com.szxb.zibo.moudle.function.location.GPSToBaidu;
 import com.szxb.zibo.util.Util;
 

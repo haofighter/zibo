@@ -15,7 +15,9 @@ import com.szxb.java8583.module.manager.BusllPosManage;
 import com.szxb.zibo.base.BusApp;
 import com.szxb.zibo.config.haikou.ConfigContext;
 import com.szxb.zibo.config.zibo.InitConfigZB;
-import com.szxb.zibo.moudle.function.card.KeyBorad;
+import com.szxb.zibo.config.zibo.line.PraseLine;
+import com.szxb.zibo.moudle.function.keyboard.KeyBoardInfo;
+import com.szxb.zibo.moudle.function.keyboard.KeyBorad;
 import com.szxb.zibo.moudle.function.card.PraseCard;
 import com.szxb.zibo.moudle.function.scan.ScanManage;
 import com.szxb.zibo.moudle.function.unionpay.UnionPay;
@@ -25,24 +27,27 @@ import com.szxb.zibo.util.BusToast;
 import com.szxb.zibo.util.MiLinkBlockQueue;
 import com.szxb.zibo.util.SecretUtils;
 import com.szxb.zibo.util.sp.CommonSharedPreferences;
+import com.szxb.zibo.voice.SoundPoolUtil;
+import com.szxb.zibo.voice.VoiceConfig;
 
 import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import static com.szxb.jni.SerialCom.SerialComWrite;
+import static com.szxb.zibo.config.zibo.InitConfigZB.INFO_UP;
 import static java.lang.System.arraycopy;
 
 public class DoCmd {
-    private static final String TAG = DoCmd.class.getSimpleName();
     private static String priceSetting = "";
+    private static String oldStationKey = "000000";
+    private static String oldSynKey = "000000";
 
     public static BlockingQueue<devCmd> queue = new MiLinkBlockQueue(1);
 
     public static void doHeart(devCmd myCmd) {
-        Log.d(TAG, "doHeart");
-        Log.d(TAG, "len = " + myCmd.getnRecvLen());
     }
 
     public static void doQRcode(devCmd myCmd) {
@@ -57,7 +62,7 @@ public class DoCmd {
             //进行二维码流程
             ScanManage.getInstance().scanRe(qrcode);
         } catch (Exception e) {
-            Log.i("错误", "二维码报错");
+            MiLog.i("错误", "二维码报错");
         }
     }
 
@@ -73,18 +78,13 @@ public class DoCmd {
         SerialComWrite(sendCmd, sendCmd.length);
 
         try {
-            devCmd bean = queue.poll(2, TimeUnit.SECONDS);
+            devCmd bean = queue.poll(900, TimeUnit.SECONDS);
             if (bean != null && bean.getS() == 0) {
-                Log.d(TAG, "取到值了  doGetVersion   刷卡数据？");
-                Log.d(TAG, "doGetVersion");
                 return new String(bean.getDataBuf());
             }
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-
-        Log.d(TAG, "doGetVersion err");
-
         return null;
     }
 
@@ -94,7 +94,7 @@ public class DoCmd {
             arraycopy(myCmd.getDataBuf(), 0, cardDate, 0, myCmd.getnRecvLen());
             PraseCard.praseCardDate(cardDate);
         } catch (Exception e) {
-            Log.i("错误", "doCard:" + e.getMessage());
+            MiLog.i("错误", "doCard:" + e.getMessage());
         }
     }
 
@@ -120,9 +120,8 @@ public class DoCmd {
         byte[] sendCmd = verCmd.packageData();
         SerialComWrite(sendCmd, sendCmd.length);
         try {
-            devCmd bean = queue.poll(2000, TimeUnit.MILLISECONDS);
+            devCmd bean = queue.poll(900, TimeUnit.MILLISECONDS);
             if (bean != null && bean.getS() == 0) {
-                Log.d(TAG, "doGetVersion");
                 return bean;
             }
         } catch (InterruptedException e) {
@@ -139,16 +138,16 @@ public class DoCmd {
         verCmd.setDataBuf(date);
         verCmd.setnRecvLen(date.length);
         byte[] sendCmd = verCmd.packageData();
-        MiLog.i(TAG, "刷卡 发送消费 = " + FileUtils.byte2Parm(sendCmd, Type.HEX));
         try {
+            MiLog.i("刷卡", "刷卡消费发送" + FileUtils.bytesToHexString(sendCmd));
             queue.clear();
             SerialComWrite(sendCmd, sendCmd.length);
-            devCmd bean = queue.poll(2000, TimeUnit.MILLISECONDS);
+            devCmd bean = queue.poll(900, TimeUnit.MILLISECONDS);
             if (bean != null && bean.getS() == 0) {
                 return bean;
             }
         } catch (InterruptedException e) {
-            MiLog.i(TAG, "刷卡 queue 报错啦" + e.getMessage());
+            MiLog.i("错误", "getPayRecord 报错啦" + e.getMessage());
             e.printStackTrace();
         }
         return null;
@@ -165,10 +164,8 @@ public class DoCmd {
         byte[] sendCmd = verCmd.packageData();
         SerialComWrite(sendCmd, sendCmd.length);
         try {
-            devCmd bean = queue.poll(2000, TimeUnit.MILLISECONDS);
-            Log.d(TAG, "取到值了  checkMac   刷卡数据？");
+            devCmd bean = queue.poll(900, TimeUnit.MILLISECONDS);
             if (bean != null && bean.getS() == 0) {
-                Log.d(TAG, "doGetVersion");
                 return bean;
             }
         } catch (InterruptedException e) {
@@ -176,6 +173,7 @@ public class DoCmd {
         }
         return null;
     }
+
 
     //银联
     public static devCmd checkUnion(byte[] date) {
@@ -188,9 +186,8 @@ public class DoCmd {
         byte[] sendCmd = verCmd.packageData();
         SerialComWrite(sendCmd, sendCmd.length);
         try {
-            devCmd bean = queue.poll(2000, TimeUnit.MILLISECONDS);
+            devCmd bean = queue.poll(900, TimeUnit.MILLISECONDS);
             if (bean != null && bean.getS() == 0) {
-                Log.d(TAG, "doGetVersion");
                 return bean;
             }
         } catch (InterruptedException e) {
@@ -210,9 +207,8 @@ public class DoCmd {
         byte[] sendCmd = verCmd.packageData();
         SerialComWrite(sendCmd, sendCmd.length);
         try {
-            devCmd bean = queue.poll(2, TimeUnit.SECONDS);
+            devCmd bean = queue.poll(1, TimeUnit.SECONDS);
             if (bean != null && bean.getS() == 0 && bean.getDataBuf() != null) {
-                Log.d(TAG, "resetPSAM=" + FileUtils.bytesToHexString(bean.getDataBuf()));
                 doPSAM(bean);
                 return bean;
             }
@@ -256,6 +252,10 @@ public class DoCmd {
                 i += M1Key_index.length;
                 String m1Key_index = (String) FileUtils.byte2Parm(M1Key_index, Type.HEX);
 
+                if (PASMresult.length <= i) {
+                    return;
+                }
+
                 //选择卡槽 固定00
                 byte[] Cpuslot = new byte[1];
                 arraycopy(PASMresult, i, Cpuslot, 0, Cpuslot.length);
@@ -280,12 +280,42 @@ public class DoCmd {
                 byte[] CpuKey_index = new byte[1];
                 arraycopy(PASMresult, i, CpuKey_index, 0, CpuKey_index.length);
                 i += CpuKey_index.length;
-                String cpukey_index = (String) FileUtils.byte2Parm(CpuKey_index, Type.HEX);
+
+
+                if (PASMresult.length <= i) {
+                    return;
+                }
+                //选择卡槽 固定00
+                byte[] jtslot = new byte[1];
+                arraycopy(PASMresult, i, Cpuslot, 0, Cpuslot.length);
+                i += Cpuslot.length;
+
+                //终端编号
+                byte[] JTBPosID = new byte[6];
+                arraycopy(PASMresult, i, JTBPosID, 0, JTBPosID.length);
+                i += JTBPosID.length;
+                String jTBPosID = (String) FileUtils.byte2Parm(JTBPosID, Type.HEX);
+                BusApp.getPosManager().setJTBpsam(jTBPosID);
+
+
+                //PSAM卡号
+                byte[] JTBSerialNum = new byte[10];
+                arraycopy(PASMresult, i, JTBSerialNum, 0, JTBSerialNum.length);
+                i += JTBSerialNum.length;
+                String jTBSerialNum = (String) FileUtils.byte2Parm(JTBSerialNum, Type.HEX);
+
+
+                ////密钥索引 有卡01
+                byte[] JTBKey_index = new byte[1];
+                arraycopy(PASMresult, i, JTBKey_index, 0, JTBKey_index.length);
+                i += JTBKey_index.length;
+                String jtbkey_index = (String) FileUtils.byte2Parm(JTBKey_index, Type.HEX);
 
 
             }
 
         } catch (Exception e) {
+            MiLog.i("错误", "PASM卡复位失败:" + e.getMessage());
             new Thread(new Runnable() {
                 @Override
                 public void run() {
@@ -297,7 +327,7 @@ public class DoCmd {
                     }
                 }
             }).start();
-            Log.i("错误", "PASM卡复位失败");
+
         }
     }
 
@@ -305,7 +335,6 @@ public class DoCmd {
 
     public static void doKeyPress(devCmd devCmd) {
         try {
-            Log.i("按键", "doKeyPress(DoCmd.java:237)" + FileUtils.bytesToHexString(devCmd.getDataBuf()));
 
             if (Math.abs(keyTime - System.currentTimeMillis()) < 200) {
                 return;
@@ -323,10 +352,11 @@ public class DoCmd {
             Rx.getInstance().sendMessage("key", keycode);
             keyTime = System.currentTimeMillis();
         } catch (Exception e) {
-            Log.i("错误", "doKeyPress(DoCmd.java:237)" + e.getMessage());
+            MiLog.i("错误", "doKeyPress(DoCmd.java:237)" + e.getMessage());
         }
 
     }
+
 
     //获取银联参数数据
     public static void doGetUnionParam(devCmd devCmd) {
@@ -350,13 +380,12 @@ public class DoCmd {
                 }
                 sendDate[19] = qrcode[3];
                 sendDate[20] = 0x0c;
-                Log.i("获取银联密钥的数据", FileUtils.bytesToHexString(sendDate));
                 Rx.getInstance().sendMessage("unionParam", sendDate);
             } else {
                 setUnionparam(devCmd);
             }
         } catch (Exception e) {
-            Log.i("错误", "获取银联参数数据");
+            MiLog.i("错误", "获取银联参数数据");
         }
     }
 
@@ -370,9 +399,8 @@ public class DoCmd {
         byte[] sendCmd = verCmd.packageData();
         SerialComWrite(sendCmd, sendCmd.length);
         try {
-            devCmd bean = queue.poll(2, TimeUnit.SECONDS);
+            devCmd bean = queue.poll(900, TimeUnit.SECONDS);
             if (bean != null && bean.getS() == 0 && bean.getDataBuf() != null) {
-                Log.d(TAG, "doGetVersion");
                 return bean;
             }
         } catch (InterruptedException e) {
@@ -455,7 +483,6 @@ public class DoCmd {
         ThreadUtils.getInstance().createSch("docmd").submit(new Runnable() {
             @Override
             public void run() {
-                MiLog.i("重新寻卡", "重新寻卡");
                 devCmd verCmd = new devCmd();
                 verCmd.setCla((byte) 0x86);
                 verCmd.setIns((byte) 0x45);
@@ -466,16 +493,16 @@ public class DoCmd {
 
                 SerialComWrite(sendCmd, sendCmd.length);
                 try {
-                    devCmd bean = queue.poll(2, TimeUnit.SECONDS);
+                    devCmd bean = queue.poll(1, TimeUnit.SECONDS);
                     if (bean != null && bean.getS() == 0) {
-                        Log.d(TAG, "resetCard");
+                        Log.d(comThread.TAG, "resetCard");
                     }
                     if (bean == null) {
-                        Log.d(TAG, "resetCard null");
+                        Log.d(comThread.TAG, "resetCard null");
                     }
                 } catch (InterruptedException e) {
                     e.printStackTrace();
-                    Log.d(TAG, "resetCard err");
+                    MiLog.i("错误", "resetCard err");
                 }
             }
         });
@@ -485,135 +512,260 @@ public class DoCmd {
         try {
             byte[] keyboardInfo = new byte[devCmd.getnRecvLen()];
             arraycopy(devCmd.getDataBuf(), 0, keyboardInfo, 0, devCmd.getnRecvLen());
-            Log.i("键盘按键", FileUtils.bytesToHexString(keyboardInfo));
-
-            KeyBorad keyBorad = new KeyBorad();
-            keyBorad.prase(keyboardInfo);
-
-            byte[] key = FileUtils.hexStringToBytes(keyBorad.getDate());
-            Log.i("键盘按键 按键代码", keyBorad.getDate() + "         " + new String(key));
-            switch (keyBorad.getDate()) {
-                case "31"://1
-                    priceSetting += "1";
-                    break;
-                case "32"://2
-                    priceSetting += "2";
-                    break;
-                case "33"://3
-                    priceSetting += "3";
-                    break;
-                case "34"://4
-                    priceSetting += "4";
-                    break;
-                case "35"://5
-                    priceSetting += "5";
-                    break;
-                case "36"://6
-                    priceSetting += "6";
-                    break;
-                case "37"://7
-                    priceSetting += "7";
-                    break;
-                case "38"://8
-                    priceSetting += "8";
-                    break;
-                case "39"://9
-                    priceSetting += "9";
-                    break;
-                case "30":// .
-                    priceSetting += ".";
-                    break;
-                case "6e":// 0
-                    priceSetting += "0";
-                    break;
-                case "6a":// #
-                    break;
-                case "26"://加站
-                    if (BusApp.getPosManager().getLineType().equals("P")) {
-                        InitConfigZB.addstation();
-                    }
-                    break;
-                case "28"://减站
-                    if (BusApp.getPosManager().getLineType().equals("P")) {
-                        InitConfigZB.refuseStation();
-                    }
-                    break;
-                case "6c"://确认
-                    BusApp.getPosManager().setBasePrice((int) (Float.parseFloat(priceSetting) * 100));
-                    BusToast.showToast("设置票价：" + FileUtils.fen2Yuan(BusApp.getPosManager().getBasePrice()), true);
-                    break;
-                case "70"://F1
-                    break;
-                case "71"://F2
-                    break;
-                case "72"://F3
-                    break;
-                case "73"://清除
-                    priceSetting = "";
-                    break;
-            }
+            MiLog.i("键盘", "数据上报：" + FileUtils.bytesToHexString(keyboardInfo) + "     " + Thread.currentThread().getName());
+            dokeyboard(keyboardInfo);
         } catch (Exception e) {
-            MiLog.i("按键 错误", "" + e.getMessage());
+            MiLog.i("错误", "键盘 上报数据错误：" + e.getMessage());
         }
     }
 
-    public static void sendStationInfo() {
-        devCmd verCmd = new devCmd();
-        verCmd.setCla((byte) 0x8e);
-        verCmd.setIns((byte) 0x03);
-        KeyBorad keyBorad = new KeyBorad();
-        keyBorad.setDestinationAddress("08");
-        keyBorad.setOriginAddress("0a");
-        keyBorad.setStart("aabb");
-
-        keyBorad.setStatus("00");
-        keyBorad.setDivice("02");
-        keyBorad.setCommand("00");
-
-        byte[] lineNo = BusApp.getPosManager().getLineNo().getBytes();
-        byte[] lineNoNeed = new byte[9];
-        arraycopy(lineNo, 0, lineNoNeed, 0, lineNo.length);
-        byte[] lineNolenth = new byte[]{(byte) lineNo.length};
-
-        byte[] stationNo = new byte[]{(byte) BusApp.getPosManager().getStationID()};
-        byte[] stationNoNeed = new byte[2];
-        arraycopy(stationNo, 0, stationNoNeed, stationNoNeed.length - stationNo.length, stationNo.length);
-
-        Log.i("发送站点数据 上下行", BusApp.getPosManager().getDirection());
-        byte[] diraction = new byte[]{(byte) (Integer.parseInt(BusApp.getPosManager().getDirection()) == 1 ? 0 : 1)};
-        Log.i("发送站点数据 上下行", FileUtils.bytesToHexString(diraction));
-        byte[] stationName = new byte[5];
+    public static void dokeyboard(byte[] keyboardInfo) {
         try {
-            stationName = BusApp.getPosManager().getStationName().getBytes("GBK");
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
+
+            if (FileUtils.bytesToHexString(keyboardInfo).toUpperCase().startsWith("55AA050004")) {
+                Rx.getInstance().sendMessage("myselfAddress", "地址设置成功");
+                BusApp.getPosManager().setMyselfkeybroadAddress(BusApp.getPosManager().getMyselfkeybroadAddressCache());
+            } else {
+                KeyBorad keyBorad = new KeyBorad();
+                keyBorad.prase(keyboardInfo);
+
+                String command = "";
+                command += checkKeyPrass(keyBorad.getKeyBoardInfo().getStationKey(), oldStationKey);
+                command += checkKeyPrass(keyBorad.getKeyBoardInfo().getSynKey(), oldSynKey);
+                command += keyBorad.getKeyBoardInfo().getPriceKey();
+
+                MiLog.i("键盘", "操作命令：" + command);
+                for (int i = 0; i < command.length() / 2; i++) {
+                    dokeyPrice(command.substring(i * 2, (i + 1) * 2), keyBorad.getKeyBoardInfo());
+                }
+                oldStationKey = keyBorad.getKeyBoardInfo().getStationKey();
+                oldSynKey = keyBorad.getKeyBoardInfo().getSynKey();
+
+                Rx.getInstance().sendMessage("sendStationInfo");
+            }
+        } catch (Exception e) {
+            MiLog.i("错误", "键盘：" + e.getMessage());
         }
-        byte[] stationNameNeed = new byte[30];
-        arraycopy(stationName, 0, stationNameNeed, 0, stationName.length);
-        byte[] stationNameLen = new byte[]{(byte) stationName.length};
+    }
 
-        byte[] bytes = FileUtils.mergeByte(lineNolenth, lineNoNeed, stationNoNeed, diraction, stationNameLen, stationNameNeed);
-        MiLog.i("发送站点数据", "当前站信息：" + FileUtils.bytesToHexString(bytes));
-        keyBorad.setDataLenth(bytes.length);
-        keyBorad.setDate(FileUtils.bytesToHexString(bytes));
 
-        byte[] alldate = FileUtils.hexStringToBytes(keyBorad.toString());
-//        byte[] alldate = FileUtils.hexStringToBytes("080aaabb000200002c0634303032353500000002000007c9cfd0d03220200000000000000000000000000000000000000000000000f1");
-        verCmd.setDataBuf(alldate);
-        verCmd.setnRecvLen(alldate.length);
-        MiLog.i("发送站点数据", FileUtils.bytesToHexString(alldate));
-        queue.clear();
-        byte[] sendCmd = verCmd.packageData();
-        SerialComWrite(sendCmd, sendCmd.length);
-//        try {
-//            devCmd bean = queue.poll(2, TimeUnit.SECONDS);
-//            if (bean != null && bean.getS() == 0 && bean.getDataBuf() != null) {
-//                Log.d(TAG, "doGetVersion");
-//            }
-//        } catch (InterruptedException e) {
-//            e.printStackTrace();
-//        }
+    //用于比较两次命令间是否有丢包的情况
+    static String checkKeyPrass(String now, String old) {
+        if (now.length() == 6 && old.length() == 6) {
+            String nowFist = now.substring(0, 2);
+            String nowSecond = now.substring(2, 4);
+            String nowThird = now.substring(4, 6);
 
+            String oldFist = old.substring(0, 2);
+            String oldSecond = old.substring(2, 4);
+            String oldThird = old.substring(4, 6);
+
+            if (oldThird.equals(nowSecond) && nowFist.equals(oldSecond)) {//表示当前未丢命令
+                return nowThird;
+            } else if (nowFist.equals(oldThird)) {//表示当前您丢失了一条命令
+                return nowSecond + nowThird;
+            } else {
+                return now;
+            }
+        }
+        return "";
+    }
+
+
+    public static void dokeyPrice(String key, KeyBoardInfo keyBoardInfo) {
+        switch (key) {
+            case "31"://1
+                priceSetting += "1";
+                break;
+            case "32"://2
+                priceSetting += "2";
+                break;
+            case "33"://3
+                priceSetting += "3";
+                break;
+            case "34"://4
+                priceSetting += "4";
+                break;
+            case "35"://5
+                priceSetting += "5";
+                break;
+            case "36"://6
+                priceSetting += "6";
+                break;
+            case "37"://7
+                priceSetting += "7";
+                break;
+            case "38"://8
+                priceSetting += "8";
+                break;
+            case "39"://9
+                priceSetting += "9";
+                break;
+            case "30":// .
+                priceSetting += ".";
+                break;
+            case "6e":// 0
+                priceSetting += "0";
+                break;
+            case "6a":// #
+                break;
+            case "26"://加站
+                if (BusApp.getPosManager().getLineType().toUpperCase().equals("P") || BusApp.getPosManager().getLineType().toUpperCase().equals("X")) {
+                    InitConfigZB.addstation();
+                }
+                break;
+            case "28"://减站
+                if (BusApp.getPosManager().getLineType().toUpperCase().equals("P") || BusApp.getPosManager().getLineType().toUpperCase().equals("X")) {
+                    InitConfigZB.refuseStation();
+                }
+                break;
+            case "6c"://确认
+                if (BusApp.getPosManager().getLineType().equals("X")) {
+                    BusApp.getPosManager().setBasePrice((int) (Float.parseFloat(priceSetting) * 100));
+                    priceSetting = "";
+                    BusToast.showToast("设置票价：" + FileUtils.fen2Yuan(BusApp.getPosManager().getBasePrice()), true);
+                }
+                break;
+            case "70"://F1 前机同步后机
+                if (BusApp.getPosManager().getPosUpDate() == 2) {
+                    synRuninfo(keyBoardInfo);
+                }
+                break;
+            case "71"://F2
+                break;
+            case "72"://F3 后机同步前机
+                if (BusApp.getPosManager().getPosUpDate() == 1) {
+                    synRuninfo2(keyBoardInfo);
+                }
+                break;
+            case "73"://清除
+                priceSetting = "";
+                break;
+        }
+    }
+
+
+    //同步运行信息
+    static void synRuninfo(final KeyBoardInfo keyBoardInfo) {
+        BusApp.getPosManager().setDirection(keyBoardInfo.getDiraction());
+
+        if (BusApp.getPosManager().getStationID() != keyBoardInfo.getStationId()) {
+            BusApp.getPosManager().setStationID(keyBoardInfo.getStationId());
+        }
+
+        if (!BusApp.getPosManager().getLineNo().equals(keyBoardInfo.getLineNo())) {
+            BusApp.getPosManager().setLineNo(keyBoardInfo.getLineNo());
+            BusApp.getPosManager().setBasePrice(0);
+            BusApp.getPosManager().setFarver("00000000000000");
+            BusApp.getPosManager().setLinver("00000000000000");
+            Executors.newScheduledThreadPool(1).schedule(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        InitConfigZB.sendInfoToServer(INFO_UP);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }, 0, TimeUnit.SECONDS);
+        } else {
+            BusApp.getPosManager().setBasePrice(PraseLine.getMorePayPrice(null, true, true));
+        }
+    }
+
+    //同步运行信息  后机同步前机
+    static void synRuninfo2(final KeyBoardInfo keyBoardInfo) {
+        BusApp.getPosManager().setDirection(keyBoardInfo.getBackDiraction());
+
+        if (BusApp.getPosManager().getStationID() != keyBoardInfo.getStationId()) {
+            BusApp.getPosManager().setStationID(keyBoardInfo.getBackstationId());
+        }
+
+        if (!BusApp.getPosManager().getLineNo().equals(keyBoardInfo.getBackLineNo())) {
+            BusApp.getPosManager().setLineNo(keyBoardInfo.getLineNo());
+            BusApp.getPosManager().setBasePrice(0);
+            BusApp.getPosManager().setFarver("00000000000000");
+            BusApp.getPosManager().setLinver("00000000000000");
+            Executors.newScheduledThreadPool(1).schedule(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        InitConfigZB.sendInfoToServer(INFO_UP);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }, 0, TimeUnit.SECONDS);
+        } else {
+            BusApp.getPosManager().setBasePrice(PraseLine.getMorePayPrice(null, true, true));
+        }
+    }
+
+    /**
+     * drivice 设备类型
+     * 02 切换站
+     * 05 设置票价
+     * 0B 心跳
+     */
+    public static void sendStationInfo() {
+        try {
+            devCmd verCmd = new devCmd();
+            verCmd.setCla((byte) 0x8e);
+            verCmd.setIns((byte) 0x03);
+            KeyBorad keyBorad = new KeyBorad();
+            keyBorad.setNetAddress(BusApp.getPosManager().getKeybroadAddress());
+            keyBorad.setDestinationAddress("08");
+            if (BusApp.getPosManager().getPosUpDate() == 1) {
+                keyBorad.setOriginAddress("0a");
+            } else {
+                keyBorad.setOriginAddress("0b");
+            }
+            keyBorad.setStart("aabb");
+
+            keyBorad.setStatus("00");
+            keyBorad.setDivice("0b");
+            keyBorad.setCommand("00");
+
+            byte[] lineNo = BusApp.getPosManager().getLineNo().getBytes();
+            byte[] lineNoNeed = new byte[9];
+            arraycopy(lineNo, 0, lineNoNeed, 0, lineNo.length);
+            byte[] lineNolenth = new byte[]{(byte) lineNo.length};
+
+            byte[] stationNo = new byte[]{(byte) BusApp.getPosManager().getStationID()};
+            byte[] stationNoNeed = new byte[2];
+            arraycopy(stationNo, 0, stationNoNeed, stationNoNeed.length - stationNo.length, stationNo.length);
+
+            byte[] diraction = new byte[]{(byte) (Integer.parseInt(BusApp.getPosManager().getDirection()) == 1 ? 0 : 1)};
+            byte[] stationName = new byte[5];
+            try {
+                stationName = BusApp.getPosManager().getStationName().getBytes("GBK");
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+            byte[] stationNameNeed = new byte[30];
+            arraycopy(stationName, 0, stationNameNeed, 0, stationName.length);
+            byte[] stationNameLen = new byte[]{(byte) stationName.length};
+
+            byte[] price = new byte[4];
+            byte[] nowprice = FileUtils.int2byte2(BusApp.getPosManager().getBasePrice());
+            arraycopy(nowprice, 0, price, price.length - nowprice.length, nowprice.length);
+
+            byte[] bytes = FileUtils.mergeByte(lineNolenth, lineNoNeed, stationNoNeed, diraction, stationNameLen, stationNameNeed, price);
+            keyBorad.setDataLenth(bytes.length);
+            keyBorad.setRunInfo(FileUtils.bytesToHexString(bytes));
+
+            byte[] alldate = FileUtils.hexStringToBytes(keyBorad.getRunInfoDate());
+
+            verCmd.setDataBuf(alldate);
+            verCmd.setnRecvLen(alldate.length);
+            byte[] sendCmd = verCmd.packageData();
+
+            MiLog.i("键盘", "本机上送数据：" + FileUtils.bytesToHexString(sendCmd));
+            SerialComWrite(sendCmd, sendCmd.length);
+
+        } catch (Exception e) {
+            MiLog.i("错误", "发送数据至外接键盘错误：" + e.getMessage());
+        }
     }
 
     public static void lockNewCpu() {
@@ -625,11 +777,31 @@ public class DoCmd {
         byte[] sendCmd = verCmd.packageData();
         SerialComWrite(sendCmd, sendCmd.length);
         try {
-            Log.d(TAG, "刷卡锁卡");
-            devCmd bean = queue.poll(2000, TimeUnit.MILLISECONDS);
-            Log.d(TAG, "取到值了  checkMac   刷卡数据？" + FileUtils.bytesToHexString(bean.getDataBuf()));
+            devCmd bean = queue.poll(900, TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+    }
+
+
+    public static void setAddress(String address) {
+        devCmd verCmd = new devCmd();
+        verCmd.setCla((byte) 0x8e);
+        verCmd.setIns((byte) 0x0f);//根据串口来灵活变动
+
+        byte[] date = new byte[5];
+        date[0] = 0x02;
+        byte[] addressE = FileUtils.hexStringToBytes(address);
+        date[1] = addressE[0];
+        date[2] = addressE[1];
+        date[3] = 0x05;
+        date[4] = 0x05;
+
+        verCmd.setDataBuf(date);
+        verCmd.setnRecvLen(date.length);
+        byte[] sendCmd = verCmd.packageData();
+
+        MiLog.i("地址", "设置地址：" + FileUtils.bytesToHexString(sendCmd));
+        SerialComWrite(sendCmd, sendCmd.length);
     }
 }

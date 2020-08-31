@@ -7,6 +7,7 @@ import android.util.Log;
 import com.alibaba.fastjson.JSONObject;
 import com.google.gson.Gson;
 import com.hao.lib.Util.FileUtils;
+import com.hao.lib.base.Rx.Rx;
 import com.lilei.tool.tool.IToolInterface;
 
 import com.szxb.java8583.core.Iso8583Message;
@@ -14,6 +15,7 @@ import com.szxb.java8583.module.SignIn;
 import com.szxb.java8583.module.manager.BusllPosManage;
 import com.szxb.jni.JTQR;
 import com.szxb.zibo.base.BusApp;
+import com.szxb.zibo.cmd.DoCmd;
 import com.szxb.zibo.config.zibo.DBManagerZB;
 import com.szxb.zibo.config.zibo.InitConfigZB;
 import com.szxb.zibo.config.zibo.PublicKey;
@@ -24,6 +26,7 @@ import com.szxb.zibo.db.manage.DBCore;
 import com.szxb.zibo.manager.PosManager;
 import com.szxb.zibo.moudle.function.unionpay.UnionPay;
 import com.szxb.zibo.moudle.function.unionpay.config.UnionConfig;
+import com.szxb.zibo.moudle.init.InitActiivty;
 import com.szxb.zibo.moudle.zibo.SelectLineActivity;
 import com.szxb.zibo.record.RecordUpload;
 import com.szxb.zibo.record.XdRecord;
@@ -80,9 +83,9 @@ public class FreeCodeManage {
                 SoundPoolUtil.play(VoiceConfig.shuamachenggong);
             } else if (freeScanEntity.getBlueRing().getType().equals("Line")) {//线路设置
                 String line = freeScanEntity.getBlueRing().getValue();
-                if (line.equals("400255")) {
+                if (line.equals("400255_1")) {
                     PraseLine.praseLine(FileUtils.readAssetsFileTobyte("20200105193254.far", BusApp.getInstance()));
-                }else if(line.equals("400251")){
+                } else if (line.equals("400251_1")) {
                     PraseLine.praseLine(FileUtils.readAssetsFileTobyte("20191228195940.far", BusApp.getInstance()));
                 } else {
                     BusToast.showToast("正在获取线路：" + freeScanEntity.getBlueRing().getValue(), true);
@@ -138,6 +141,23 @@ public class FreeCodeManage {
                 BusToast.showToast("设置当前城市代码：\n" + freeScanEntity.getBlueRing().getValue(), true);
                 SoundPoolUtil.play(VoiceConfig.shuamachenggong);
 
+            } else if (freeScanEntity.getBlueRing().getType().equals("Address")) {//设置键盘通讯地址
+                if (freeScanEntity.getBlueRing().getValue().length() != 4) {
+                    BusToast.showToast("键盘通讯地址错误", false);
+                    SoundPoolUtil.play(VoiceConfig.cuowu);
+                    return;
+                }
+                BusApp.getPosManager().setKeybroadAddress(freeScanEntity.getBlueRing().getValue());
+                BusToast.showToast("键盘通讯地址：\n" + freeScanEntity.getBlueRing().getValue(), true);
+                SoundPoolUtil.play(VoiceConfig.shuamachenggong);
+            } else if (freeScanEntity.getBlueRing().getType().equals("MyAddress")) {//设置本机
+                if (freeScanEntity.getBlueRing().getValue().length() != 4) {
+                    BusToast.showToast("键盘通讯地址错误", false);
+                    SoundPoolUtil.play(VoiceConfig.cuowu);
+                    return;
+                }
+                BusApp.getPosManager().setMyselfkeybroadAddressCache(freeScanEntity.getBlueRing().getValue());
+                Rx.getInstance().sendMessage("keyboardAddress", freeScanEntity.getBlueRing().getValue());
             } else if (freeScanEntity.getBlueRing().getType().equals("Union")) {//设置银联参数
                 if (BusApp.getPosManager().getLineType().equals("P")) {
                     BusToast.showToast("该线路暂不支持此方式乘车", true);
@@ -202,8 +222,8 @@ public class FreeCodeManage {
             System.arraycopy(qrCode, i, issuerCert, 0, issuerCert.length);
             i += issuerCert.length;
             if (!checkCert(issuerCert)) {
-                BusToast.showToast("账户过期", false);
-                SoundPoolUtil.play(VoiceConfig.cikayiguoyouxiaoqi);
+//                BusToast.showToast("账户过期", false);
+//                SoundPoolUtil.play(VoiceConfig.cikayiguoyouxiaoqi);
                 return;
             }
 
@@ -239,12 +259,17 @@ public class FreeCodeManage {
             i += CreatType.length;
             String creatType = FileUtils.bytesToHexString(CreatType);
 
+            if (creatType.toLowerCase().endsWith("dd")) {
+                BusToast.showToast("暂不能使用", false);
+                SoundPoolUtil.play(VoiceConfig.zanshibunengshiyong);
+                return;
+            }
+
             //单次消费金额上限
             byte[] PayLimit = new byte[3];
             System.arraycopy(qrCode, i, PayLimit, 0, PayLimit.length);
             i += PayLimit.length;
             String payLimit = FileUtils.bytesToHexString(PayLimit);
-
 
             //支付账户用户公钥
             byte[] PayPublic = new byte[33];
@@ -258,7 +283,7 @@ public class FreeCodeManage {
             i += PayExpire.length;
             String payExpire = FileUtils.bytesToHexString(PayExpire);
 
-            if (Integer.parseInt(payExpire, 16) < System.currentTimeMillis() / 1000) {
+            if (Long.parseLong(payExpire, 16) < System.currentTimeMillis() / 1000) {
                 BusToast.showToast("账户过期", false);
                 SoundPoolUtil.play(VoiceConfig.cikayiguoyouxiaoqi);
                 return;
@@ -269,7 +294,7 @@ public class FreeCodeManage {
             byte[] ScanExpire = new byte[2];
             System.arraycopy(qrCode, i, ScanExpire, 0, ScanExpire.length);
             i += ScanExpire.length;
-            int scanExpire = Integer.parseInt(FileUtils.bytesToHexString(ScanExpire), 16);
+            long scanExpire = Long.parseLong(FileUtils.bytesToHexString(ScanExpire), 16);
 
             //发卡机构自定义域长度
             byte[] FreeAreaLenth = new byte[1];
@@ -312,7 +337,7 @@ public class FreeCodeManage {
             i += ScanCreateTime.length;
             String scanCreateTime = FileUtils.bytesToHexString(ScanCreateTime);
 
-            if (System.currentTimeMillis() / 1000 - Integer.parseInt(scanCreateTime, 16) > scanExpire) {
+            if (System.currentTimeMillis() / 1000 - Long.parseLong(scanCreateTime, 16) > scanExpire) {
                 BusToast.showToast("二维码过期", false);
                 SoundPoolUtil.play(VoiceConfig.qingshuaxinchongsao);
                 return;
@@ -334,7 +359,7 @@ public class FreeCodeManage {
 
             int res = JTQR.QrVerify(userPrivateKeySignData, payPublic, userPrivateKeySign);
             if (res != 0) {
-                BusToast.showToast("二维码验证失败", false);
+                BusToast.showToast("二维码验证失败【" + res + "】", false);
                 SoundPoolUtil.play(VoiceConfig.erweimageshicuowu);
                 return;
             }
@@ -465,20 +490,51 @@ public class FreeCodeManage {
         int startIndex = 6;
         byte[] certSignData = new byte[certSignDataLen];
         System.arraycopy(issuerCert, startIndex, certSignData, 0, certSignData.length);
-        List<PublicKey> key = DBManagerZB.getTXPublicKey(PosManager.FR_PUB, -1);
-        if (key.size() == 0) {
-            BusToast.showToast("交通部公钥获取失败", false);
-            SoundPoolUtil.play(VoiceConfig.cuowu);
-            return false;
-        }
+
         int res = JTQR.QrVerify(certSignData, FileUtils.bytesToHexString(publickey), certSign);
         //(2.)res!=0时 返回错误码
-//        if (res != 0) {
-//            BusToast.showToast("请检查二维码【" + res + "】", false);
-//            SoundPoolUtil.play(VoiceConfig.yanzhengshibai);
-//            return false;
-//        }
+        if (res != 0) {
+            BusToast.showToast("请检查二维码【" + res + "】", false);
+            SoundPoolUtil.play(VoiceConfig.erweimageshicuowu);
+            return false;
+        }
 
         return true;
     }
+
+
+    public void praseJtbScan(String result) {
+        try {
+            QRData qrData = new QRData(FileUtils.hexStringToBytes(result));
+
+
+            int resultCode = QRVerifyUtil.getInstance().verifyQR(qrData);
+
+
+            if (resultCode == 5) {
+                BusToast.showToast("刷码成功", true);
+            } else if (resultCode == 4) {
+                BusToast.showToast("二维码过期", false);
+            } else {
+                BusToast.showToast("二维码格式错误", false);
+            }
+        } catch (Exception e) {
+            BusToast.showToast("二维码解析错误", false);
+        }
+
+//        Log.i("二维码解析", "解码前时间：" + System.currentTimeMillis());
+//        JTB_QR_outline jtbQrOutline = DecryptUtil.qrDecrypt(map, result);
+//        Log.i("二维码解析", "解码：" + jtbQrOutline.getMsg());
+//        if (jtbQrOutline.getCode().equals("9000")) {
+//            SoundPoolUtil.play(Config.quanchengyunka);
+//            saveRecord(result, jtbQrOutline);
+//        } else if (jtbQrOutline.getCode().equals("9007")) {
+//            SoundPoolUtil.play(Config.erweimageshicuowu);
+//        } else {
+//            InitActiivty.resetParam();
+//            SoundPoolUtil.play(Config.erweimamiyaoguoqi);
+//        }
+//        BusToast.showToast(jtbQrOutline.getMsg() + "");
+    }
+
 }

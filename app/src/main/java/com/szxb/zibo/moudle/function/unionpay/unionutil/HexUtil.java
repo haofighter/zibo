@@ -79,4 +79,11 @@ public class HexUtil {
             return "错误";
         }
     }
+
+    public static byte[] compress(byte[] pk64) {
+        byte[] pk33 = new byte[33];
+        System.arraycopy(pk64, 0, pk33, 1, pk33.length - 1);
+        pk33[0] = (byte) (2 + (pk64[32 * 2 - 1] & 0x01));
+        return pk33;
+    }
 }

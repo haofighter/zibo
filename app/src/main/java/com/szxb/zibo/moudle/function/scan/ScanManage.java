@@ -69,12 +69,14 @@ public class ScanManage {
                     return;
                 }
                 TencentCodeManage.getInstance().posScan(qrCode);
-            } else if (qrCode.length >= 332 && qrCode.length <= 364) {
+            } else if (qrCode.length >= 332 && qrCode.length <= 364) {//自建二维码
                 if (BusApp.getPosManager().getLineNo().equals("")) {
                     BusToast.showToast("请设置线路", false);
                     return;
                 }
-                FreeCodeManage.getInstance().praseJTBScan(qrCode);
+//                FreeCodeManage.getInstance().praseJTBScan(qrCode);
+                FreeCodeManage.getInstance().praseJtbScan(FileUtils.bytesToHexString(qrCode));
+
             } else {
                 //如果没有线路号 则提示请设置线路
                 if (BusApp.getPosManager().getLineNo().equals("")) {

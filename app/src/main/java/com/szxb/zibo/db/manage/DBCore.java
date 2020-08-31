@@ -2,6 +2,7 @@ package com.szxb.zibo.db.manage;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
+
 import com.szxb.zibo.db.dao.DaoMaster;
 import com.szxb.zibo.db.dao.DaoSession;
 

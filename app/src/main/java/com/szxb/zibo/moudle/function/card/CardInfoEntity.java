@@ -4,7 +4,9 @@ package com.szxb.zibo.moudle.function.card;
 import com.hao.lib.Util.*;
 
 import com.szxb.java8583.module.manager.BusllPosManage;
+import com.szxb.zibo.BuildConfig;
 import com.szxb.zibo.base.BusApp;
+import com.szxb.zibo.config.zibo.line.PraseLine;
 import com.szxb.zibo.moudle.function.card.CPU.File05NewCPUInfoEntity;
 import com.szxb.zibo.moudle.function.card.CPU.File10NewCPUInfoEntity;
 import com.szxb.zibo.moudle.function.card.CPU.File15LocalInfoEntity;
@@ -14,6 +16,11 @@ import com.szxb.zibo.moudle.function.card.CPU.File17NewCPUInfoEntity;
 import com.szxb.zibo.moudle.function.card.CPU.File18LocalInfoEntity;
 import com.szxb.zibo.moudle.function.card.CPU.File18NewCPUInfoEntity;
 import com.szxb.zibo.moudle.function.card.CPU.File1CLocalInfoEntity;
+import com.szxb.zibo.moudle.function.card.JTB.File15JTBInfoEntity;
+import com.szxb.zibo.moudle.function.card.JTB.File17JTBInfoEntity;
+import com.szxb.zibo.moudle.function.card.JTB.File18JTBInfoEntity;
+import com.szxb.zibo.moudle.function.card.JTB.File1AJTBInfoEntity;
+import com.szxb.zibo.moudle.function.card.JTB.File1EJTBInfoEntity;
 import com.szxb.zibo.moudle.function.card.M1.FileM1InfoEntity;
 import com.szxb.zibo.moudle.function.unionpay.UnionCard;
 import com.szxb.zibo.moudle.function.unionpay.unionutil.TLV;
@@ -28,7 +35,7 @@ import java.util.Map;
 
 import static java.lang.System.arraycopy;
 
-public class CardInfoEntity implements Cloneable{
+public class CardInfoEntity implements Cloneable {
 
     //------------------------------------互联互通卡
     String status;    //用于存储错误码 00 正常的 01
@@ -78,6 +85,14 @@ public class CardInfoEntity implements Cloneable{
 
     /***********多票信息**************/
     File1CLocalInfoEntity file1CLocalInfoEntity;
+
+
+    /***********JTB卡片**************/
+    File15JTBInfoEntity file15JTBInfoEntity;
+    File17JTBInfoEntity file17JTBInfoEntity;
+    File18JTBInfoEntity file18JTBInfoEntity;
+    File1AJTBInfoEntity file1AJTBInfoEntity;
+    File1EJTBInfoEntity file1EJTBInfoEntity;
 
     private long balance;  //余额
     int payAllPrice;  //打折前的票价
@@ -145,13 +160,13 @@ public class CardInfoEntity implements Cloneable{
             if (selete_aid.equals("10")) {//住建部CPU锁卡
                 if (!BusApp.oldCardTag.equals(uid)) {
                     SoundPoolUtil.play(VoiceConfig.heimingdanka);
-                    BusToast.showToast("黑名单卡", false);
+                    BusToast.showToast("黑名单卡(锁卡)", false);
                     BusApp.oldCardTag = uid;
                     BusApp.oldCardTime = System.currentTimeMillis();
                 } else {
                     if (System.currentTimeMillis() - BusApp.oldCardTime > 2000) {
                         SoundPoolUtil.play(VoiceConfig.heimingdanka);
-                        BusToast.showToast("黑名单卡", false);
+                        BusToast.showToast("黑名单卡(锁卡)", false);
                         BusApp.oldCardTag = uid;
                         BusApp.oldCardTime = System.currentTimeMillis();
                     }
@@ -180,13 +195,62 @@ public class CardInfoEntity implements Cloneable{
                 praseLoaclCard(date);
             } else if (selete_aid.equals("02")) {//住建部CPU
                 praseNewCPUCard(date);
+            } else if (selete_aid.equals("01")) {//交通部
+//                praseJTBCard(date);
+                BusToast.showToast("暂时不能使用此方式乘车", false);
             }
-            MiLog.i("刷卡", "主卡类型：" + cardType + "       字卡类型：" + childCardType + "     卡号：" + cardNo);
+            MiLog.i("刷卡", "主卡类型：" + cardType + "       字卡类型：" + childCardType + "          实际主卡类型：" + realCardType + "          实际字卡类型：" + realChildCardType + "     卡号：" + cardNo);
             return "00";
         } catch (Exception e) {
             e.printStackTrace();
             return status;
         }
+    }
+
+    private void praseJTBCard(byte[] date) {
+        int i = 0;
+        byte[] card_pan = new byte[8];
+        arraycopy(date, i, card_pan, 0, card_pan.length);
+        i += card_pan.length;
+        this.cardNo = (String) FileUtils.byte2Parm(card_pan, Type.HEX);
+
+        file15JTBInfoEntity = new File15JTBInfoEntity();
+        i = file15JTBInfoEntity.praseFile(i, date);
+
+        file17JTBInfoEntity = new File17JTBInfoEntity();
+        i = file17JTBInfoEntity.praseFile(i, date);
+
+        file18JTBInfoEntity = new File18JTBInfoEntity();
+        i = file18JTBInfoEntity.praseFile(i, date);
+
+        file1EJTBInfoEntity = new File1EJTBInfoEntity();
+        i = file1EJTBInfoEntity.praseFile(i, date);
+
+        file1AJTBInfoEntity = new File1AJTBInfoEntity();
+        i = file1AJTBInfoEntity.praseFile(i, date);
+
+        byte[] blance = new byte[4];
+        arraycopy(date, i, blance, 0, blance.length);
+        i += blance.length;
+        String balanceStr = FileUtils.bytesToHexString(blance);
+        balance = FileUtils.hexStringToInt(balanceStr);
+
+
+        //判断是否为本地卡
+        if (file15JTBInfoEntity.getCard_issuer().contains("03664530")) {
+            realCardType = cardType = "65";
+            realChildCardType = childCardType = "02";
+        } else {
+            realCardType = cardType = "65";
+            realChildCardType = childCardType = "03";
+        }
+
+        if (BuildConfig.isTest) {
+            realCardType = cardType = "01";
+            realChildCardType = childCardType = "00";
+        }
+
+        MiLog.i("刷卡", "交通部卡余额：" + balance);
     }
 
     private void praseNewCPUCard(byte[] date) {
@@ -221,12 +285,13 @@ public class CardInfoEntity implements Cloneable{
 
         isManageCard = manageCardType.contains(cardType + childCardType);
 
-        MiLog.i("刷卡", "过期时间："+file05NewCPUInfoEntity.getValid_date());
+
         if (System.currentTimeMillis() - DateUtil.getDateLong(file05NewCPUInfoEntity.getValid_date(), "yyyyMMdd") > 0) {
             isExpire = true;
         } else {
             isExpire = false;
         }
+        MiLog.i("刷卡", "过期时间：" + file05NewCPUInfoEntity.getValid_date() + "     是否过期：" + isExpire);
     }
 
     //本地卡解析
@@ -252,12 +317,13 @@ public class CardInfoEntity implements Cloneable{
         realChildCardType = cardType = "65";
         realChildCardType = childCardType = "01";
         cardNo = file15LocalInfoEntity.getPan();
-        MiLog.i("刷卡","过期时间：" +file15LocalInfoEntity.getValid_time());
         if (System.currentTimeMillis() - DateUtil.getDateLong(file15LocalInfoEntity.getValid_time(), "yyyyMMdd") > 0) {
             isExpire = true;
         } else {
             isExpire = false;
         }
+
+        MiLog.i("刷卡", "过期时间：" + file05NewCPUInfoEntity.getValid_date() + "     是否过期：" + isExpire);
     }
 
     //银联卡解析
@@ -324,13 +390,12 @@ public class CardInfoEntity implements Cloneable{
         }
 
         file1CLocalInfoEntity = fileM1InfoEntity.getBlock_1C1D();
-        MiLog.i("刷卡","过期时间"+ fileM1InfoEntity.getBlock_5().getValid_time());
         if (System.currentTimeMillis() - DateUtil.getDateLong(fileM1InfoEntity.getBlock_5().getValid_time(), "yyyyMMdd") > 0) {
             isExpire = true;
         } else {
             isExpire = false;
         }
-
+        MiLog.i("刷卡", "过期时间：" + fileM1InfoEntity.getBlock_5().getValid_time() + "       是否过期：" + isExpire);
 
         isManageCard = manageCardType.contains(cardType + childCardType);
     }
@@ -343,6 +408,11 @@ public class CardInfoEntity implements Cloneable{
     //获取当前卡片的多票信息
     public File17NewCPUInfoEntity getnewCPUMorePriceInfo() {
         return file17NewCPUInfoEntity;
+    }
+
+    //获取当前卡片的多票信息
+    public File1AJTBInfoEntity getJTBMorePriceInfo() {
+        return file1AJTBInfoEntity;
     }
 
     public int getTranseType() {
@@ -374,6 +444,8 @@ public class CardInfoEntity implements Cloneable{
             return getMorePriceInfo().getPre_preferential_amount();
         } else if (selete_aid.equals("02")) {
             return getnewCPUMorePriceInfo().getPre_preferential_amount();
+        } else if (selete_aid.equals("01")) {
+            return file1AJTBInfoEntity.getBoarding_max_amount_1a();
         }
         return "00";
     }
@@ -383,6 +455,8 @@ public class CardInfoEntity implements Cloneable{
             getMorePriceInfo().setFull_fare(fullprice);
         } else if (selete_aid.equals("02")) {
             getnewCPUMorePriceInfo().setFull_fare(fullprice);
+        } else if (selete_aid.equals("01")) {
+            file1AJTBInfoEntity.setBoarding_max_amount_1a(fullprice);
         }
     }
 
@@ -391,6 +465,8 @@ public class CardInfoEntity implements Cloneable{
             getMorePriceInfo().setComplete_mark(s);
         } else if (selete_aid.equals("02")) {
             getnewCPUMorePriceInfo().setComplete_mark(s);
+        } else if (selete_aid.equals("01")) {
+            getJTBMorePriceInfo().setTransaction_status_1a(s);
         }
     }
 
@@ -399,6 +475,8 @@ public class CardInfoEntity implements Cloneable{
             return getMorePriceInfo().getComplete_mark();
         } else if (selete_aid.equals("02")) {
             return getnewCPUMorePriceInfo().getComplete_mark();
+        } else if (selete_aid.equals("01")) {
+            return getJTBMorePriceInfo().getTransaction_status_1a();
         }
         return "00";
     }
@@ -408,6 +486,8 @@ public class CardInfoEntity implements Cloneable{
             return getMorePriceInfo().getFull_fare();
         } else if (selete_aid.equals("02")) {
             return Integer.parseInt(getnewCPUMorePriceInfo().getFull_fare(), 16);
+        } else if (selete_aid.equals("01")) {
+            return Integer.parseInt(getJTBMorePriceInfo().getBoarding_max_amount_1a(), 16);
         }
         return 0;
     }
@@ -417,6 +497,8 @@ public class CardInfoEntity implements Cloneable{
             return getMorePriceInfo().getBoarding_site_indexInt();
         } else if (selete_aid.equals("02")) {
             return getnewCPUMorePriceInfo().getBoarding_site_indexInt();
+        } else if (selete_aid.equals("01")) {
+            return getJTBMorePriceInfo().getBoarding_the_site_1a();
         }
         return 0;
     }
@@ -429,6 +511,8 @@ public class CardInfoEntity implements Cloneable{
     public String getVehicle_number() {
         if (selete_aid.equals("03") || selete_aid.equals("04")) {
             return getMorePriceInfo().getVehicle_number();
+        } else if (selete_aid.equals("02")) {
+            return getnewCPUMorePriceInfo().getVehicle_number();
         } else if (selete_aid.equals("02")) {
             return getnewCPUMorePriceInfo().getVehicle_number();
         }
@@ -472,11 +556,25 @@ public class CardInfoEntity implements Cloneable{
     @Override
     protected CardInfoEntity clone() throws CloneNotSupportedException {
         CardInfoEntity cardInfoEntity = null;
-        try{
-            cardInfoEntity = (CardInfoEntity)super.clone();   //浅复制
-        }catch(CloneNotSupportedException e) {
+        try {
+            cardInfoEntity = (CardInfoEntity) super.clone();   //浅复制
+        } catch (CloneNotSupportedException e) {
             e.printStackTrace();
         }
         return cardInfoEntity;
+    }
+
+    public File1AJTBInfoEntity getFile1AJTBInfoEntity() {
+        if (file1AJTBInfoEntity == null) {
+            file1AJTBInfoEntity = new File1AJTBInfoEntity();
+        }
+        return file1AJTBInfoEntity;
+    }
+
+    public File1EJTBInfoEntity getFile1EJTBInfoEntity() {
+        if (file1EJTBInfoEntity == null) {
+            file1EJTBInfoEntity = new File1EJTBInfoEntity();
+        }
+        return file1EJTBInfoEntity;
     }
 }

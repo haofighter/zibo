@@ -34,14 +34,23 @@ public class MiLog {
             if (file.isDirectory()) {
                 File[] files = file.listFiles();
                 for (int i = 0; i < files.length; i++) {
-                    long fileCreatTime = Long.parseLong(files[i].getName().split("_")[1].substring(0,8));
-                    if (fileCreatTime - Long.parseLong(DataUtils.getStringDateYMD()) > time) {
-                        files[i].delete();
+                    try {
+                        String[] fileNames = files[i].getName().split("_");
+                        long fileCreatTime = Long.parseLong(fileNames[1].substring(0, 8));
+                        if (Long.parseLong(DataUtils.getStringDateYMD()) - fileCreatTime > time) {
+                            MiLog.i("日志清除", "删除文件：" + files[i].getPath() + "   删除结果：" + files[i].delete());
+                        }
+                    } catch (Exception e) {
+                        if (files[i].isDirectory()) {
+                            MiLog.i("日志清除", "删除文件：" + files[i].getPath() + "   删除结果：" + FileUtils.delAllFile(files[i].getPath()));
+                        } else {
+                            MiLog.i("日志清除", "删除文件：" + files[i].getPath() + "   删除结果：" + files[i].delete());
+                        }
                     }
                 }
             }
         } catch (Exception e) {
-            MiLog.i("日志清除失败", "原因" + e.getMessage());
+            MiLog.i("日志清除", "失败 原因" + e.getMessage());
             if (file.exists()) {
                 FileUtils.delAllFile(file.getPath());
             }

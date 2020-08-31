@@ -5,7 +5,11 @@ import android.util.Log;
 import com.hao.lib.Util.FileUtils;
 import com.hao.lib.Util.Type;
 import com.szxb.zibo.moudle.function.card.CPU.FileCpuPayResult;
+import com.szxb.zibo.moudle.function.card.JTB.FileJTBPay;
+import com.szxb.zibo.moudle.function.card.JTB.FileJTBPayResult;
 import com.szxb.zibo.moudle.function.card.M1.FileMIPayResult;
+
+import java.io.File;
 
 import static java.lang.System.arraycopy;
 
@@ -19,6 +23,7 @@ public class PraseConsumCard {
     String sw;        //每次操作后的sw值，用于配合错误码上报错误
     FileCpuPayResult fileCpuPayResult;
     FileMIPayResult fileMIPayResult;
+    FileJTBPayResult fileJTBPayResult;
 
 
     int trandePrice;
@@ -51,6 +56,10 @@ public class PraseConsumCard {
             fileMIPayResult = new FileMIPayResult();
             fileMIPayResult.praseResult(i, payResult, cardInfoEntity);
             balance = fileMIPayResult.getBlock_9_after().getBlanace();
+        } else if (cardInfoEntity.selete_aid.equals("01")) {
+            fileJTBPayResult = new FileJTBPayResult();
+            fileJTBPayResult.praseDate(i, payResult);
+            balance = fileJTBPayResult.getBalance();
         }
     }
 

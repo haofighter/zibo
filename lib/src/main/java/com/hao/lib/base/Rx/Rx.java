@@ -15,7 +15,13 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-public class Rx {
+public class
+
+
+
+
+
+Rx {
 
     private Rx() {
     }
@@ -76,7 +82,7 @@ public class Rx {
                                     try {
                                         rx.rxDo(tag, o);
                                     } catch (Exception e) {
-                                        MiLog.i("rx报错了", "tag=" + tag);
+                                        MiLog.i("rx", "报错了tag=" + tag);
                                     }
                                 }
                             });
@@ -84,7 +90,7 @@ public class Rx {
                             rx.rxDo(tag, o);
                         }
                     } catch (Exception e) {
-                        MiLog.i("rx报错了", "直接" + "tag=" + tag);
+                        MiLog.i("rx", "报错了tag=" + tag);
                     }
                 }
             }

@@ -51,8 +51,6 @@ public class FileUtils {
     }
 
 
-
-
     /**
      * 根据byte数组，生成文件
      */
@@ -1024,6 +1022,15 @@ public class FileUtils {
      *将指定字符串转换为固定长度的byte容纳的字符串
      */
     public static String formatHexStringToByteString(int i, String string) {
+
+        return formatHexStringToByteString(i, string, false);
+    }
+
+
+    /*
+     *将指定字符串转换为固定长度的byte容纳的字符串
+     */
+    public static String formatHexStringToByteString(int i, String string, boolean ishead) {
         if (string == null) {
             string = "";
         }
@@ -1031,26 +1038,54 @@ public class FileUtils {
         if (string.length() % 2 != 0) {//用于解决数据为单数导致的异常
             string = "0" + string;
         }
+
         byte[] strByte = FileUtils.hex2byte(string);
-        if (strByte.length >= newByte.length) {
-            arraycopy(strByte, strByte.length - newByte.length, newByte, 0, newByte.length);
+        if (ishead) {
+            if (strByte.length >= newByte.length) {
+                arraycopy(strByte, strByte.length - newByte.length, newByte, 0, newByte.length);
+            } else {
+                arraycopy(strByte, 0, newByte, 0, strByte.length);
+            }
         } else {
-            arraycopy(strByte, 0, newByte, newByte.length - strByte.length, strByte.length);
+            if (strByte.length >= newByte.length) {
+                arraycopy(strByte, strByte.length - newByte.length, newByte, 0, newByte.length);
+            } else {
+                arraycopy(strByte, 0, newByte, newByte.length - strByte.length, strByte.length);
+            }
         }
-        return bytesToHexString(newByte);
+
+        String result = bytesToHexString(newByte);
+        return result;
     }
+
 
     /*
      *将指定字符串转换为固定长度的byte容纳的字符串 不足位置补充F
      */
     public static String hexStringFromatByF(int i, String string) {
+        return hexStringFromatByF(i, string, true);
+    }
+
+
+    /**
+     * @param i      字节长度
+     * @param string 转换的字符串
+     * @param isHead 是否在头部加F
+     * @return
+     */
+    public static String hexStringFromatByF(int i, String string, boolean isHead) {
         if (string == null) {
             string = "";
         }
         int length = string.length();
         while (length < i * 2) {
-            string = "F" + string;
-            length = string.length();
+            if (isHead) {
+                string = "F" + string;
+                length = string.length();
+            } else {
+                string = string + "F";
+                length = string.length();
+            }
         }
         return string;
     }
@@ -1303,43 +1338,16 @@ public class FileUtils {
             return flag;
         }
         if (!file.isDirectory()) {
-            return flag;
-        }
-        String[] tempList = file.list();
-        File temp = null;
-        for (int i = 0; i < tempList.length; i++) {
-            if (path.endsWith(File.separator)) {
-                temp = new File(path + tempList[i]);
-            } else {
-                temp = new File(path + File.separator + tempList[i]);
+            return file.delete();
+        } else if (file.isDirectory()) {
+            File[] files = file.listFiles();
+            Log.i("文件夹", file.getPath() + "     包含文件数：" + files.length);
+            for (int i = 0; i < files.length; i++) {
+                flag = delAllFile(files[i].getPath());
             }
-            if (temp.isFile()) {
-                temp.delete();
-            }
-            if (temp.isDirectory()) {
-                delAllFile(path + "/" + tempList[i]);//先删除文件夹里面的文件
-                delFolder(path + "/" + tempList[i]);//再删除空文件夹
-                flag = true;
-            }
+            flag = file.delete();
         }
         return flag;
-    }
-
-    /**
-     * 删除文件夹
-     *
-     * @param folderPath
-     */
-    public static void delFolder(String folderPath) {
-        try {
-            delAllFile(folderPath); //删除完里面所有内容
-            String filePath = folderPath;
-            filePath = filePath.toString();
-            java.io.File myFilePath = new java.io.File(filePath);
-            myFilePath.delete(); //删除空文件夹
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
 
@@ -1361,6 +1369,7 @@ public class FileUtils {
             sb.append(data + "\n");
             //写入
             out.write(sb.toString().getBytes("utf-8"));//注意需要转换对应的字符集
+            out.close();
             return "success";
         } catch (IOException ex) {
             System.out.println(ex.getStackTrace());
@@ -1394,7 +1403,7 @@ public class FileUtils {
 //        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 //        MI2App.getInstance().startActivity(intent);
 
-        intent.setClassName("com.szxb.installapk","com.szxb.installapk.MainActivity");
+        intent.setClassName("com.szxb.installapk", "com.szxb.installapk.MainActivity");
         MI2App.getInstance().startActivity(intent);
     }
 
@@ -1411,14 +1420,14 @@ public class FileUtils {
 //        }
     }
 
-    public boolean isContentApp(String packageName){
-        List<ResolveInfo> resolveInfos=getAllPackget();
-        if(resolveInfos==null){
+    public boolean isContentApp(String packageName) {
+        List<ResolveInfo> resolveInfos = getAllPackget();
+        if (resolveInfos == null) {
             return false;
         }
         for (int i = 0; i < resolveInfos.size(); i++) {
             String name = resolveInfos.get(i).activityInfo.packageName;
-            if(name.equals(packageName)){
+            if (name.equals(packageName)) {
                 return true;
             }
         }
@@ -1426,18 +1435,16 @@ public class FileUtils {
     }
 
     //字符串转换为ascii
-    public static String stringToAsc(String content){
+    public static String stringToAsc(String content) {
         String result = "";
         int max = content.length();
-        for (int i=0; i<max; i++){
+        for (int i = 0; i < max; i++) {
             char c = content.charAt(i);
-            int b = (int)c;
+            int b = (int) c;
             result = result + b;
         }
         return result;
     }
-
-
 
 
 }

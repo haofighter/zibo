@@ -5,20 +5,20 @@ import android.content.Intent
 import android.media.AudioManager
 import android.os.Bundle
 import android.os.Environment
+import android.os.Handler
+import android.os.Message
 import android.support.v4.content.ContextCompat
+import android.support.v4.content.ContextCompat.startActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.util.Log
 import android.view.View
 import android.widget.RelativeLayout
-import com.baidu.mapapi.model.LatLng
 import com.google.gson.Gson
 import com.hao.lib.Util.FileUtils
 import com.hao.lib.Util.MiLog
 import com.hao.lib.Util.StatusBarUtil
 import com.hao.lib.Util.ThreadUtils
-import com.hao.lib.base.MI2App
 import com.hao.lib.base.Rx.Rx
-import com.hao.lib.base.Rx.RxMessage
 import com.szxb.java8583.module.manager.BusllPosManage
 import com.szxb.jni.SerialCom
 import com.szxb.zibo.BuildConfig
@@ -27,41 +27,42 @@ import com.szxb.zibo.base.BusApp
 import com.szxb.zibo.base.BaseActivity
 import com.szxb.zibo.base.Task
 import com.szxb.zibo.cmd.DoCmd
+import com.szxb.zibo.cmd.devCmd
 import com.szxb.zibo.config.haikou.ConfigContext
-import com.szxb.zibo.config.zibo.DBManagerZB
 import com.szxb.zibo.config.zibo.InitConfigZB
 import com.szxb.zibo.config.zibo.Result
 import com.szxb.zibo.config.zibo.line.PraseLine
-import com.szxb.zibo.db.manage.DBCore
 import com.szxb.zibo.moudle.function.card.CardInfoEntity
 import com.szxb.zibo.moudle.function.card.PraseCard
-import com.szxb.zibo.moudle.function.location.GPSEntity
 import com.szxb.zibo.moudle.function.location.GPSEvent
-import com.szxb.zibo.moudle.function.location.GPSToBaidu
 import com.szxb.zibo.moudle.init.InitActiivty.init21Time
 import com.szxb.zibo.moudle.maintool.HistoryAdapter
 import com.szxb.zibo.moudle.maintool.MainToolAdapter
 import com.szxb.zibo.moudle.maintool.ParamShowInfo
-import com.szxb.zibo.record.RecordUpload
 import com.szxb.zibo.record.XdRecord
 import com.szxb.zibo.util.BusToast
 import com.szxb.zibo.util.DateUtil
-import com.szxb.zibo.util.Util
+import com.szxb.zibo.util.ZipUtils
 import com.szxb.zibo.util.sp.CommonSharedPreferences
+import com.szxb.zibo.voice.SoundPoolUtil
+import com.szxb.zibo.voice.VoiceConfig
 import kotlinx.android.synthetic.main.activity_base.*
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.activity_main.main
 import kotlinx.android.synthetic.main.param_layout.*
 import java.io.File
+import java.util.concurrent.Executor
+import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
 class Main2Activity : BaseActivity() {
 
-
+    var sendStationInfo = 1;
     var operate = 0//未操作的时间间隔
     var viewTag = 0//1 菜单  2 历史记录  3 参数  0 主页无任何附加页面
     var sdCardpath = "/storage/sdcard1"
     var am: AudioManager? = null
+    var heartTime: Long = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -78,7 +79,6 @@ class Main2Activity : BaseActivity() {
         } catch (e: java.lang.Exception) {
             Log.i("错误", "main 初始化错误")
         }
-        Log.i("流程", "界面填充完成")
 
         sign.setOnClickListener {
             BusApp.getPosManager().driverNo = "12345667"
@@ -91,6 +91,8 @@ class Main2Activity : BaseActivity() {
                 InitConfigZB.downLoadFile(r, r.trans_data.task_no);
             }.start()
         }
+
+//        PraseLine.praseUsrByte(FileUtils.readAssetsFileTobyte("20200726121107.usr", BusApp.getInstance()), "20200726121107.usr");
     }
 
     private fun updateView() {
@@ -132,7 +134,7 @@ class Main2Activity : BaseActivity() {
             if (!BusApp.getPosManager().driverNo.equals("00000000")) {//不刷司机卡也能上班
                 is_sign.visibility = View.VISIBLE
                 no_sign.visibility = View.GONE
-                line.text = BusApp.getPosManager().lineName + "   " + BusApp.getPosManager().lineNo
+                line.text = BusApp.getPosManager().getLineName() + "   " + BusApp.getPosManager().lineNo
                 if (!BusApp.getPosManager().lineType.equals("O")) {
                     station.text = BusApp.getPosManager().stationName + "(" + BusApp.getPosManager().stationID + ")"
                     station.visibility = View.VISIBLE
@@ -141,7 +143,7 @@ class Main2Activity : BaseActivity() {
                 }
                 if (BusApp.getPosManager().basePrice == 0) {
                     price.text = "暂无票价";
-                    if(!BusApp.getPosManager().lineType.equals("O")){
+                    if (!BusApp.getPosManager().lineType.equals("O")) {
                         BusApp.getPosManager().basePrice = PraseLine.getMorePayPrice(null, true, true)
                     }
                 } else {
@@ -163,6 +165,7 @@ class Main2Activity : BaseActivity() {
             } else {
                 diraction.visibility = View.GONE
             }
+
 
         } catch (e: Exception) {
             Log.i("界面设置报错了", "报错了" + e.message)
@@ -203,6 +206,7 @@ class Main2Activity : BaseActivity() {
         tools.add("当前操作：" + (if (BusApp.getPosManager().operate == 0) "自动" else "手动"))
         tools.add("设置车号")
         tools.add("采集GPS")
+        tools.add("当前机器：" + (if (BusApp.getPosManager().posUpDate == 1) "前车机" else "后车机"))
         tools_list.layoutManager = LinearLayoutManager(this)
         tools_list.adapter = MainToolAdapter(this, tools)
 
@@ -319,19 +323,39 @@ class Main2Activity : BaseActivity() {
                         }
                         PraseCard.checkMacBack(DoCmd.checkMac(FileUtils.hex2byte(transaction_num + transaction_type)), cardInfoEntity, xdRecord)
                     } catch (e: java.lang.Exception) {
-                        MiLog.i("刷卡", "校验出错了：" + e.message)
+                        MiLog.i("刷卡", "mainactivity校验出错了：" + e.message)
                     }
-                }
-                "station" -> {
-                    DoCmd.sendStationInfo()
                 }
 
                 "lockNewCpu" -> {
                     DoCmd.lockNewCpu()
                 }
+                "myselfAddress" -> {
+                    if ((o[0] as String?)!!.contains("失败")) {
+                        BusToast.showToast(o[0] as CharSequence?, false)
+                    } else {
+                        BusToast.showToast(o[0] as CharSequence?, true)
+                        SoundPoolUtil.play(VoiceConfig.shuamachenggong)
+                    }
+                }
+                "keyboardAddress" -> {
+                    DoCmd.setAddress(o[0] as String?)
+                }
+
+                "sendStationInfo" -> {
+                    var time: Long = 0
+                    if (BusApp.getPosManager().getPosUpDate() == 1) {
+                        time = 50
+                    } else {
+                        time = 300
+                    }
+                    Handler().postDelayed(Runnable { DoCmd.sendStationInfo() }, time)
+                }
             }
         }
+
     }
+
 
     private fun keyComfir() {
         Log.i("当前状态", "" + viewTag)
@@ -441,7 +465,7 @@ class Main2Activity : BaseActivity() {
                                 PraseLine.praseAllLine(File(line))
                                 BusToast.showToast("线路导入成功", true)
                             } else {
-                                BusToast.showToast("白名单导入异常，请检查SD卡状态和黑名单文件", true)
+                                BusToast.showToast("白名单导入异常，请检查SD卡状态和白名单文件", true)
                             }
                         } catch (e: Exception) {
                             BusToast.showToast("导入失败,请检查线路文件是否异常", false)
@@ -468,9 +492,17 @@ class Main2Activity : BaseActivity() {
                     refreshMoudle()
                     startActivity(Intent(this, GPSColletActivity::class.java))
                 }
+                13 -> {
+                    refreshMoudle()
+                    if (BusApp.getPosManager().posUpDate == 1) {
+                        BusApp.getPosManager().posUpDate = 2
+                    } else {
+                        BusApp.getPosManager().posUpDate = 1
+                    }
+                    initView()
+                }
             }
         }
-
     }
 
     private fun keyCancal() {
@@ -494,7 +526,8 @@ class Main2Activity : BaseActivity() {
                 paramShowInfo.farver = BusApp.getPosManager().farver  //票价
                 paramShowInfo.loction = if (GPSEvent.bdLocation == null) "0" else GPSEvent.bdLocation.longitude.toString() + "," + GPSEvent.bdLocation.latitude
                 paramShowInfo.pubver = BusApp.getPosManager().pub_ver //密钥
-
+                paramShowInfo.mykeyborad = BusApp.getPosManager().myselfkeybroadAddress
+                paramShowInfo.keyborad = BusApp.getPosManager().keybroadAddress
                 Rx.getInstance().sendMessage("mianParam", paramShowInfo)
             } catch (e: java.lang.Exception) {
                 Log.i("界面数据刷新失败", "失败")
@@ -516,6 +549,8 @@ class Main2Activity : BaseActivity() {
             location_now.text = paramShowInfo.loction
             lin_ver.text = paramShowInfo.linever
             key_ver.text = paramShowInfo.pubver
+            myself_keyboardAddress.text = paramShowInfo.mykeyborad
+            keyboard_Address.text = paramShowInfo.keyborad
         } catch (e: Exception) {
             Log.i("界面设置报错了", "报错了");
         }

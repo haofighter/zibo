@@ -97,7 +97,6 @@ public class File17NewCPUInfoEntity {
         this.pre_preferential_amount = (String) FileUtils.byte2Parm(pre_preferential_amount, Type.HEX);
 
 
-
         //上车时间
         byte[] boarding_time = new byte[7];
         arraycopy(date, i, boarding_time, 0, boarding_time.length);
@@ -219,6 +218,10 @@ public class File17NewCPUInfoEntity {
     }
 
     public String getPose_id() {
+        if (pose_id == null || pose_id.length() < 12) {
+            pose_id = "000000000000";
+        }
+
         return pose_id;
     }
 
@@ -251,6 +254,6 @@ public class File17NewCPUInfoEntity {
     }
 
     public int getBoarding_site_indexInt() {
-        return Integer.parseInt(boarding_site_index,16);
+        return Integer.parseInt(boarding_site_index, 16);
     }
 }

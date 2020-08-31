@@ -22,13 +22,14 @@ android {
 
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
+            shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
 
     greendao {
-        schemaVersion version()+10
+        schemaVersion 23
         daoPackage 'com.szxb.zibo.db.dao'
         targetGenDir 'src/main/java'
     }
@@ -37,12 +38,17 @@ android {
     productFlavors {
         zibo {
             versionCode version()
-            versionName "1.1.10"
+            versionName "1.1.21_1"
             buildConfigField 'String', 'LOG_TAG', '"zibo"'
-            buildConfigField 'String', 'BIN_NAME', '"Q6_ZiBo_191231143404.bin"'
+            buildConfigField 'String', 'BIN_NAME', '"Q6_ZiBo_200817103916.bin"'
             buildConfigField 'int', 'CITY', '0'
             buildConfigField 'String', 'InstallApk', '"install1.5.apk"'
-            buildConfigField 'boolean', 'isTest', 'false'
+            buildConfigField 'boolean', 'isTest', 'true'
+            //1.1.12 屏蔽定制公交DD类型的二维码
+            //1.1.17 修改新卡无多票区域数据导致无法刷卡 屏蔽上下车机选项 屏蔽键盘通讯
+            //1.1.18 修复M1卡出现多票区域读写不全的问题
+            //1.1.20 修改交通部卡多票区域无法容纳线路号问题
+            //1.1.21 屏蔽交通部卡片
         }
     }
 
@@ -65,8 +71,8 @@ static def debugTime() {
     return new Date().format("yyMMdd", TimeZone.getDefault())
 }
 
-static def version(){
-    return 13
+static def version() {
+    return 14
 }
 
 dependencies {
@@ -101,6 +107,7 @@ dependencies {
     implementation 'org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.2.1'
     implementation 'org.eclipse.paho:org.eclipse.paho.android.service:1.1.1'
     implementation files('libs/ibuscloudposlib.jar')
+    implementation 'com.tencent:mmkv:1.0.19'
 
     implementation project(path: ':java8583')
 }

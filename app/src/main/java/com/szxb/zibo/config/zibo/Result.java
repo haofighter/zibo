@@ -39,6 +39,8 @@ public class Result {
     private String terminal_no;
     private String sign_type;
 
+
+
     public String getCustomer_code() {
         return customer_code;
     }
