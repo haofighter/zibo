@@ -119,4 +119,8 @@ public class FileJTBPayResult {
     public int getBalance() {
         return Integer.parseInt(balance,16);
     }
+
+    public String getTAC() {
+        return TAC;
+    }
 }

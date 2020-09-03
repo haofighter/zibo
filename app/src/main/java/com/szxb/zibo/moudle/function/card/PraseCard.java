@@ -914,9 +914,15 @@ public class PraseCard {
                 MiLog.i("刷卡", "补全数据:" + xdRecord.getStatus() + "   记录标示：" + xdRecord.getRecordTag() + "         交易后卡余额：" + praseConsumCard.balance);
             }
             xdRecord.setCardTradeTAC(praseConsumCard.fileMIPayResult.tac);//TODO MI卡TAC
-//          xdRecord.setUseCardnum(praseConsumCard.fileMIPayResult.c());//TODO 应用卡号
+        } else if (select_aid.equals(JTB_CARD)) {
+            if (xdRecord.getCardTradeCount().equals("0000")) {
+                MiLog.i("刷卡", "新增数据" + "         交易后卡余额：" + praseConsumCard.balance);
+                xdRecord.setCardTradeCount(cardInfoEntity.file18JTBInfoEntity.getTransaction_number_18());//TODO M1卡交易序号
+            } else {
+                MiLog.i("刷卡", "补全数据:" + xdRecord.getStatus() + "   记录标示：" + xdRecord.getRecordTag() + "         交易后卡余额：" + praseConsumCard.balance);
+            }
+            xdRecord.setCardTradeTAC(praseConsumCard.fileJTBPayResult.getTAC());//TODO MI卡TAC
         }
-        MiLog.i("刷卡", "交易完成时的卡交易序号：" + xdRecord.getCardTradeCount());
     }
 
     //直接保存数据并上送
@@ -993,6 +999,7 @@ public class PraseCard {
 //            xdRecord.setBeforTradeTime(cardInfoEntity.fileM1InfoEntity.getBlock_1C1D().getBoarding_time());
 //            xdRecord.setBeforTradePrice(cardInfoEntity.fileM1InfoEntity.getBlock_18().transaction_money);
             //TODO 填充上次交易信息
+            xdRecord.setCityCode(cardInfoEntity.file17JTBInfoEntity.getCity_code());
             xdRecord.setTradePSAM(BusApp.getPosManager().getJTBpsam());
         }
 

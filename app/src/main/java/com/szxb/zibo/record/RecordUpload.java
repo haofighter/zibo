@@ -65,7 +65,6 @@ public class RecordUpload {
         xdRecord.setMainPSAM(BusApp.getPosManager().getMainPSAM());
 //        xdRecord.setTradePSAM(praseConsumCard.);//TODO 当前交易的PSAM
         xdRecord.setDriverNum(BusApp.getPosManager().getDriverNo());
-        xdRecord.setCityCode(BusApp.getPosManager().getCityCode());
         xdRecord.setDirection(BusApp.getPosManager().getDirection());
         int lenth = FileUtils.hex2byte(xdRecord.toString()).length / 128;
         if (FileUtils.hex2byte(xdRecord.toString()).length / 128 > 0) {

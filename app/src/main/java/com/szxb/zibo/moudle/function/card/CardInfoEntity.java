@@ -196,8 +196,7 @@ public class CardInfoEntity implements Cloneable {
             } else if (selete_aid.equals("02")) {//住建部CPU
                 praseNewCPUCard(date);
             } else if (selete_aid.equals("01")) {//交通部
-//                praseJTBCard(date);
-                BusToast.showToast("暂时不能使用此方式乘车", false);
+                praseJTBCard(date);
             }
             MiLog.i("刷卡", "主卡类型：" + cardType + "       字卡类型：" + childCardType + "          实际主卡类型：" + realCardType + "          实际字卡类型：" + realChildCardType + "     卡号：" + cardNo);
             return "00";
@@ -212,10 +211,11 @@ public class CardInfoEntity implements Cloneable {
         byte[] card_pan = new byte[8];
         arraycopy(date, i, card_pan, 0, card_pan.length);
         i += card_pan.length;
-        this.cardNo = (String) FileUtils.byte2Parm(card_pan, Type.HEX);
+
 
         file15JTBInfoEntity = new File15JTBInfoEntity();
         i = file15JTBInfoEntity.praseFile(i, date);
+        this.cardNo = file15JTBInfoEntity.getPan();
 
         file17JTBInfoEntity = new File17JTBInfoEntity();
         i = file17JTBInfoEntity.praseFile(i, date);
@@ -243,11 +243,6 @@ public class CardInfoEntity implements Cloneable {
         } else {
             realCardType = cardType = "65";
             realChildCardType = childCardType = "03";
-        }
-
-        if (BuildConfig.isTest) {
-            realCardType = cardType = "01";
-            realChildCardType = childCardType = "00";
         }
 
         MiLog.i("刷卡", "交通部卡余额：" + balance);

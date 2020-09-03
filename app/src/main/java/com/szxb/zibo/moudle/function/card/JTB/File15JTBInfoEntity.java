@@ -63,4 +63,8 @@ public class File15JTBInfoEntity {
     public String getCard_issuer() {
         return card_issuer;
     }
+
+    public String getPan() {
+        return pan;
+    }
 }

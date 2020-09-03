@@ -47,4 +47,8 @@ public class File17JTBInfoEntity {
     public String getCard_type() {
         return card_type;
     }
+
+    public String getCity_code() {
+        return city_code;
+    }
 }

@@ -38,7 +38,7 @@ android {
     productFlavors {
         zibo {
             versionCode version()
-            versionName "1.1.21_1"
+            versionName "1.1.22"
             buildConfigField 'String', 'LOG_TAG', '"zibo"'
             buildConfigField 'String', 'BIN_NAME', '"Q6_ZiBo_200817103916.bin"'
             buildConfigField 'int', 'CITY', '0'
@@ -49,6 +49,7 @@ android {
             //1.1.18 修复M1卡出现多票区域读写不全的问题
             //1.1.20 修改交通部卡多票区域无法容纳线路号问题
             //1.1.21 屏蔽交通部卡片
+            //1.1.22 修改交通部卡记录Tac码 卡类型等上送数据不对的问题
         }
     }
 
