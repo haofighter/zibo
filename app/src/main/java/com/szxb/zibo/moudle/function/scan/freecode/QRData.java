@@ -67,7 +67,7 @@ public class QRData {
 
         byte[] payUser = new byte[16];
         System.arraycopy(data, index += cert.length, payUser, 0, payUser.length);
-        setUserPayID(new String(payUser));
+        setUserPayID(FileUtils.bytesToHexString(payUser));
 //        setUserPayID(Util.bytesToHexString(payUser));
 
         byte[] cardUser = new byte[10];
@@ -134,7 +134,7 @@ public class QRData {
         userPrivateKeySignData = new byte[data.length - userPrivateKeySign.length - 1];
         System.arraycopy(data, 0, userPrivateKeySignData, 0, userPrivateKeySignData.length);
 
-        long currentTime = System.currentTimeMillis() / 1000;
+        long currentTime = System.currentTimeMillis() / 1000 + 8 * 60 * 60;
         long resTime = currentTime - this.qrTime;
 
         //满足条件则日期非法

@@ -196,191 +196,8 @@ public class FreeCodeManage {
         return FreeCodeManageHelp.fcm;
     }
 
-    public void praseJTBScan(byte[] qrCode) {
-
-        try {
-            Log.i("自有码", "线路发卡机构代码" + FileUtils.bytesToHexString(qrCode));
-            int i = 0;
-            byte[] Version = new byte[1];
-            arraycopy(qrCode, i, Version, 0, Version.length);
-            i += Version.length;
-            int version = Integer.parseInt(FileUtils.bytesToHexString(Version), 16);
-
-            if (!(version >= 0x80 && version <= 0xFF)) {
-                BusToast.showToast("二维码格式错误", false);
-                return;
-            }
-
-            //二维码数据长度
-            byte[] ScanLen = new byte[2];
-            arraycopy(qrCode, i, ScanLen, 0, ScanLen.length);
-            i += ScanLen.length;
-            String scanLen = FileUtils.bytesToHexString(ScanLen);
-
-            //发卡机构公钥证书
-            byte[] issuerCert = new byte[117];
-            System.arraycopy(qrCode, i, issuerCert, 0, issuerCert.length);
-            i += issuerCert.length;
-            if (!checkCert(issuerCert)) {
-//                BusToast.showToast("账户过期", false);
-//                SoundPoolUtil.play(VoiceConfig.cikayiguoyouxiaoqi);
-                return;
-            }
-
-
-            //支付账户号
-            byte[] PayCount = new byte[16];
-            System.arraycopy(qrCode, i, PayCount, 0, PayCount.length);
-            i += PayCount.length;
-            String payCount = new String(PayCount);
-
-            //卡账户号
-            byte[] CardCount = new byte[10];
-            System.arraycopy(qrCode, i, CardCount, 0, CardCount.length);
-            i += CardCount.length;
-            String cardCount = FileUtils.bytesToHexString(CardCount);
-
-            //发卡机构号
-            byte[] CreatCardIs = new byte[4];
-            System.arraycopy(qrCode, i, CreatCardIs, 0, CreatCardIs.length);
-            i += CreatCardIs.length;
-            String creatCardIs = FileUtils.bytesToHexString(CreatCardIs);
-
-
-            //发码平台编号
-            byte[] CreatScanIs = new byte[4];
-            System.arraycopy(qrCode, i, CreatScanIs, 0, CreatScanIs.length);
-            i += CreatScanIs.length;
-            String creatScanIs = FileUtils.bytesToHexString(CreatScanIs);
-
-            //卡账户类型
-            byte[] CreatType = new byte[1];
-            System.arraycopy(qrCode, i, CreatType, 0, CreatType.length);
-            i += CreatType.length;
-            String creatType = FileUtils.bytesToHexString(CreatType);
-
-            if (creatType.toLowerCase().endsWith("dd")) {
-                BusToast.showToast("暂不能使用", false);
-                SoundPoolUtil.play(VoiceConfig.zanshibunengshiyong);
-                return;
-            }
-
-            //单次消费金额上限
-            byte[] PayLimit = new byte[3];
-            System.arraycopy(qrCode, i, PayLimit, 0, PayLimit.length);
-            i += PayLimit.length;
-            String payLimit = FileUtils.bytesToHexString(PayLimit);
-
-            //支付账户用户公钥
-            byte[] PayPublic = new byte[33];
-            System.arraycopy(qrCode, i, PayPublic, 0, PayPublic.length);
-            i += PayPublic.length;
-            String payPublic = FileUtils.bytesToHexString(PayPublic);
-
-            //支付账户系统授权过期时间
-            byte[] PayExpire = new byte[4];
-            System.arraycopy(qrCode, i, PayExpire, 0, PayExpire.length);
-            i += PayExpire.length;
-            String payExpire = FileUtils.bytesToHexString(PayExpire);
-
-            if (Long.parseLong(payExpire, 16) < System.currentTimeMillis() / 1000) {
-                BusToast.showToast("账户过期", false);
-                SoundPoolUtil.play(VoiceConfig.cikayiguoyouxiaoqi);
-                return;
-            }
-
-
-            //二维码有效时间
-            byte[] ScanExpire = new byte[2];
-            System.arraycopy(qrCode, i, ScanExpire, 0, ScanExpire.length);
-            i += ScanExpire.length;
-            long scanExpire = Long.parseLong(FileUtils.bytesToHexString(ScanExpire), 16);
-
-            //发卡机构自定义域长度
-            byte[] FreeAreaLenth = new byte[1];
-            System.arraycopy(qrCode, i, FreeAreaLenth, 0, FreeAreaLenth.length);
-            i += FreeAreaLenth.length;
-            int freeAreaLenth = Integer.parseInt(FileUtils.bytesToHexString(FreeAreaLenth));
-
-            byte[] FreeArea = new byte[freeAreaLenth];
-            if (freeAreaLenth != 0) {
-                //发卡机构自定义域
-                System.arraycopy(qrCode, i, FreeArea, 0, FreeArea.length);
-                i += FreeArea.length;
-                String freeArea = FileUtils.bytesToHexString(FreeArea);
-            }
-
-            byte[] IssDate = new byte[i - 3];
-            System.arraycopy(qrCode, 3, IssDate, 0, IssDate.length);
-
-            byte[] IsSignTag = new byte[1];
-            System.arraycopy(qrCode, i, IsSignTag, 0, IsSignTag.length);
-            i += IsSignTag.length;
-            String isSignTag = FileUtils.bytesToHexString(IsSignTag);
-
-            // 发卡机构授权签名
-            byte[] IsSign = new byte[64];
-            System.arraycopy(qrCode, i, IsSign, 0, IsSign.length);
-            i += IsSign.length;
-            String isSign = FileUtils.bytesToHexString(IsSign);
-
-//            int isRet = JTQR.QrVerify(IssDate, payPublic, isSign);
-//            if (isRet != 0) {
-//                BusToast.showToast("二维码有误", false);
-//                SoundPoolUtil.play(VoiceConfig.qingshuaxinchongsao);
-//                return;
-//            }
-
-            //二维码生成时间
-            byte[] ScanCreateTime = new byte[4];
-            System.arraycopy(qrCode, i, ScanCreateTime, 0, ScanCreateTime.length);
-            i += ScanCreateTime.length;
-            String scanCreateTime = FileUtils.bytesToHexString(ScanCreateTime);
-
-            if (System.currentTimeMillis() / 1000 - Long.parseLong(scanCreateTime, 16) > scanExpire) {
-                BusToast.showToast("二维码过期", false);
-                SoundPoolUtil.play(VoiceConfig.qingshuaxinchongsao);
-                return;
-            }
-
-            byte[] PayPrivateTag = new byte[1];
-            System.arraycopy(qrCode, i, PayPrivateTag, 0, PayPrivateTag.length);
-            i += PayPrivateTag.length;
-            String payPrivateTag = FileUtils.bytesToHexString(PayPrivateTag);
-
-            //支付账户用户私钥签名
-            byte[] PayPrivate = new byte[64];
-            System.arraycopy(qrCode, i, PayPrivate, 0, PayPrivate.length);
-            i += PayPrivate.length;
-            String userPrivateKeySign = FileUtils.bytesToHexString(PayPrivate);
-
-            byte[] userPrivateKeySignData = new byte[qrCode.length - 65];
-            System.arraycopy(qrCode, 0, userPrivateKeySignData, 0, userPrivateKeySignData.length);
-
-            int res = JTQR.QrVerify(userPrivateKeySignData, payPublic, userPrivateKeySign);
-            if (res != 0) {
-                BusToast.showToast("二维码验证失败【" + res + "】", false);
-                SoundPoolUtil.play(VoiceConfig.erweimageshicuowu);
-                return;
-            }
-
-            XdRecord xdRecord = DBManagerZB.checkXdRecordByqrCode(FileUtils.bytesToHexString(qrCode));
-            if (xdRecord != null) {
-                SoundPoolUtil.play(VoiceConfig.qingshuaxinchongsao);
-                BusToast.showToast("二维码重复使用", false);
-            } else {
-                Log.i("交通部二维码", "验证通过");
-                packegePay(qrCode, payCount);
-            }
-        } catch (Exception e) {
-            Log.i("错误", "交通部二维码错误" + e.getMessage());
-        }
-
-    }
-
-    private void packegePay(byte[] qrcode, String cardNo) {
+    private void packegePay(String extraDate, String cardNo) {
         XdRecord xdRecord = new XdRecord();
-        String extraDate = FileUtils.bytesToHexString(qrcode);
         xdRecord.setQrCode(extraDate);
         xdRecord.setExtraDate(extraDate);
         if (DBManagerZB.checkRepeatScan(extraDate) == null) {
@@ -409,110 +226,25 @@ public class FreeCodeManage {
     }
 
 
-    public boolean checkCert(byte[] issuerCert) {
-        int i = 0;
-        byte[] head = new byte[1];
-        System.arraycopy(issuerCert, i, head, 0, head.length);
-        i += head.length;
-        String ihead = FileUtils.bytesToHexString(head);
-
-        byte[] serverTag = new byte[4];
-        System.arraycopy(issuerCert, i, serverTag, 0, serverTag.length);
-        i += serverTag.length;
-
-        //中心 CA 公钥索引
-        byte[] caIndex = new byte[1];
-        System.arraycopy(issuerCert, i, caIndex, 0, caIndex.length);
-        i += caIndex.length;
-
-        //证书格式
-        byte[] Iss = new byte[1];
-        System.arraycopy(issuerCert, i, Iss, 0, Iss.length);
-        i += Iss.length;
-
-        //发卡机构代码
-        byte[] IssCode = new byte[4];
-        System.arraycopy(issuerCert, i, IssCode, 0, IssCode.length);
-        i += IssCode.length;
-
-        //证书失效日期
-        byte[] lostTime = new byte[2];
-        System.arraycopy(issuerCert, i, lostTime, 0, lostTime.length);
-        i += lostTime.length;
-        String certInvalidDate = FileUtils.bytesToHexString(lostTime);
-        String resetCertInvalidDate = certInvalidDate.substring(2) + certInvalidDate.substring(0, 2);
-        String currentDate = DateUtil.getYM();
-        if (resetCertInvalidDate.compareTo(currentDate) < 0) {
-            BusToast.showToast("二维码过期", false);
-            SoundPoolUtil.play(VoiceConfig.erweimaguoqi);
-            return false;
-        }
-
-
-        //证书序列号
-        byte[] trano = new byte[3];
-        System.arraycopy(issuerCert, i, trano, 0, trano.length);
-        i += trano.length;
-
-        //发卡机构 公钥签名算法标识
-        byte[] calSignTag = new byte[1];
-        System.arraycopy(issuerCert, i, calSignTag, 0, calSignTag.length);
-        i += calSignTag.length;
-
-        //发卡机构 公钥加密算法标识
-        byte[] calMacTag = new byte[1];
-        System.arraycopy(issuerCert, i, calMacTag, 0, calMacTag.length);
-        i += calMacTag.length;
-
-        //公钥参数标识
-        byte[] publicTag = new byte[1];
-        System.arraycopy(issuerCert, i, publicTag, 0, publicTag.length);
-        i += publicTag.length;
-
-        //发卡机构公钥长度
-        byte[] publicLen = new byte[1];
-        System.arraycopy(issuerCert, i, publicLen, 0, publicLen.length);
-        i += publicLen.length;
-
-        //发卡机构公钥
-        byte[] publickey = new byte[33];
-        System.arraycopy(issuerCert, i, publickey, 0, publickey.length);
-        i += publickey.length;
-
-        //数字签名
-        byte[] sign = new byte[64];
-        System.arraycopy(issuerCert, i, sign, 0, sign.length);
-        i += sign.length;
-        String certSign = FileUtils.bytesToHexString(sign);
-
-
-        int certSignDataLen = issuerCert.length - 70;
-        int startIndex = 6;
-        byte[] certSignData = new byte[certSignDataLen];
-        System.arraycopy(issuerCert, startIndex, certSignData, 0, certSignData.length);
-
-        int res = JTQR.QrVerify(certSignData, FileUtils.bytesToHexString(publickey), certSign);
-        //(2.)res!=0时 返回错误码
-        if (res != 0) {
-            BusToast.showToast("请检查二维码【" + res + "】", false);
-            SoundPoolUtil.play(VoiceConfig.erweimageshicuowu);
-            return false;
-        }
-
-        return true;
-    }
 
 
     public void praseJtbScan(String result) {
         try {
             QRData qrData = new QRData(FileUtils.hexStringToBytes(result));
 
+            XdRecord xdRecord = DBManagerZB.checkXdRecordByqrCode(result);
+            if (xdRecord != null) {
+                SoundPoolUtil.play(VoiceConfig.qingshuaxinchongsao);
+                BusToast.showToast("二维码重复使用", false);
+                return;
+            }
 
             int resultCode = QRVerifyUtil.getInstance().verifyQR(qrData);
 
 
             if (resultCode == 5) {
                 BusToast.showToast("刷码成功", true);
+                packegePay(result, qrData.getUserPayID());
             } else if (resultCode == 4) {
                 BusToast.showToast("二维码过期", false);
             } else {

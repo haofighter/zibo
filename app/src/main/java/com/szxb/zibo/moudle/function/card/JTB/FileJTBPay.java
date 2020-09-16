@@ -27,7 +27,15 @@ public class FileJTBPay {
         this.file1AJTBInfoEntity = file1AJTBInfoEntity;
     }
 
+    public File1AJTBInfoEntity getFile1AJTBInfoEntity() {
+        return file1AJTBInfoEntity;
+    }
+
     public void setUpdata_1A(String updata_1A) {
         this.updata_1A = updata_1A;
+    }
+
+    public String getUpdata_1A() {
+        return updata_1A;
     }
 }

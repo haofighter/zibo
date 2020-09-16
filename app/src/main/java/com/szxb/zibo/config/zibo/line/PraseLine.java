@@ -421,12 +421,20 @@ public class PraseLine {
         Log.i("文件  票价 卡方案生成规则", cardPlans.toString());
     }
 
-    //解析密钥
     public static void prasePub(File file) {
         try {
             byte[] pub = FileUtils.readFile(file);
-//        byte[] pub = FileUtils.readAssetsFileTobyte("wKgGK11WkOuAGRrnAAADQsGRFu4353.pub", BusApp.getInstance());
-            String pubStr = new String(pub);
+            prasePub(pub);
+        } catch (Exception e) {
+            MiLog.i("文件  密钥", "读取失败");
+        }
+    }
+
+    //解析密钥
+    public static void prasePub(byte[] file) {
+        try {
+
+            String pubStr = new String(file);
             String[] pubSingles = pubStr.split("\n");
             List<PublicKey> publicKeys = new ArrayList<>();
             for (int i = 0; i < pubSingles.length; i++) {
@@ -681,7 +689,7 @@ public class PraseLine {
                 cardInfoEntity.setTranseType(0);
                 break;
             case "P":
-                if (cardInfoEntity.getComplete_mark().equals("00")) {//表示交易完成 当前为上车
+                if (cardInfoEntity.getComplete_mark().equals("00")) { //表示交易完成 当前为上车
                     //表示上车 计算当前站至终点的票价
                     cardInfoEntity.setTranseType(1);
                     int fullprice = getMorePayPrice(cardInfoEntity, true, true);
@@ -763,7 +771,7 @@ public class PraseLine {
                     int nowStation = BusApp.getPosManager().getStationID();
 
 
-                    if (!isSameBus || isLimitTime || !isSameLine) {// 非同车  时间限制之外  非同线路
+                    if (!isSameBus || isLimitTime || !isSameLine) { // 非同车  时间限制之外  非同线路
                         if (cardInfoEntity.getComplete_mark().equals("01")) {//表示交易未完成 当前为补票
                             cardInfoEntity.setComplete_mark("00");
                             cardInfoEntity.setTranseType(3);
@@ -781,7 +789,7 @@ public class PraseLine {
                             cardInfoEntity.setComplete_mark("00");
                             cardInfoEntity.setPayAllPrice(fullPrice);
                             setMoreTicketInfo(cardInfoEntity, fullPrice);
-                            cardInfoEntity.setTranseType(4);
+                            cardInfoEntity.setTranseType(3);
                             return 0;
                         }
                     } else {

@@ -147,7 +147,7 @@ public class DoCmd {
                 return bean;
             }
         } catch (InterruptedException e) {
-            MiLog.i("错误", "getPayRecord 报错啦" + e.getMessage());
+            MiLog.i("刷卡错误", "getPayRecord 报错啦" + e.getMessage());
             e.printStackTrace();
         }
         return null;
@@ -267,6 +267,9 @@ public class DoCmd {
                 i += CpuPosID.length;
                 String cpuPosID = (String) FileUtils.byte2Parm(CpuPosID, Type.HEX);
                 BusApp.getPosManager().setM1psam(cpuPosID);
+                if(BusApp.getPosManager().getMainPSAM().equals("000000000000")){
+                    BusApp.getPosManager().setMainPSAM(cpuPosID);
+                }
 
 
                 //PSAM卡号
@@ -296,7 +299,9 @@ public class DoCmd {
                 i += JTBPosID.length;
                 String jTBPosID = (String) FileUtils.byte2Parm(JTBPosID, Type.HEX);
                 BusApp.getPosManager().setJTBpsam(jTBPosID);
-
+                if(BusApp.getPosManager().getMainPSAM().equals("000000000000")){
+                    BusApp.getPosManager().setMainPSAM(jTBPosID);
+                }
 
                 //PSAM卡号
                 byte[] JTBSerialNum = new byte[10];
@@ -521,7 +526,6 @@ public class DoCmd {
 
     public static void dokeyboard(byte[] keyboardInfo) {
         try {
-
             if (FileUtils.bytesToHexString(keyboardInfo).toUpperCase().startsWith("55AA050004")) {
                 Rx.getInstance().sendMessage("myselfAddress", "地址设置成功");
                 BusApp.getPosManager().setMyselfkeybroadAddress(BusApp.getPosManager().getMyselfkeybroadAddressCache());
@@ -804,4 +808,6 @@ public class DoCmd {
         MiLog.i("地址", "设置地址：" + FileUtils.bytesToHexString(sendCmd));
         SerialComWrite(sendCmd, sendCmd.length);
     }
+
+
 }

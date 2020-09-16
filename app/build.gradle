@@ -38,9 +38,9 @@ android {
     productFlavors {
         zibo {
             versionCode version()
-            versionName "1.1.22"
+            versionName "1.1.26"
             buildConfigField 'String', 'LOG_TAG', '"zibo"'
-            buildConfigField 'String', 'BIN_NAME', '"Q6_ZiBo_200817103916.bin"'
+            buildConfigField 'String', 'BIN_NAME', '"Q6_ZiBo_2008171039.bin"'
             buildConfigField 'int', 'CITY', '0'
             buildConfigField 'String', 'InstallApk', '"install1.5.apk"'
             buildConfigField 'boolean', 'isTest', 'true'
@@ -50,6 +50,11 @@ android {
             //1.1.20 修改交通部卡多票区域无法容纳线路号问题
             //1.1.21 屏蔽交通部卡片
             //1.1.22 修改交通部卡记录Tac码 卡类型等上送数据不对的问题
+            //1.1.23 修复叠包时第二包为空数据时会继承第一包数据
+            //1.1.24 修复除m1卡外的卡出现消费问题时 不更新多票区域数据的问题
+            //1.1.25 修复CPU卡多票区域写入成功但消费失败导致上车扣费的情况
+            //1.1.26 修改刷卡错误后校验的细节问题
+            //1.1.27 修改交通部二维码，用户账号解析错误问题
         }
     }
 

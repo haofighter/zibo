@@ -3,22 +3,17 @@ package com.szxb.zibo.moudle.function.scan.freecode;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.hao.lib.Util.FileUtils;
 import com.szxb.jni.JTQR;
 import com.szxb.zibo.config.zibo.DBManagerZB;
 import com.szxb.zibo.config.zibo.PublicKey;
-import com.szxb.zibo.db.manage.DBCore;
 import com.szxb.zibo.manager.PosManager;
-import com.szxb.zibo.moudle.function.unionpay.unionutil.HexUtil;
 import com.szxb.zibo.util.BusToast;
 import com.szxb.zibo.voice.SoundPoolUtil;
 import com.szxb.zibo.voice.VoiceConfig;
 
+import java.util.ArrayList;
 import java.util.List;
-
-//import com.szxb.parse.util.HexUtil;
-//import com.szxb.yps.BusApp;
-//import com.szxb.yps.util.constant.NumberConstant;
-//import com.szxb.yps.util.sign.Des3Util;
 
 /**
  * 作者：Tangren on 2018-11-27
@@ -57,26 +52,33 @@ public class QRVerifyUtil {
         byte[] verifyData = qrIssuerCert.getCertSignData();
         String sign = qrIssuerCert.getCertSign();
 
-        Log.i("交通部二维码", "密钥索引：" + qrIssuerCert.getcAIndex() + "      " + sign.length());
-        List<PublicKey> keys = DBManagerZB.getTXPublicKey(PosManager.FR_PUB, -1);
+        Log.i("交通部二维码", "密钥索引：" + qrIssuerCert.getcAIndex());
+        List<PublicKey> keys = new ArrayList<>();
+        if (qrData.getIssuer().equals("03664530")) {
+            keys = DBManagerZB.getTXPublicKey(PosManager.FR_PUB, 23);
+        } else {
+            keys = DBManagerZB.getTXPublicKey(PosManager.FR_PUB, 1);
+        }
         if (keys.size() == 0) {
             BusToast.showToast("交通部公钥获取失败", false);
             SoundPoolUtil.play(VoiceConfig.cuowu);
             return -1;
         }
         String key = keys.get(0).getPublicKey();
-
+        if (TextUtils.isEmpty(key)) {
+            return 0;
+        }
 
         if (TextUtils.equals(key, "")) {
 //            return NumberConstant.CERT_KEY_NO_EXIST;
-            return 00;
+            return 0;
         }
-//
-//        byte[] keyByte = HexUtil.hex2byte(key);
-//        byte[] keyCompress = HexUtil.compress(keyByte);
-//        String keyHex = HexUtil.bytesToHexString(keyCompress);
 
-        int res = JTQR.QrVerify(verifyData, key, sign);
+        byte[] keyByte = FileUtils.hex2byte(key);
+        byte[] keyCompress = FileUtils.compress(keyByte);
+        String keyHex = FileUtils.bytesToHexString(keyCompress);
+
+        int res = JTQR.QrVerify(verifyData, keyHex, sign);
         if (res != 0) {
 //            return NumberConstant.FAIL_CERT_INVALID;
             return 1;

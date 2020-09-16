@@ -1,5 +1,7 @@
 package com.szxb.zibo.moudle.function.card.JTB;
 
+import android.util.Log;
+
 import com.hao.lib.Util.FileUtils;
 import com.hao.lib.Util.Type;
 
@@ -82,6 +84,7 @@ public class File1AJTBInfoEntity {
         arraycopy(date, i, transaction_status_1a, 0, transaction_status_1a.length);
         i += transaction_status_1a.length;
         this.transaction_status_1a = (String) FileUtils.byte2Parm(transaction_status_1a, Type.HEX);
+        Log.i("刷卡", "卡中的原始   交易状态：" + this.transaction_status_1a);
 
 
 //        uint8_t boarding_city_code_1a[2];        //上车城市代码

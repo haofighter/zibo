@@ -62,7 +62,7 @@ public class RecordUpload {
         xdRecord.setLongitude((BusApp.getPosManager().getLocation()[0] + "").replace(".", ""));
         xdRecord.setLatitude((BusApp.getPosManager().getLocation()[1] + "").replace(".", ""));
         xdRecord.setPosSn(BusApp.getPosManager().getPosSN());
-        xdRecord.setMainPSAM(BusApp.getPosManager().getMainPSAM());
+
 //        xdRecord.setTradePSAM(praseConsumCard.);//TODO 当前交易的PSAM
         xdRecord.setDriverNum(BusApp.getPosManager().getDriverNo());
         xdRecord.setDirection(BusApp.getPosManager().getDirection());

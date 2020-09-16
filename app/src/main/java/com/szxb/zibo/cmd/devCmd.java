@@ -107,7 +107,7 @@ public class devCmd {
 
 
     public void doCmd() {
-         if ((cla & 0x80) != 0) {
+        if ((cla & 0x80) != 0) {
             switch (cla) {
                 case (byte) 0x8b:
                     DoCmd.doHeart(devCmd.this);

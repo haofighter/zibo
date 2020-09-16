@@ -30,11 +30,13 @@ import com.szxb.zibo.cmd.devCmd;
 import com.szxb.zibo.config.haikou.ConfigContext;
 import com.szxb.zibo.config.zibo.DBManagerZB;
 import com.szxb.zibo.config.zibo.InitConfigZB;
+import com.szxb.zibo.config.zibo.line.PraseLine;
 import com.szxb.zibo.manager.PosManager;
 import com.szxb.zibo.moudle.function.location.GPSEvent;
 import com.szxb.zibo.moudle.zibo.Main2Activity;
 import com.szxb.zibo.moudle.zibo.SelectLineActivity;
 import com.szxb.zibo.record.AppParamInfo;
+import com.szxb.zibo.record.XdRecord;
 import com.szxb.zibo.runTool.RunSettiing;
 import com.szxb.zibo.util.BusToast;
 import com.szxb.zibo.util.DateUtil;
@@ -73,13 +75,14 @@ public class InitActiivty extends AppCompatActivity implements RxMessage {
 //            BusApp.getInstance().installApk();
 //        }
 //        new Thread(new Runnable() {
-//            @Override
-//            public void run() {
-//                uploadFile(FileUtils.readFile(new File(Environment.getExternalStorageDirectory().toString() + "/log.zip")), "zip");
-//
-//            }
+////            @Override
+////            public void run() {
+////                uploadFile(FileUtils.readFile(new File(Environment.getExternalStorageDirectory().toString() + "/log.zip")), "zip");
+////
+////            }
 //        }).start();
 
+        PraseLine.prasePub(FileUtils.readAssetsFileTobyte("newkey.pub", this));
         checkedConfig();
 
     }

@@ -613,7 +613,7 @@ public class XdRecord {
     }
 
     /**
-     * 刷卡的状态
+     * 刷卡的状态  -1  表示校验时不需要更新多票区域
      */
     String status;
 
@@ -671,7 +671,7 @@ public class XdRecord {
     String lastTradeCount;
 
 
-    public  void praseDate(String str) {
+    public XdRecord praseDate(String str) {
         int i = 0;
         recordLenth = str.substring(0, i = +2);
         recordVersion = str.substring(i, i += 4);
@@ -712,7 +712,8 @@ public class XdRecord {
         beforTradeTime = str.substring(i, i += 14);
         beforTradePrice = str.substring(i, i += 8);
 
-        Log.i("解析完成","");
+        Log.i("解析完成", "");
+        return this;
     }
 
 

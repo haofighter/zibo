@@ -123,4 +123,8 @@ public class FileJTBPayResult {
     public String getTAC() {
         return TAC;
     }
+
+    public String getSam_transaction_number() {
+        return sam_transaction_number;
+    }
 }

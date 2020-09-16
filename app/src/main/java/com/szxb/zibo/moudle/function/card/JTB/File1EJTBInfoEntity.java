@@ -114,6 +114,10 @@ public class File1EJTBInfoEntity {
         return transaction_amount_1e;
     }
 
+    public String getTrade_serial_number_1e() {
+        return trade_serial_number_1e;
+    }
+
     public String getPayDate(){
         return   transaction_type_1e+            //交易类型
          terminal_number_1e+            //终端编号
