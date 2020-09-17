@@ -38,7 +38,7 @@ android {
     productFlavors {
         zibo {
             versionCode version()
-            versionName "1.1.26"
+            versionName "1.1.28"
             buildConfigField 'String', 'LOG_TAG', '"zibo"'
             buildConfigField 'String', 'BIN_NAME', '"Q6_ZiBo_2008171039.bin"'
             buildConfigField 'int', 'CITY', '0'
@@ -54,10 +54,12 @@ android {
             //1.1.24 修复除m1卡外的卡出现消费问题时 不更新多票区域数据的问题
             //1.1.25 修复CPU卡多票区域写入成功但消费失败导致上车扣费的情况
             //1.1.26 修改刷卡错误后校验的细节问题
-            //1.1.27 修改交通部二维码，用户账号解析错误问题
+            //1.1.27 修改交通部二维码，用户账号解析错误问题，修改记录中卡介质和卡类型错误
+            //1.1.28 修改交通部卡单票消费语音问题，界面加入交通部psam卡显示
         }
     }
 
+    //打包发送地址 jc@szxiaobing.com
     android.applicationVariants.all { variant ->
         variant.outputs.all {
             if (variant.buildType.name == 'debug') {
@@ -80,6 +82,7 @@ static def debugTime() {
 static def version() {
     return 14
 }
+
 
 dependencies {
     implementation fileTree(include: ['*.jar', '*.aar'], dir: 'libs')

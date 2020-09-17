@@ -54,9 +54,9 @@ public class QRVerifyUtil {
 
         Log.i("交通部二维码", "密钥索引：" + qrIssuerCert.getcAIndex());
         List<PublicKey> keys = new ArrayList<>();
-        if (qrData.getIssuer().equals("03664530")) {
+        if (qrData.getIssuer().equals("03664530")) {//交通部码
             keys = DBManagerZB.getTXPublicKey(PosManager.FR_PUB, 23);
-        } else {
+        } else {//自建码
             keys = DBManagerZB.getTXPublicKey(PosManager.FR_PUB, 1);
         }
         if (keys.size() == 0) {

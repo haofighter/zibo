@@ -84,7 +84,7 @@ public class FreeCodeManage {
             } else if (freeScanEntity.getBlueRing().getType().equals("Line")) {//线路设置
                 String line = freeScanEntity.getBlueRing().getValue();
                 if (line.equals("400255_1")) {
-                    PraseLine.praseLine(FileUtils.readAssetsFileTobyte("20200105193254.far", BusApp.getInstance()));
+                    PraseLine.praseLine(FileUtils.readAssetsFileTobyte("20200826143855.far", BusApp.getInstance()));
                 } else if (line.equals("400251_1")) {
                     PraseLine.praseLine(FileUtils.readAssetsFileTobyte("20191228195940.far", BusApp.getInstance()));
                 } else {
@@ -196,16 +196,26 @@ public class FreeCodeManage {
         return FreeCodeManageHelp.fcm;
     }
 
-    private void packegePay(String extraDate, String cardNo) {
+    private void packegePay(String extraDate, String cardNo, QRData qrData) {
         XdRecord xdRecord = new XdRecord();
         xdRecord.setQrCode(extraDate);
         xdRecord.setExtraDate(extraDate);
         if (DBManagerZB.checkRepeatScan(extraDate) == null) {
-            int price = PraseLine.getNormalPayPrice("33", "00");//金额
+            int price = 0;
+
+            if (qrData.getIssuer().equals("03664530")) {
+                price = PraseLine.getNormalPayPrice("66", "00");//金额
+                xdRecord.setMainCardType("66");
+                xdRecord.setChildCardType("00");
+                xdRecord.setTradeType("14");
+            } else {
+                price = PraseLine.getNormalPayPrice("33", "00");//金额
+                xdRecord.setTradeType("0a");
+                xdRecord.setMainCardType("33");
+                xdRecord.setChildCardType("00");
+            }
+
             xdRecord.setTradePay(price);
-            xdRecord.setTradeType("0a");
-            xdRecord.setMainCardType("33");
-            xdRecord.setChildCardType("00");
             xdRecord.setUseCardnum(cardNo);
             xdRecord.setRecordVersion("0001");
 
@@ -226,8 +236,6 @@ public class FreeCodeManage {
     }
 
 
-
-
     public void praseJtbScan(String result) {
         try {
             QRData qrData = new QRData(FileUtils.hexStringToBytes(result));
@@ -243,8 +251,7 @@ public class FreeCodeManage {
 
 
             if (resultCode == 5) {
-                BusToast.showToast("刷码成功", true);
-                packegePay(result, qrData.getUserPayID());
+                packegePay(result, qrData.getUserPayID(), qrData);
             } else if (resultCode == 4) {
                 BusToast.showToast("二维码过期", false);
             } else {

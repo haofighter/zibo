@@ -82,9 +82,8 @@ public class InitActiivty extends AppCompatActivity implements RxMessage {
 ////            }
 //        }).start();
 
-        PraseLine.prasePub(FileUtils.readAssetsFileTobyte("newkey.pub", this));
+//        PraseLine.prasePub(FileUtils.readAssetsFileTobyte("newkey.pub", this));
         checkedConfig();
-
     }
 
     private void checkedConfig() {

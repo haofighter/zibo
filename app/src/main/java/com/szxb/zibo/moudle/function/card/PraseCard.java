@@ -888,6 +888,8 @@ public class PraseCard {
             case "65"://加油卡
                 if (cardInfoEntity.childCardType.endsWith("01")) {
                     SoundPoolUtil.play(VoiceConfig.dang);
+                } else if (cardInfoEntity.childCardType.endsWith("02")) {
+                    SoundPoolUtil.play(VoiceConfig.dang);
                 } else {
                     SoundPoolUtil.play(VoiceConfig.cuowu);
                 }

@@ -646,7 +646,7 @@ public class InitConfigZB {
             public void subscribe(ObservableEmitter<Boolean> subscriber) throws Exception {
                 AppParamInfo appParamInfo = DBManagerZB.checkAppParamInfo();
                 if (appParamInfo == null || appParamInfo.getLinVer().equals("00000000000000")) {
-                    byte[] bytes = FileUtils.readAssetsFileTobyte("20190723000001_EFD9.lin", BusApp.getInstance());
+                    byte[] bytes = FileUtils.readAssetsFileTobyte("20191227151906_91AB.lin", BusApp.getInstance());
                     PraseLine.praseAllLineByte(bytes);
                     subscriber.onNext(true);
                 }

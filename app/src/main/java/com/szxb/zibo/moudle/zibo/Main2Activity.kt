@@ -116,7 +116,7 @@ class Main2Activity : BaseActivity() {
         try {
             now_time.text = DateUtil.getCurrentDate();
             version_tx.text = BuildConfig.BIN_NAME + "\n[" + BusApp.getInstance().getPakageVersion() + "]"
-            version_tx.append("\n" + BusApp.getPosManager().m1psam + "\n" + BusApp.getPosManager().cpupsam)
+            version_tx.append("\n" + BusApp.getPosManager().m1psam + "\n" + BusApp.getPosManager().cpupsam + "\n" + BusApp.getPosManager().jtBpsam)
             white.text = "白名单：" + CommonSharedPreferences.get("white", "未获取到当前黑名单版本") as String
             black.text = "黑名单：" + CommonSharedPreferences.get("black", "未获取到当前白名单版本") as String
             busno.text = "车辆号：" + BusApp.getPosManager().busNo
