@@ -2,11 +2,10 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
-      <module fileurl="file://$PROJECT_DIR$/install/install.iml" filepath="$PROJECT_DIR$/install/install.iml" />
-      <module fileurl="file://$PROJECT_DIR$/java8583/java8583.iml" filepath="$PROJECT_DIR$/java8583/java8583.iml" />
-      <module fileurl="file://$PROJECT_DIR$/lib/lib.iml" filepath="$PROJECT_DIR$/lib/lib.iml" />
       <module fileurl="file://$PROJECT_DIR$/zibo.iml" filepath="$PROJECT_DIR$/zibo.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/zibo.app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/zibo.app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/install/zibo.install.iml" filepath="$PROJECT_DIR$/.idea/modules/install/zibo.install.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/java8583/zibo.java8583.iml" filepath="$PROJECT_DIR$/.idea/modules/java8583/zibo.java8583.iml" />
     </modules>
   </component>
 </project>

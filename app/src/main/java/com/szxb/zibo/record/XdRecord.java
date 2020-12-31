@@ -2,10 +2,10 @@ package com.szxb.zibo.record;
 
 import android.util.Log;
 
-import com.hao.lib.Util.FileUtils;
-import com.hao.lib.Util.MiLog;
-import com.hao.lib.Util.Type;
 import com.szxb.jni.SerialCom;
+import com.szxb.lib.Util.FileUtils;
+import com.szxb.lib.Util.MiLog;
+import com.szxb.lib.Util.Type;
 import com.szxb.zibo.base.BusApp;
 import com.szxb.zibo.util.DateUtil;
 import com.szxb.zibo.util.Util;
@@ -308,9 +308,8 @@ public class XdRecord {
     /**
      * 交易金额  4
      * bin 多票二维码传基本票价后折扣金额
+     * 银联记录此值为消费金额（未进行银联方折扣）
      */
-
-
     public void setTradePay(long tradePay) {
         String str = (String) FileUtils.byte2Parm(FileUtils.int2byte(tradePay), Type.HEX);
         this.tradePay = FileUtils.formatHexStringToByteString(4, str);
@@ -574,6 +573,7 @@ public class XdRecord {
     @Unique
     private long creatTime;
 
+
     public long getCreatTime() {
         return creatTime;
     }
@@ -669,6 +669,39 @@ public class XdRecord {
      * 刷卡前卡中的交易序号
      */
     String lastTradeCount;
+
+
+    /**
+     * 银联交易实际扣款
+     */
+    private String realFree;
+
+    /**
+     * 银联交易状态
+     */
+    private String unionPayStatus;
+
+
+    /**
+     * 备用
+     */
+    private String res1;//银联卡交易卡号(冲正时使用)
+    private String res2;
+    private String res3;
+    private String res4;
+    private String res5;
+
+
+    private String rev1;
+    private String rev2;
+    private String rev3;
+    private String rev4;
+    private String rev5;
+    private String rev6;
+    private String rev7;
+    private String rev8;
+    private String rev9;
+    private String rev10;
 
 
     public XdRecord praseDate(String str) {
@@ -1051,19 +1084,22 @@ public class XdRecord {
         setTradeTime(DateUtil.getCurrentDate2());
         setCreatTime(System.currentTimeMillis());
         setNewExtraDate("");
+        setRealFree("0");
+        setUnionPayStatus("FF");
     }
 
-    @Generated(hash = 2106004647)
-    public XdRecord(String recordTag, String recordLenth, String flag, String recordVersion, String recordBigType,
-                    String recordSmallType, String tradeType, String industryType, String payType, String merchantNum, String companyNum,
-                    String unionNum, String lineNum, String carNum, String stationNum, String longitude, String latitude, String posSn,
-                    String mainPSAM, String tradePSAM, String driverNum, String useCardnum, String tradeTime, String tradeNum,
-                    String tradePay, String tradePayNum, String tradeDiscount, String cardTradeCount, String cardTradeTAC,
-                    String samTradeCount, String cityCode, String creatCardMechanism, String mainCardType, String childCardType,
-                    String direction, String inCardStatus, String beforTradePosSn, String beforTradeType, String beforTradeTime,
-                    String beforTradePrice, String changeLineNum, String changePosSn, String changeNearTime, String changePayPrice,
-                    String extraDateLenth, String extraDate, String newExtraDate, long creatTime, String updateFlag, String qrCode,
-                    String status, long balance, int voiceType, String payCommand, String lastTradeCount) {
+    @Generated(hash = 1673005270)
+    public XdRecord(String recordTag, String recordLenth, String flag, String recordVersion, String recordBigType, String recordSmallType,
+            String tradeType, String industryType, String payType, String merchantNum, String companyNum, String unionNum, String lineNum,
+            String carNum, String stationNum, String longitude, String latitude, String posSn, String mainPSAM, String tradePSAM,
+            String driverNum, String useCardnum, String tradeTime, String tradeNum, String tradePay, String tradePayNum, String tradeDiscount,
+            String cardTradeCount, String cardTradeTAC, String samTradeCount, String cityCode, String creatCardMechanism, String mainCardType,
+            String childCardType, String direction, String inCardStatus, String beforTradePosSn, String beforTradeType, String beforTradeTime,
+            String beforTradePrice, String changeLineNum, String changePosSn, String changeNearTime, String changePayPrice,
+            String extraDateLenth, String extraDate, String newExtraDate, long creatTime, String updateFlag, String qrCode, String status,
+            long balance, int voiceType, String payCommand, String lastTradeCount, String realFree, String unionPayStatus, String res1,
+            String res2, String res3, String res4, String res5, String rev1, String rev2, String rev3, String rev4, String rev5, String rev6,
+            String rev7, String rev8, String rev9, String rev10) {
         this.recordTag = recordTag;
         this.recordLenth = recordLenth;
         this.flag = flag;
@@ -1119,6 +1155,23 @@ public class XdRecord {
         this.voiceType = voiceType;
         this.payCommand = payCommand;
         this.lastTradeCount = lastTradeCount;
+        this.realFree = realFree;
+        this.unionPayStatus = unionPayStatus;
+        this.res1 = res1;
+        this.res2 = res2;
+        this.res3 = res3;
+        this.res4 = res4;
+        this.res5 = res5;
+        this.rev1 = rev1;
+        this.rev2 = rev2;
+        this.rev3 = rev3;
+        this.rev4 = rev4;
+        this.rev5 = rev5;
+        this.rev6 = rev6;
+        this.rev7 = rev7;
+        this.rev8 = rev8;
+        this.rev9 = rev9;
+        this.rev10 = rev10;
     }
 
     public String getLastTradeCount() {
@@ -1142,4 +1195,142 @@ public class XdRecord {
     }
 
 
+    public String getRes1() {
+        return this.res1;
+    }
+
+    public void setRes1(String res1) {
+        this.res1 = res1;
+    }
+
+    public String getRes2() {
+        return this.res2;
+    }
+
+    public void setRes2(String res2) {
+        this.res2 = res2;
+    }
+
+    public String getRes3() {
+        if (res3 == null) {
+            this.res3 = "0";
+        }
+        return this.res3;
+    }
+
+    public void setRes3(String res3) {
+        this.res3 = res3;
+    }
+
+    public String getRes4() {
+        return this.res4;
+    }
+
+    public void setRes4(String res4) {
+        this.res4 = res4;
+    }
+
+    public String getRes5() {
+        return this.res5;
+    }
+
+    public void setRes5(String res5) {
+        this.res5 = res5;
+    }
+
+    public String getUnionPayStatus() {
+        return this.unionPayStatus;
+    }
+
+    public void setUnionPayStatus(String unionPayStatus) {
+        this.unionPayStatus = unionPayStatus;
+    }
+
+    public String getRealFree() {
+        return realFree;
+    }
+
+    public void setRealFree(String realFree) {
+        this.realFree = realFree;
+    }
+
+    public String getRev1() {
+        return this.rev1;
+    }
+
+    public void setRev1(String rev1) {
+        this.rev1 = rev1;
+    }
+
+    public String getRev2() {
+        return this.rev2;
+    }
+
+    public void setRev2(String rev2) {
+        this.rev2 = rev2;
+    }
+
+    public String getRev3() {
+        return this.rev3;
+    }
+
+    public void setRev3(String rev3) {
+        this.rev3 = rev3;
+    }
+
+    public String getRev4() {
+        return this.rev4;
+    }
+
+    public void setRev4(String rev4) {
+        this.rev4 = rev4;
+    }
+
+    public String getRev5() {
+        return this.rev5;
+    }
+
+    public void setRev5(String rev5) {
+        this.rev5 = rev5;
+    }
+
+    public String getRev6() {
+        return this.rev6;
+    }
+
+    public void setRev6(String rev6) {
+        this.rev6 = rev6;
+    }
+
+    public String getRev7() {
+        return this.rev7;
+    }
+
+    public void setRev7(String rev7) {
+        this.rev7 = rev7;
+    }
+
+    public String getRev8() {
+        return this.rev8;
+    }
+
+    public void setRev8(String rev8) {
+        this.rev8 = rev8;
+    }
+
+    public String getRev9() {
+        return this.rev9;
+    }
+
+    public void setRev9(String rev9) {
+        this.rev9 = rev9;
+    }
+
+    public String getRev10() {
+        return this.rev10;
+    }
+
+    public void setRev10(String rev10) {
+        this.rev10 = rev10;
+    }
 }

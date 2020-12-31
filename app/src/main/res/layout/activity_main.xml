@@ -153,22 +153,21 @@
         android:layout_margin="10dp"
         android:textColor="@color/white"
         android:textSize="20dp" />
-    ¬
 
-    <android.support.v7.widget.RecyclerView
+    <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/tools_list"
         android:layout_width="wrap_content"
         android:layout_height="300dp"
         android:layout_marginLeft="40dp"
         android:background="@color/gray_66"
-        android:visibility="gone"></android.support.v7.widget.RecyclerView>
+        android:visibility="gone"></androidx.recyclerview.widget.RecyclerView>
 
-    <android.support.v7.widget.RecyclerView
+    <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/history_list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@color/gray_dd"
-        android:visibility="gone"></android.support.v7.widget.RecyclerView>
+        android:visibility="gone"></androidx.recyclerview.widget.RecyclerView>
 
     <include layout="@layout/param_layout" />
 

@@ -24,9 +24,10 @@ public class BaseByteRequest extends ByteArrayRequest {
         this.setHeader("Accept", "*/*");
         this.setHeader("Accept-Encoding", "*");
         this.setHeader("Connection", "close");
-        this.setHeader("HOST", "120.204.69.139:30000");
+//        this.setHeader("HOST", "120.204.69.139:30000");
+        this.setHeader("HOST", "140.207.168.62:30000");
 
-        SSLContext sslContext = SSLContextUtil.getSSLContext(BusApp.getInstance().getApplicationContext());
+        SSLContext sslContext = SSLContextUtil.getSSLContext(BusApp.getInstance().getApplication());
         if (sslContext == null) {
             sslContext = SSLContextUtil.getDefaultSLLContext();
         }

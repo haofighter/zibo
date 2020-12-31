@@ -4,12 +4,12 @@ import android.os.SystemClock;
 import android.text.TextUtils;
 import android.util.Log;
 
-import com.hao.lib.Util.FileUtils;
-import com.hao.lib.Util.MiLog;
 import com.szxb.java8583.core.Iso8583Message;
 import com.szxb.java8583.module.BankPay;
 import com.szxb.java8583.module.BusCard;
 import com.szxb.java8583.module.manager.BusllPosManage;
+import com.szxb.lib.Util.FileUtils;
+import com.szxb.lib.Util.MiLog;
 import com.szxb.zibo.base.BusApp;
 import com.szxb.zibo.cmd.DoCmd;
 import com.szxb.zibo.cmd.devCmd;
@@ -20,16 +20,20 @@ import com.szxb.zibo.moudle.function.unionpay.config.UnionConfig;
 import com.szxb.zibo.moudle.function.unionpay.entity.PassCode;
 import com.szxb.zibo.moudle.function.unionpay.entity.TERM_INFO;
 import com.szxb.zibo.moudle.function.unionpay.entity.UnionAidEntity;
+import com.szxb.zibo.moudle.function.unionpay.entity.UnionPayEntity;
+import com.szxb.zibo.moudle.function.unionpay.unionutil.HexUtil;
 import com.szxb.zibo.moudle.function.unionpay.unionutil.TLV;
 import com.szxb.zibo.record.RecordUpload;
 import com.szxb.zibo.record.XdRecord;
 import com.szxb.zibo.util.BusToast;
+import com.szxb.zibo.util.DateUtil;
 import com.szxb.zibo.voice.SoundPoolUtil;
 import com.szxb.zibo.voice.VoiceConfig;
 
 import java.io.File;
 import java.util.*;
 
+import static com.szxb.zibo.db.manage.DBCore.getDaoSession;
 import static com.szxb.zibo.moudle.function.unionpay.UnionUtil.*;
 import static com.szxb.zibo.util.DateUtil.getCurrentDate;
 import static java.lang.System.arraycopy;
@@ -59,7 +63,7 @@ public class UnionCard {
 
     private UnionCard() {
         AIDiameters = new ArrayList<>();
-        UnionAidEntityDao dao = DBCore.getDaoSession().getUnionAidEntityDao();
+        UnionAidEntityDao dao = getDaoSession().getUnionAidEntityDao();
         List<UnionAidEntity> list = dao.queryBuilder().build().list();
         for (int i = 0; i < list.size(); i++) {
             String useaidparameter = list.get(i).getIcParam().substring(2, list.get(i).getIcParam().length());
@@ -93,7 +97,7 @@ public class UnionCard {
     public void run(String aid) {
         try {
 
-            money = PraseLine.getPayPrice("41", "00", BusApp.getPosManager().getBasePrice());
+            money = PraseLine.getPayPrice("42", "00", BusApp.getPosManager().getBasePrice());
 
             if (money > 1500) {
                 notice(VoiceConfig.qingchongshua, "金额超出最大限制[" + money + "]", false);
@@ -119,7 +123,6 @@ public class UnionCard {
      * @return 检查是否拦截
      */
     private boolean filterCheck(String result) {
-        Log.d("LoopCard", "(filterCheck.java:296)result=" + result + ",tempStr=" + tempStr);
         if (TextUtils.equals(result, tempStr) &&
                 !checkQR2(SystemClock.elapsedRealtime(), lastScanTime2)) {
             return true;
@@ -160,7 +163,7 @@ public class UnionCard {
         String strs = FileUtils.bytesToHexString(sAidCommmond);
         devCmd unionInfo = DoCmd.checkUnion(sAidCommmond);
 
-        MiLog.i("银联刷卡", "aid下发:" + sAidCommmond);
+        MiLog.i("银联", "刷卡 aid下发:" + sAidCommmond);
         if (unionInfo == null) {
             BusToast.showToast("解析卡失败,卡校验失败", false);
             return;
@@ -172,7 +175,7 @@ public class UnionCard {
 
         listTLV = TLV.decodingPDOL(mapTLV.get("9f38"));
 
-        Log.d("银联刷卡", "(run.java:126)9f38>>" + mapTLV.get("9f38"));
+        MiLog.i("银联", "刷卡9f38>>" + mapTLV.get("9f38"));
 
         mapTLV = TLV.decodingTLV(listTLV);
 
@@ -241,10 +244,10 @@ public class UnionCard {
                 + Integer.toHexString(len + 2) + "83"
                 + Integer.toHexString(len) + pDOLBuilder.toString();
 
-        Log.d("银联刷卡", "(run.java:191)GPO=" + GPO);
+        MiLog.i("银联", "刷卡GPO=" + GPO);
 
         devCmd gpoDate = DoCmd.checkUnion(FileUtils.hex2byte(GPO));
-        Log.i("银联刷卡", "gpo下发" +(gpoDate==null?"空数据":FileUtils.bytesToHexString(gpoDate.getDataBuf())));
+        MiLog.i("银联", "刷卡 gpo下发" + (gpoDate == null ? "空数据" : FileUtils.bytesToHexString(gpoDate.getDataBuf())));
         if (gpoDate == null) {
             BusToast.showToast("卡解析失败,校验失败2", false);
             return;
@@ -290,7 +293,7 @@ public class UnionCard {
 
         int index = retPassCode.getTAG57().indexOf("d");
 
-        Log.d("银联刷卡", "(run.java:263)getTAG57=" + retPassCode.getTAG57() + "<<index=" + index);
+        MiLog.i("银联", "刷卡(run.java:263)getTAG57=" + retPassCode.getTAG57() + "<<index=" + index);
 
         String mainCardNo = retPassCode.getTAG57();
         if (index > 0) {
@@ -317,8 +320,9 @@ public class UnionCard {
             busCard.setMoney(money);
             busCard.setTradeSeq(BusllPosManage.getPosManager().getTradeSeq());
 
-            Log.i("银联刷卡", "组装请求包");
+
             Iso8583Message iso8583Message = BankPay.getInstance().payMessage(busCard, false);
+            MiLog.i("银联", "消费数据：" + iso8583Message.toFormatString());
             byte[] sendData = iso8583Message.getBytes();
 
             BusApp.oldCardTag = mainCardNo;
@@ -333,19 +337,26 @@ public class UnionCard {
             xdRecord.setTradePay(money);
             xdRecord.setTradeType("08");
             xdRecord.setUseCardnum(mainCardNo);
+            xdRecord.setRes1(cardNum);
+            xdRecord.setRes2(mainCardNo);
+            xdRecord.setUnionPayStatus("408");
             xdRecord.setRecordVersion("0003");
             xdRecord.setMainCardType("42");
             xdRecord.setChildCardType("00");
+            xdRecord.setRes3(String.format("%06d", BusllPosManage.getPosManager().getTradeSeq()));
+            xdRecord.setRes4(BusllPosManage.getPosManager().getBatchNum());
             xdRecord.setFlag(String.format("%06d", BusllPosManage.getPosManager().getTradeSeq()) + BusllPosManage.getPosManager().getBatchNum());
             xdRecord.setCarNum(BusApp.getPosManager().getBusNo());
             RecordUpload.saveRecord(xdRecord, false, false);
-            Log.i("银联刷卡", "更新记录");
+            MiLog.i("银联", "刷卡更新记录");
+
             UnionPay.getInstance().exeSSL(UnionConfig.PAY, sendData, true);
+
 
             ret = 0;
             tempStr = mainCardNo;
         } catch (Exception e) {
-            Log.i("错误", "银联卡刷卡报错" + e.getMessage());
+            MiLog.i("银联", "刷卡银联卡刷卡报错" + e.getMessage());
         }
     }
 

@@ -6,12 +6,12 @@ import android.util.Log;
 import com.alibaba.fastjson.JSONObject;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import com.hao.lib.Util.FileUtils;
-import com.hao.lib.Util.MiLog;
 import com.szxb.java8583.core.Iso8583Message;
 import com.szxb.java8583.module.BankPay;
 import com.szxb.java8583.module.BusCard;
 import com.szxb.java8583.module.manager.BusllPosManage;
+import com.szxb.lib.Util.FileUtils;
+import com.szxb.lib.Util.MiLog;
 import com.szxb.zibo.base.BusApp;
 import com.szxb.zibo.config.zibo.DBManagerZB;
 import com.szxb.zibo.config.zibo.RequestDate.PosInfoDate;
@@ -37,6 +37,7 @@ public class RecordUpload {
 
     public static void saveRecord(XdRecord xdRecord, boolean isDriver) {
         xdRecord.setCarNum(BusApp.getPosManager().getBusNo());
+        xdRecord.setLineNum(BusApp.getPosManager().getLineNo());
         saveRecord(xdRecord, true, isDriver);
     }
 
@@ -56,7 +57,6 @@ public class RecordUpload {
         xdRecord.setMerchantNum(BusApp.getPosManager().getMchID());
         xdRecord.setCompnayNum(BusApp.getPosManager().getCompanyID());
         xdRecord.setUnionNum(BusApp.getPosManager().getUnitno());
-        xdRecord.setLineNum(BusApp.getPosManager().getLineNo());
 
         xdRecord.setStationNum(BusApp.getPosManager().getStationID());
         xdRecord.setLongitude((BusApp.getPosManager().getLocation()[0] + "").replace(".", ""));
@@ -71,7 +71,7 @@ public class RecordUpload {
             lenth += 1;
         }
         xdRecord.setRecordLenth(FileUtils.bytesToHexString(FileUtils.int2byte(lenth)));
-        Log.i("刷卡", "当前车号：" + xdRecord.getCarNum());
+        Log.i("刷卡", "记录保存   车号：" + xdRecord.getCarNum() + "      线路：" + xdRecord.getLineNum());
         DBManagerZB.saveRecord(xdRecord);
         if (isUpLoad) {
             try {
@@ -170,5 +170,43 @@ public class RecordUpload {
             UnionPay.getInstance().exeSSL(UnionConfig.PAY, sendData, false);
         }
     }
+
+    static int recordSaveNum = 3000;
+
+    //将超过5000条的数据 转换成文件进行储存
+    public static void clearDateBase() {
+        try {
+            long allcount = DBManagerZB.checkXdRecordUpload();
+            MiLog.i("数据清理", "记录条数：" + allcount);
+            if (allcount > recordSaveNum) {
+                List<XdRecord> scanRecordEntities = DBManagerZB.checkXdRecordUploadList();
+                String scanRecord = new Gson().toJson(scanRecordEntities);
+                FileUtils.saveStrToFile(scanRecord, new File(Environment.getExternalStorageDirectory() + "/Record/xd_" + DateUtil.getCurrentDate2() + "_record.txt"));
+                DBManagerZB.deleteXdRecord();
+            }
+
+
+            File file = new File(Environment.getExternalStorageDirectory() + "/Record");
+            List<File> remove = new ArrayList<>();
+            if (file.isDirectory()) {
+                File[] files = file.listFiles();
+                for (int i = 0; i < files.length; i++) {
+                    String[] strs = files[i].getName().split("_");
+                    long date = Long.parseLong(strs[1]);//yyyyMMddHHmmss  转为int  20190621000000
+                    long now = Long.parseLong(DateUtil.getCurrentDate2());//       20190721000000
+                    if (now - date > 100000000) {
+                        remove.add(files[i]);
+                    }
+                }
+            }
+            for (int i = 0; i < remove.size(); i++) {
+                Log.i("文件清理", remove.get(i).getName());
+                remove.get(i).delete();
+            }
+        } catch (Exception e) {
+            Log.i("错误", "clearDateBase(RecordUpload.java:207) 数据清除错误" + e.getMessage());
+        }
+    }
+
 
 }

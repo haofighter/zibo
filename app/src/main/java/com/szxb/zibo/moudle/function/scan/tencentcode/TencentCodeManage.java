@@ -1,7 +1,7 @@
 package com.szxb.zibo.moudle.function.scan.tencentcode;
 
-import com.hao.lib.Util.FileUtils;
-import com.hao.lib.Util.MiLog;
+import com.szxb.lib.Util.FileUtils;
+import com.szxb.lib.Util.MiLog;
 import com.szxb.zibo.config.zibo.DBManagerZB;
 import com.szxb.zibo.config.zibo.InitConfigZB;
 import com.szxb.zibo.config.zibo.PublicKey;
@@ -23,7 +23,7 @@ import com.szxb.zibo.voice.VoiceConfig;
 import java.util.Calendar;
 import java.util.List;
 
-import static com.hao.lib.Util.FileUtils.fen2Yuan;
+import static com.szxb.lib.Util.FileUtils.fen2Yuan;
 import static com.szxb.zibo.moudle.function.scan.QRCode.QR_ERROR;
 
 public class TencentCodeManage {
@@ -54,6 +54,16 @@ public class TencentCodeManage {
         List<PublicKey> macKey = DBManagerZB.getTXPublicKey(PosManager.TX_MAC, mac_root_id);
         if (pubKey.size() == 0 && macKey.size() == 0) {
             BusApp.getPosManager().setPub_ver("00000000000000");
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        InitConfigZB.sendInfoToServer(InitConfigZB.INFO_UP);
+                    } catch (Exception e) {
+
+                    }
+                }
+            }).start();
             BusToast.showToast("腾讯密钥配置失败", false);
             return;
         }

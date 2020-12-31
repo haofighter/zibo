@@ -15,8 +15,6 @@ import com.baidu.location.LocationClientOption;
 import com.baidu.mapapi.model.LatLng;
 import com.baidu.mapapi.utils.CoordinateConverter;
 import com.baidu.mapapi.utils.DistanceUtil;
-import com.hao.lib.Util.MiLog;
-import com.hao.lib.base.Rx.Rx;
 import com.szxb.zibo.base.BusApp;
 import com.szxb.zibo.config.zibo.DBManagerZB;
 import com.szxb.zibo.config.zibo.line.PraseLine;
@@ -49,16 +47,16 @@ public class GPSEvent {
 
     //使用百度定位服务
     public static void GPSEventOpen() {
-        if (!isOPen(BusApp.getInstance())) {
-            openGPS(BusApp.getInstance());
+        if (!isOPen(BusApp.getInstance().getApplication())) {
+            openGPS(BusApp.getInstance().getApplication());
         }
 
         if (BusApp.getPosManager().getLineType().equals("O")) {
             return;
         }
 
-        locationService = new LocationService(BusApp.getInstance());
-        mLocationClient = new LocationClient(BusApp.getInstance());
+        locationService = new LocationService(BusApp.getInstance().getApplication());
+        mLocationClient = new LocationClient(BusApp.getInstance().getApplication());
 
         LocationClientOption option = new LocationClientOption();
         option.setLocationMode(LocationClientOption.LocationMode.Device_Sensors);
@@ -196,6 +194,8 @@ public class GPSEvent {
                     }
                 }
             }
+            ArrayList arrayList=new ArrayList();
+
         } catch (Exception e) {
             Log.i("错误", e.getMessage());
         }

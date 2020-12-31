@@ -6,14 +6,15 @@ import android.util.Log;
 
 import com.alibaba.fastjson.JSONObject;
 import com.google.gson.Gson;
-import com.hao.lib.Util.FileUtils;
-import com.hao.lib.base.Rx.Rx;
 import com.lilei.tool.tool.IToolInterface;
 
 import com.szxb.java8583.core.Iso8583Message;
 import com.szxb.java8583.module.SignIn;
 import com.szxb.java8583.module.manager.BusllPosManage;
 import com.szxb.jni.JTQR;
+import com.szxb.lib.Util.FileUtils;
+import com.szxb.lib.Util.MiLog;
+import com.szxb.lib.base.Rx.Rx;
 import com.szxb.zibo.base.BusApp;
 import com.szxb.zibo.cmd.DoCmd;
 import com.szxb.zibo.config.zibo.DBManagerZB;
@@ -44,7 +45,7 @@ import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import static com.hao.lib.Util.FileUtils.fen2Yuan;
+import static com.szxb.lib.Util.FileUtils.fen2Yuan;
 import static com.szxb.zibo.config.zibo.InitConfigZB.INFO_UP;
 import static java.lang.System.arraycopy;
 
@@ -84,9 +85,9 @@ public class FreeCodeManage {
             } else if (freeScanEntity.getBlueRing().getType().equals("Line")) {//线路设置
                 String line = freeScanEntity.getBlueRing().getValue();
                 if (line.equals("400255_1")) {
-                    PraseLine.praseLine(FileUtils.readAssetsFileTobyte("20200826143855.far", BusApp.getInstance()));
+                    PraseLine.praseLine(FileUtils.readAssetsFileTobyte("20200909000001.far", BusApp.getInstance().getApplication()));
                 } else if (line.equals("400251_1")) {
-                    PraseLine.praseLine(FileUtils.readAssetsFileTobyte("20191228195940.far", BusApp.getInstance()));
+                    PraseLine.praseLine(FileUtils.readAssetsFileTobyte("20191228195940.far", BusApp.getInstance().getApplication()));
                 } else {
                     BusToast.showToast("正在获取线路：" + freeScanEntity.getBlueRing().getValue(), true);
                     ZBLineInfo zbLineInfo = DBCore.getDaoSession().getZBLineInfoDao().queryBuilder().where(ZBLineInfoDao.Properties.Routeno.eq(freeScanEntity.getBlueRing().getValue())).limit(1).unique();
@@ -97,6 +98,7 @@ public class FreeCodeManage {
                     BusApp.getPosManager().setLineName(zbLineInfo.getRoutename());
                     BusApp.getPosManager().setLineNo(zbLineInfo.getRouteno());
                     BusApp.getPosManager().setBasePrice(0);
+                    MiLog.i("流程", "posmanager 初始化  线路版本  票价版本" );
                     BusApp.getPosManager().setFarver("00000000000000");
                     BusApp.getPosManager().setLinver("00000000000000");
                     BusToast.showToast("下载线路", true);
@@ -254,11 +256,14 @@ public class FreeCodeManage {
                 packegePay(result, qrData.getUserPayID(), qrData);
             } else if (resultCode == 4) {
                 BusToast.showToast("二维码过期", false);
+                SoundPoolUtil.play(VoiceConfig.erweimaguoqi);
             } else {
                 BusToast.showToast("二维码格式错误", false);
+                SoundPoolUtil.play(VoiceConfig.erweimageshicuowu);
             }
         } catch (Exception e) {
             BusToast.showToast("二维码解析错误", false);
+            SoundPoolUtil.play(VoiceConfig.cuowu);
         }
 
 //        Log.i("二维码解析", "解码前时间：" + System.currentTimeMillis());

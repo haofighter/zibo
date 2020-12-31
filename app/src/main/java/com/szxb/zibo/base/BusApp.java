@@ -2,6 +2,7 @@ package com.szxb.zibo.base;
 
 import android.annotation.SuppressLint;
 import android.app.ActivityManager;
+import android.app.Application;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -12,18 +13,22 @@ import android.net.NetworkInfo;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
-import android.support.multidex.MultiDex;
 import android.telephony.TelephonyManager;
+import android.text.TextUtils;
 import android.util.Log;
+
+import androidx.multidex.MultiDex;
 
 import com.baidu.mapapi.SDKInitializer;
 import com.google.gson.Gson;
-import com.hao.lib.Util.FileUtils;
-import com.hao.lib.Util.MiLog;
-import com.hao.lib.base.MI2App;
 import com.lilei.tool.tool.IToolInterface;
+import com.szxb.lib.Util.FileUtils;
+import com.szxb.lib.Util.MiLog;
+import com.szxb.lib.base.MI2App;
 import com.szxb.zibo.BuildConfig;
 import com.szxb.zibo.Mqtt.GetPushService;
+import com.szxb.zibo.base.tinker.App;
+import com.szxb.zibo.base.tinker.TinkerManager;
 import com.szxb.zibo.config.haikou.AppBuildConfig;
 import com.szxb.zibo.config.haikou.AppPreload;
 import com.szxb.zibo.config.zibo.DBManagerZB;
@@ -33,17 +38,24 @@ import com.szxb.zibo.db.bean.FTPEntity;
 import com.szxb.zibo.db.manage.DBCore;
 import com.szxb.zibo.manager.PosManager;
 import com.szxb.zibo.record.AppParamInfo;
+import com.szxb.zibo.record.RecordUpload;
 import com.szxb.zibo.record.XdRecord;
 import com.szxb.zibo.util.BusToast;
 import com.szxb.zibo.util.MMKVManager;
 import com.szxb.zibo.util.apkmanage.ApkUtilImpl;
 import com.szxb.zibo.util.apkmanage.IApkUtil;
+import com.szxb.zibo.util.md5.MD5;
+import com.szxb.zibo.util.sp.CommonSharedPreferences;
 import com.szxb.zibo.voice.SoundPoolUtil;
 import com.szxb.zibo.voice.VoiceConfig;
+import com.tencent.tinker.lib.tinker.Tinker;
+import com.tencent.tinker.lib.tinker.TinkerInstaller;
+import com.tencent.tinker.loader.shareutil.SharePatchFileUtil;
 import com.yanzhenjie.nohttp.InitializationConfig;
 import com.yanzhenjie.nohttp.NoHttp;
 import com.yanzhenjie.nohttp.URLConnectionNetworkExecutor;
 
+import java.io.File;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -53,11 +65,13 @@ public class BusApp extends MI2App {
     public static final String M1_CARD = "04";
     public static final String NEW_CPU_CARD = "02";
     public static final String JTB_CARD = "01";
-    static BusApp instance;
     private static PosManager manager;
     private static int city = BuildConfig.CITY;
     private static String binName = BuildConfig.BIN_NAME;
     public static int downProgress = 0;
+    public static String pakegeVersion = BuildConfig.VERSION_NAME;
+
+    private static BusApp app;
 
     public static Boolean netIsCanUse = true;
     //服务操作
@@ -80,22 +94,30 @@ public class BusApp extends MI2App {
         return iApkUtil;
     }
 
-    @Override
-    public void onCreate() {
-        DBCore.init(this);
+    public static BusApp getInstance() {
+        if (app == null) {
+            app = new BusApp();
+        }
+        return app;
+    }
+
+
+    public void init() {
+        DBCore.init(getApplication());
         String path = Environment.getExternalStorageDirectory() + "/config";
         MMKVManager.getInstance(path);
-        String processName = getProcessName(this, android.os.Process.myPid());
+        String processName = getProcessName(getApplication(), android.os.Process.myPid());
         if (processName != null && processName.endsWith("remote")) {
             return;
         }
-        super.onCreate();
-        instance = this;
+
         getPosManager();
-        MiLog.i("流程", "开机启动  app进入" + getPakageVersion());
+        MiLog.i("流程", "开机启动" + getPakageVersion());
         try {
+            RecordUpload.clearDateBase();
             initConfig();
             manager.loadFromPrefs(city, binName);
+            initRunParam();
         } catch (Exception e) {
             Log.i("流程错误", "app");
         }
@@ -147,29 +169,24 @@ public class BusApp extends MI2App {
         BusApp.manager.init(manager);
     }
 
-    @Override
-    protected void attachBaseContext(Context base) {
-        super.attachBaseContext(base);
-        MultiDex.install(this);
-    }
-
-    public static BusApp getInstance() {
-        return instance;
-    }
 
     private void initConfig() {
-
-        SDKInitializer.initialize(this);
+        SDKInitializer.initialize(getApplication());
         Log.i("流程", "数据库初始化成功");
         AppBuildConfig.createConfig(BuildConfig.CITY);
-        SoundPoolUtil.init(this);
-        //初始化网络请求
-        NoHttp.initialize(InitializationConfig.newBuilder(this)
-                .networkExecutor(new URLConnectionNetworkExecutor())
-                .connectionTimeout(15 * 1000)
-                .build());
-
+        SoundPoolUtil.init(getApplication());
         initService();
+    }
+
+    /**
+     * 升级后参数需重新下载
+     */
+    private void initRunParam() {
+        String version = (String) CommonSharedPreferences.get("version", "00000000000000");
+        if (!BusApp.getInstance().getPakageVersion().equals(version)) {
+            BusApp.getPosManager().clearRunParam();
+        }
+
     }
 
     //连接服务
@@ -177,7 +194,7 @@ public class BusApp extends MI2App {
         Intent i = new Intent();
         i.setAction("com.lypeer.aidl");
         i.setPackage("com.lilei.tool.tool");
-        boolean ret = bindService(i, mServiceConnection, Context.BIND_AUTO_CREATE);
+        boolean ret = getApplication().bindService(i, mServiceConnection, Context.BIND_AUTO_CREATE);
     }
 
     public IToolInterface getmService() {
@@ -200,8 +217,8 @@ public class BusApp extends MI2App {
 
     @SuppressLint("WrongConstant")
     public void bindMqtt() {
-        Intent intent = new Intent(this, GetPushService.class);
-        bindService(intent, mqttServiceConnection, Context.BIND_AUTO_CREATE);
+        Intent intent = new Intent(getApplication(), GetPushService.class);
+        getApplication().bindService(intent, mqttServiceConnection, Context.BIND_AUTO_CREATE);
     }
 
     private ServiceConnection mqttServiceConnection = new ServiceConnection() {
@@ -217,21 +234,24 @@ public class BusApp extends MI2App {
     };
 
     public String getPakageVersion() {
-        try {
-            return getPackageManager().getPackageInfo(
-                    "com.szxb.zibo", 0).versionName;
-        } catch (PackageManager.NameNotFoundException e) {
-            e.printStackTrace();
-        }
-        return "";
+//        try {
+//            return getApplication().getPackageManager().getPackageInfo(
+//                    "com.szxb.zibo", 0).versionName;
+//        } catch (PackageManager.NameNotFoundException e) {
+//            e.printStackTrace();
+//        }
+        return pakegeVersion;
     }
 
+    public void setPakegeVersion(String pakegeVersion) {
+        this.pakegeVersion = pakegeVersion;
+    }
 
     //获取sim卡iccid
     @SuppressLint("MissingPermission")
     public String getIccid() {
         String iccid = "N/A";
-        TelephonyManager telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+        TelephonyManager telephonyManager = (TelephonyManager) getApplication().getSystemService(Context.TELEPHONY_SERVICE);
         iccid = telephonyManager.getSimSerialNumber();
         return iccid == null ? "N|A" : iccid;
     }
@@ -241,7 +261,7 @@ public class BusApp extends MI2App {
      * @return 是否有网络
      */
     public boolean getNetWorkState() {
-        ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        ConnectivityManager connectivityManager = (ConnectivityManager) getApplication().getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetworkInfo = connectivityManager
                 .getActiveNetworkInfo();
         if (activeNetworkInfo != null && activeNetworkInfo.isConnected()) {
@@ -296,16 +316,40 @@ public class BusApp extends MI2App {
         return null;
     }
 
-
+    /**
+     * 备份运行数据
+     */
     public void saveBackeUp() {
-        AppParamInfo appParamInfo = DBManagerZB.checkAppParamInfo();
-        if (appParamInfo.checked()) {
+        MiLog.i("流程", "保存备份数据" + "      " + BusApp.getPosManager().getLineNo() + "        " + BusApp.getPosManager().getBusNo());
+        if (!TextUtils.isEmpty(BusApp.getPosManager().getLineNo()) && !BusApp.getPosManager().getLineNo().equals("000000") && !TextUtils.isEmpty(BusApp.getPosManager().getBusNo()) && !BusApp.getPosManager().getBusNo().equals("000000")) {
             try {
                 MMKVManager.getInstance().put("appRunInfo", new Gson().toJson(BusApp.getPosManager()));
-                MiLog.i("流程", "保存备份数据");
+                MiLog.i("流程", "保存备份数据" + "      " + new Gson().toJson(BusApp.getPosManager()));
             } catch (Exception e) {
                 e.getMessage();
             }
         }
+    }
+
+
+    /**
+     * tinker 加载查分包
+     *
+     * @param path
+     */
+    public void loadPatch(String path) {
+        BusApp.getPosManager().setUpDateInfo("正在更新版本");
+        String str = SharePatchFileUtil.getMD5(new File(path));
+        MiLog.i("升级", "补丁包md5:" + str);
+        TinkerInstaller.onReceiveUpgradePatch(getApplication(), path);
+    }
+
+    /**
+     * tinker 清除查分包 还原为基础包
+     */
+    public void cleanParch() {
+        BusApp.getPosManager().setUpDateInfo("更新失败,判定升级失败,还原版本,需重启");
+        BusApp.getPosManager().setIsClean(true);
+        TinkerInstaller.cleanPatch(BusApp.getInstance().getApplication());
     }
 }

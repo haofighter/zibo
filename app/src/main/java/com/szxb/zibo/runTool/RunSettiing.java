@@ -3,9 +3,9 @@ package com.szxb.zibo.runTool;
 import android.text.TextUtils;
 import android.util.Log;
 import com.google.gson.Gson;
-import com.hao.lib.net.OkHttpManager;
 import com.lilei.tool.tool.IToolInterface;
 
+import com.szxb.lib.net.OkHttpManager;
 import com.szxb.zibo.base.BusApp;
 import com.szxb.zibo.net.NetUrl;
 import com.szxb.zibo.net.bean.TimeSettingBean;

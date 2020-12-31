@@ -2,7 +2,7 @@ package com.szxb.zibo.util;
 
 import android.util.Log;
 
-import com.hao.lib.Util.FileUtils;
+import com.szxb.lib.Util.FileUtils;
 import com.szxb.zibo.cmd.DoCmd;
 
 import java.text.ParseException;
@@ -30,6 +30,10 @@ public class DateUtil {
     private static SimpleDateFormat format_6 = new SimpleDateFormat("yyyyMMdd", new Locale("zh", "CN"));
     private static SimpleDateFormat format_7 = new SimpleDateFormat("yyMM", new Locale("zh", "CN"));
 
+    public static SimpleDateFormat getFormat_6() {
+        return format_6;
+    }
+
     /**
      * 时钟
      *
@@ -50,11 +54,19 @@ public class DateUtil {
 
 
     public static long getDateLong(String dateStr, String formatString) {
-        SimpleDateFormat format = new SimpleDateFormat(formatString, new Locale("zh", "CN"));
         try {
-            return format.parse(dateStr).getTime();
+            return getDate(dateStr, formatString).getTime();
         } catch (Exception e) {
             return new Date().getTime();
+        }
+    }
+
+    public static Date getDate(String dateStr, String formatString) {
+        SimpleDateFormat format = new SimpleDateFormat(formatString, new Locale("zh", "CN"));
+        try {
+            return format.parse(dateStr);
+        } catch (Exception e) {
+            return new Date();
         }
     }
 //    public static Long hmStrToLong(String str) {
@@ -85,6 +97,7 @@ public class DateUtil {
     public static String getCurrentDate() {
         return format.format(new Date());
     }
+
 
     //得到当前日期前w小时的时间
     public static String getBeforNow(int w) {

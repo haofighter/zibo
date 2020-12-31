@@ -50,6 +50,16 @@ public class JTBscanRecordDao extends AbstractDao<JTBscanRecord, Long> {
         public final static Property BizData = new Property(23, String.class, "bizData", false, "BIZ_DATA");
         public final static Property AllDriver = new Property(24, String.class, "allDriver", false, "ALL_DRIVER");
         public final static Property CardNo = new Property(25, String.class, "cardNo", false, "CARD_NO");
+        public final static Property Rev1 = new Property(26, String.class, "rev1", false, "REV1");
+        public final static Property Rev2 = new Property(27, String.class, "rev2", false, "REV2");
+        public final static Property Rev3 = new Property(28, String.class, "rev3", false, "REV3");
+        public final static Property Rev4 = new Property(29, String.class, "rev4", false, "REV4");
+        public final static Property Rev5 = new Property(30, String.class, "rev5", false, "REV5");
+        public final static Property Rev6 = new Property(31, String.class, "rev6", false, "REV6");
+        public final static Property Rev7 = new Property(32, String.class, "rev7", false, "REV7");
+        public final static Property Rev8 = new Property(33, String.class, "rev8", false, "REV8");
+        public final static Property Rev9 = new Property(34, String.class, "rev9", false, "REV9");
+        public final static Property Rev10 = new Property(35, String.class, "rev10", false, "REV10");
     }
 
 
@@ -90,7 +100,17 @@ public class JTBscanRecordDao extends AbstractDao<JTBscanRecord, Long> {
                 "\"REPEAT_COUNT\" INTEGER NOT NULL ," + // 22: repeatCount
                 "\"BIZ_DATA\" TEXT," + // 23: bizData
                 "\"ALL_DRIVER\" TEXT," + // 24: allDriver
-                "\"CARD_NO\" TEXT);"); // 25: cardNo
+                "\"CARD_NO\" TEXT," + // 25: cardNo
+                "\"REV1\" TEXT," + // 26: rev1
+                "\"REV2\" TEXT," + // 27: rev2
+                "\"REV3\" TEXT," + // 28: rev3
+                "\"REV4\" TEXT," + // 29: rev4
+                "\"REV5\" TEXT," + // 30: rev5
+                "\"REV6\" TEXT," + // 31: rev6
+                "\"REV7\" TEXT," + // 32: rev7
+                "\"REV8\" TEXT," + // 33: rev8
+                "\"REV9\" TEXT," + // 34: rev9
+                "\"REV10\" TEXT);"); // 35: rev10
     }
 
     /** Drops the underlying database table. */
@@ -220,6 +240,56 @@ public class JTBscanRecordDao extends AbstractDao<JTBscanRecord, Long> {
         if (cardNo != null) {
             stmt.bindString(26, cardNo);
         }
+ 
+        String rev1 = entity.getRev1();
+        if (rev1 != null) {
+            stmt.bindString(27, rev1);
+        }
+ 
+        String rev2 = entity.getRev2();
+        if (rev2 != null) {
+            stmt.bindString(28, rev2);
+        }
+ 
+        String rev3 = entity.getRev3();
+        if (rev3 != null) {
+            stmt.bindString(29, rev3);
+        }
+ 
+        String rev4 = entity.getRev4();
+        if (rev4 != null) {
+            stmt.bindString(30, rev4);
+        }
+ 
+        String rev5 = entity.getRev5();
+        if (rev5 != null) {
+            stmt.bindString(31, rev5);
+        }
+ 
+        String rev6 = entity.getRev6();
+        if (rev6 != null) {
+            stmt.bindString(32, rev6);
+        }
+ 
+        String rev7 = entity.getRev7();
+        if (rev7 != null) {
+            stmt.bindString(33, rev7);
+        }
+ 
+        String rev8 = entity.getRev8();
+        if (rev8 != null) {
+            stmt.bindString(34, rev8);
+        }
+ 
+        String rev9 = entity.getRev9();
+        if (rev9 != null) {
+            stmt.bindString(35, rev9);
+        }
+ 
+        String rev10 = entity.getRev10();
+        if (rev10 != null) {
+            stmt.bindString(36, rev10);
+        }
     }
 
     @Override
@@ -343,6 +413,56 @@ public class JTBscanRecordDao extends AbstractDao<JTBscanRecord, Long> {
         if (cardNo != null) {
             stmt.bindString(26, cardNo);
         }
+ 
+        String rev1 = entity.getRev1();
+        if (rev1 != null) {
+            stmt.bindString(27, rev1);
+        }
+ 
+        String rev2 = entity.getRev2();
+        if (rev2 != null) {
+            stmt.bindString(28, rev2);
+        }
+ 
+        String rev3 = entity.getRev3();
+        if (rev3 != null) {
+            stmt.bindString(29, rev3);
+        }
+ 
+        String rev4 = entity.getRev4();
+        if (rev4 != null) {
+            stmt.bindString(30, rev4);
+        }
+ 
+        String rev5 = entity.getRev5();
+        if (rev5 != null) {
+            stmt.bindString(31, rev5);
+        }
+ 
+        String rev6 = entity.getRev6();
+        if (rev6 != null) {
+            stmt.bindString(32, rev6);
+        }
+ 
+        String rev7 = entity.getRev7();
+        if (rev7 != null) {
+            stmt.bindString(33, rev7);
+        }
+ 
+        String rev8 = entity.getRev8();
+        if (rev8 != null) {
+            stmt.bindString(34, rev8);
+        }
+ 
+        String rev9 = entity.getRev9();
+        if (rev9 != null) {
+            stmt.bindString(35, rev9);
+        }
+ 
+        String rev10 = entity.getRev10();
+        if (rev10 != null) {
+            stmt.bindString(36, rev10);
+        }
     }
 
     @Override
@@ -378,7 +498,17 @@ public class JTBscanRecordDao extends AbstractDao<JTBscanRecord, Long> {
             cursor.getInt(offset + 22), // repeatCount
             cursor.isNull(offset + 23) ? null : cursor.getString(offset + 23), // bizData
             cursor.isNull(offset + 24) ? null : cursor.getString(offset + 24), // allDriver
-            cursor.isNull(offset + 25) ? null : cursor.getString(offset + 25) // cardNo
+            cursor.isNull(offset + 25) ? null : cursor.getString(offset + 25), // cardNo
+            cursor.isNull(offset + 26) ? null : cursor.getString(offset + 26), // rev1
+            cursor.isNull(offset + 27) ? null : cursor.getString(offset + 27), // rev2
+            cursor.isNull(offset + 28) ? null : cursor.getString(offset + 28), // rev3
+            cursor.isNull(offset + 29) ? null : cursor.getString(offset + 29), // rev4
+            cursor.isNull(offset + 30) ? null : cursor.getString(offset + 30), // rev5
+            cursor.isNull(offset + 31) ? null : cursor.getString(offset + 31), // rev6
+            cursor.isNull(offset + 32) ? null : cursor.getString(offset + 32), // rev7
+            cursor.isNull(offset + 33) ? null : cursor.getString(offset + 33), // rev8
+            cursor.isNull(offset + 34) ? null : cursor.getString(offset + 34), // rev9
+            cursor.isNull(offset + 35) ? null : cursor.getString(offset + 35) // rev10
         );
         return entity;
     }
@@ -411,6 +541,16 @@ public class JTBscanRecordDao extends AbstractDao<JTBscanRecord, Long> {
         entity.setBizData(cursor.isNull(offset + 23) ? null : cursor.getString(offset + 23));
         entity.setAllDriver(cursor.isNull(offset + 24) ? null : cursor.getString(offset + 24));
         entity.setCardNo(cursor.isNull(offset + 25) ? null : cursor.getString(offset + 25));
+        entity.setRev1(cursor.isNull(offset + 26) ? null : cursor.getString(offset + 26));
+        entity.setRev2(cursor.isNull(offset + 27) ? null : cursor.getString(offset + 27));
+        entity.setRev3(cursor.isNull(offset + 28) ? null : cursor.getString(offset + 28));
+        entity.setRev4(cursor.isNull(offset + 29) ? null : cursor.getString(offset + 29));
+        entity.setRev5(cursor.isNull(offset + 30) ? null : cursor.getString(offset + 30));
+        entity.setRev6(cursor.isNull(offset + 31) ? null : cursor.getString(offset + 31));
+        entity.setRev7(cursor.isNull(offset + 32) ? null : cursor.getString(offset + 32));
+        entity.setRev8(cursor.isNull(offset + 33) ? null : cursor.getString(offset + 33));
+        entity.setRev9(cursor.isNull(offset + 34) ? null : cursor.getString(offset + 34));
+        entity.setRev10(cursor.isNull(offset + 35) ? null : cursor.getString(offset + 35));
      }
     
     @Override

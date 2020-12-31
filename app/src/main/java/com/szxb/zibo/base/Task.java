@@ -1,8 +1,10 @@
 package com.szxb.zibo.base;
 
 import android.util.Log;
-import com.hao.lib.Util.ThreadUtils;
 
+
+import com.szxb.lib.Util.ThreadUtils;
+import com.szxb.zibo.moudle.function.unionpay.dispose.BankRefund;
 import com.szxb.zibo.record.RecordUpload;
 import com.szxb.zibo.util.apkmanage.AppUtil;
 
@@ -19,6 +21,7 @@ public class Task {
                     public void run() {
                         try {
                             RecordUpload.upLoadCardRecord();
+
                         } catch (Exception e) {
                             Log.i("错误", "上传错误  upload");
                         }
@@ -38,6 +41,10 @@ public class Task {
                         }
                     }
                 }, 10, 5, TimeUnit.SECONDS);
+
+//冲正
+//        ThreadUtils.getInstance().createSch("checkUnion").scheduleAtFixedRate(new BankRefund(), 1, 10, TimeUnit.SECONDS);
+
     }
 
 

@@ -1,12 +1,11 @@
 package com.szxb.zibo.moudle.function.scan.alicode;
 
 import android.util.Log;
-
-import com.hao.lib.Util.MiLog;
 import com.ibuscloud.ibuscloudposlib.IBusCloudPos;
 import com.ibuscloud.ibuscloudposlib.constant.IBusCloudStdRetCodeEnum;
 
 import com.szxb.jni.Alipay;
+import com.szxb.lib.Util.MiLog;
 import com.szxb.zibo.base.BusApp;
 import com.szxb.zibo.config.zibo.DBManagerZB;
 import com.szxb.zibo.config.zibo.InitConfigZB;
@@ -25,9 +24,9 @@ import com.szxb.zibo.voice.VoiceConfig;
 
 import java.util.List;
 
-import static com.hao.lib.Util.FileUtils.fen2Yuan;
 import static com.szxb.jni.Alipay.init_pos_verify;
 import static com.szxb.jni.Alipay.verify_qrcode_v2;
+import static com.szxb.lib.Util.FileUtils.fen2Yuan;
 
 
 public class AliCodeManage {
@@ -63,7 +62,6 @@ public class AliCodeManage {
         }
         aliKey += "]";
         /************************************************/
-
         int nRet = init_pos_verify(aliKey, cardList);
         Log.i("支付宝二维码", "nRet=" + nRet);
         String par = "{\"pos_id\":\"" + BusApp.getPosManager().getPosSN()

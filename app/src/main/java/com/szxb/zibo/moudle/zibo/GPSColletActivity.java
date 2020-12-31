@@ -6,7 +6,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.google.gson.Gson;
-import com.hao.lib.Util.FileUtils;
+import com.szxb.lib.Util.FileUtils;
 import com.szxb.zibo.R;
 import com.szxb.zibo.base.BaseActivity;
 import com.szxb.zibo.config.haikou.ConfigContext;

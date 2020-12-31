@@ -2,10 +2,8 @@ package com.szxb.zibo.moudle.function.card.JTB;
 
 import android.util.Log;
 
-import com.hao.lib.Util.FileUtils;
-import com.hao.lib.Util.MiLog;
-import com.szxb.zibo.moudle.function.card.CPU.File17NewCPUInfoEntity;
-import com.szxb.zibo.moudle.function.card.CPU.File1CLocalInfoEntity;
+import com.szxb.lib.Util.MiLog;
+
 
 //CPU卡消费 命令数据
 public class FileJTBPay {

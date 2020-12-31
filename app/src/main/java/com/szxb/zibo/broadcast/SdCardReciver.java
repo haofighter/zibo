@@ -6,7 +6,7 @@ import android.content.Intent;
 
 import android.util.Log;
 
-import com.hao.lib.base.Rx.Rx;
+import com.szxb.lib.base.Rx.Rx;
 
 
 /**

@@ -1,6 +1,7 @@
 package com.szxb.zibo.moudle.function.unionpay.entity;
 
-import com.hao.lib.Util.FileUtils;
+
+import com.szxb.lib.Util.FileUtils;
 
 /**
  * 作者：Tangren on 2018-07-07

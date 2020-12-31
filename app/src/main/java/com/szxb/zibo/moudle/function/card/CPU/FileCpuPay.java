@@ -2,8 +2,8 @@ package com.szxb.zibo.moudle.function.card.CPU;
 
 import android.util.Log;
 
-import com.hao.lib.Util.FileUtils;
-import com.szxb.zibo.moudle.function.unionpay.unionutil.HexUtil;
+import com.szxb.lib.Util.FileUtils;
+
 
 //CPU卡消费 命令数据
 public class FileCpuPay {

@@ -58,4 +58,11 @@ public class VoiceConfig {
     public static final int laoniankaqingshangche = xueshengkaqingshangche + 1;
     public static final int aixinkaqingshangche = laoniankaqingshangche + 1;
     public static final int rongjunkaqingshangche = aixinkaqingshangche + 1;
+    public static final int  tuiyijunren= rongjunkaqingshangche + 1;
+    public static final int  tuiyijunrenqingshangche= tuiyijunren + 1;
+    public static final int  tuiyijunrenqingxiache= tuiyijunrenqingshangche + 1;
+    public static final int  laonianyouhuika= tuiyijunrenqingxiache + 1;
+    public static final int  laonianyouhuikaqingshangche= laonianyouhuika + 1;
+    public static final int  laonianyouhuikaqingxiache= laonianyouhuikaqingshangche + 1;
+    public static final int  nianzhangzhe= laonianyouhuikaqingxiache + 1;
 }

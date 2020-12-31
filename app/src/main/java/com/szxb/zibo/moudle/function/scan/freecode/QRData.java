@@ -1,7 +1,9 @@
 package com.szxb.zibo.moudle.function.scan.freecode;
 
 
-import com.hao.lib.Util.FileUtils;
+import com.szxb.lib.Util.FileUtils;
+import com.szxb.zibo.config.zibo.DBManagerZB;
+import com.szxb.zibo.manager.PosManager;
 
 /**
  * 作者：Tangren on 2018-11-27
@@ -67,8 +69,8 @@ public class QRData {
 
         byte[] payUser = new byte[16];
         System.arraycopy(data, index += cert.length, payUser, 0, payUser.length);
-        setUserPayID(FileUtils.bytesToHexString(payUser));
-//        setUserPayID(Util.bytesToHexString(payUser));
+//        setUserPayID(FileUtils.bytesToHexString(payUser));
+        setUserPayID(new String(payUser));
 
         byte[] cardUser = new byte[10];
         System.arraycopy(data, index += payUser.length, cardUser, 0, cardUser.length);
@@ -134,11 +136,31 @@ public class QRData {
         userPrivateKeySignData = new byte[data.length - userPrivateKeySign.length - 1];
         System.arraycopy(data, 0, userPrivateKeySignData, 0, userPrivateKeySignData.length);
 
-        long currentTime = System.currentTimeMillis() / 1000 + 8 * 60 * 60;
-        long resTime = currentTime - this.qrTime;
+        if (issuer.equals("03664530")) {//交通部码
+            long currentTime = System.currentTimeMillis() / 1000 - 8 * 60 * 60;
+            long resTime = currentTime - this.qrTime;
+            //满足条件则日期非法
+            beOverdue = resTime < -timeOutTime || resTime > timeOutTime;
 
-        //满足条件则日期非法
-        beOverdue = resTime < -timeOutTime || resTime > timeOutTime;
+            if (beOverdue) {
+                currentTime = System.currentTimeMillis() / 1000 + 8 * 60 * 60;
+                resTime = currentTime - this.qrTime;
+                //满足条件则日期非法
+                beOverdue = resTime < -timeOutTime || resTime > timeOutTime;
+            }
+
+            if (beOverdue) {
+                currentTime = System.currentTimeMillis() / 1000;
+                resTime = currentTime - this.qrTime;
+                //满足条件则日期非法
+                beOverdue = resTime < -timeOutTime || resTime > timeOutTime;
+            }
+        } else {//自建码
+            long currentTime = System.currentTimeMillis() / 1000;
+            long resTime = currentTime - this.qrTime;
+            //满足条件则日期非法
+            beOverdue = resTime < -timeOutTime || resTime > timeOutTime;
+        }
     }
 
     public boolean isBeOverdue() {

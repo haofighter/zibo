@@ -1,1 +1,2 @@
-include ':app', 'lib', ':java8583', ':install'
+include ':app',  ':java8583', ':install'
+rootProject.name='zibo'

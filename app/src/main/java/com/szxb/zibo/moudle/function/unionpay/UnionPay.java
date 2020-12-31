@@ -1,15 +1,14 @@
 package com.szxb.zibo.moudle.function.unionpay;
 
 import android.util.Log;
-
-import com.hao.lib.Util.FileUtils;
-import com.hao.lib.Util.MiLog;
 import com.szxb.java8583.core.Iso8583Message;
 import com.szxb.java8583.core.Iso8583MessageFactory;
 import com.szxb.java8583.module.SignIn;
 import com.szxb.java8583.module.manager.BusllPosManage;
 import com.szxb.java8583.quickstart.SingletonFactory;
 import com.szxb.java8583.quickstart.special.SpecialField62;
+import com.szxb.lib.Util.FileUtils;
+import com.szxb.lib.Util.MiLog;
 import com.szxb.zibo.base.BusApp;
 import com.szxb.zibo.config.zibo.DBManagerZB;
 import com.szxb.zibo.db.dao.XdRecordDao;
@@ -73,27 +72,25 @@ public class UnionPay {
         }
 
 
-        String url = BusllPosManage.getPosManager().getUnionPayUrl();
-        url.replace("http", "https");
-        url = "https://140.207.168.62:30000/mjc/webtrans/VPB_lb";
+        String url = "https://140.207.168.62:30000/mjc/webtrans/VPB_lb";
         final Request<byte[]> request = NoHttp.createByteArrayRequest(url, RequestMethod.POST);
         request.setHeader("User-Agent", "Donjin Http 0.1");
         request.setHeader("Cache-Control", "no-cache");
         request.setHeader("Accept", "*/*");
         request.setHeader("Accept-Encoding", "*");
         request.setHeader("Connection", "close");
-        request.setHeader("HOST", "120.204.69.139:30000");
+//        request.setHeader("HOST", "120.204.69.139:30000");
         request.setHeader("HOST", "140.207.168.62:30000");
 
         if (what == UnionConfig.PAY) {
             request.setConnectTimeout(3000);
             request.setReadTimeout(3000);
         }
-        Log.i("银联交易", "开始" + System.currentTimeMillis());
+        MiLog.i("银联", "交易开始" + System.currentTimeMillis());
         try {
             InputStream stream = new ByteArrayInputStream(sendData);
             request.setDefineRequestBody(stream, "x-ISO-TPDU/x-auth");
-            SSLContext sslContext = SSLContextUtil.getSSLContext(BusApp.getInstance());
+            SSLContext sslContext = SSLContextUtil.getSSLContext(BusApp.getInstance().getApplication());
             request.setHostnameVerifier(SSLContextUtil.getHostnameVerifier());
             if (sslContext != null) {
                 SSLSocketFactory socketFactory = sslContext.getSocketFactory();
@@ -109,6 +106,7 @@ public class UnionPay {
 
                             if (what == UnionConfig.SIGN) {//签到
                                 if (message0810.getValue(39).getValue().equals("00")) {
+                                    MiLog.i("银联", "银联签到成功");
                                     String batchNum = message0810.getValue(60).getValue().substring(2, 8);
                                     BusllPosManage.getPosManager().setBatchNum(batchNum);
                                     parseMackey(message0810.getValue(62).getValue(), isTip);
@@ -119,11 +117,11 @@ public class UnionPay {
                                     }
                                 }
                             } else if (what == UnionConfig.PAY) {//消费
-                                int pay_fee = Integer.parseInt(message0810.getValue(4).getValue());
                                 String resCode = message0810.getValue(39).getValue();
                                 String tradeSeq = message0810.getValue(11).getValue();
                                 String batchNum = message0810.getValue(60).getValue().substring(2, 8);
                                 String uniqueFlag = tradeSeq + batchNum;
+                                MiLog.i("银联", "tradeSeq=" + tradeSeq + "      batchNum=" + batchNum);
                                 XdRecordDao dao = DBCore.getDaoSession().getXdRecordDao();
                                 XdRecord unique = dao.queryBuilder()
                                         .where(XdRecordDao.Properties.Flag.eq(uniqueFlag))
@@ -138,8 +136,9 @@ public class UnionPay {
                                         case "A6":
                                             SoundPoolUtil.play(VoiceConfig.yinhangshanfuka);
                                             String amount = message0810.getValue(4).getValue();
+                                            unique.setRealFree(amount);
                                             BusToast.showToast("扣款成功\n扣款金额" + yuan2Fen(amount) + "元", true);
-                                            Log.i("数据库", "银联消费完成2");
+                                            MiLog.i("银联", "银联消费成功");
                                             break;
                                         case "A0":
                                             //重新签到
@@ -152,19 +151,19 @@ public class UnionPay {
                                             //重复交易（流水号重复）
                                             BusToast.showToast("刷卡失败,流水重复,请重试", false);
                                             SoundPoolUtil.play(VoiceConfig.qingchongshua);
-                                            Log.d("UnionPay", "(success.java:104)重复支付");
+                                            MiLog.i("银联", "(success.java:104)重复支付");
                                             break;
                                         case "51":
                                             //余额不足
                                             SoundPoolUtil.play(VoiceConfig.yuebuzu);
                                             BusToast.showToast("刷卡失败,余额不足", false);
-                                            Log.d("UnionPay", "(success.java:130)余额不足");
+                                            MiLog.i("银联", "(success.java:130)余额不足");
                                             break;
                                         case "54":
                                             //卡过期
                                             SoundPoolUtil.play(VoiceConfig.ic_invalid);
                                             BusToast.showToast("卡过期", false);
-                                            Log.d("UnionPay", "(success.java:136)卡过期");
+                                            MiLog.i("银联", "(success.java:136)卡过期");
                                             break;
                                         default:
                                             BusToast.showToast("刷卡失败[" + UnionUtil.unionPayStatus(resCode) + "]", false);
@@ -172,13 +171,14 @@ public class UnionPay {
                                             break;
                                     }
                                 }
+                                unique.setUnionPayStatus(resCode);
                                 if (unique.getNewExtraDate().endsWith(FileUtils.bytesToHexString("DD".getBytes()))) {
-                                    MiLog.i("银联记录 附加数据", unique.getNewExtraDate());
+                                    MiLog.i("银联", "记录 附加数据：" + unique.getNewExtraDate());
                                     String rescode = FileUtils.bytesToHexString(resCode.getBytes());
                                     String ex = unique.getNewExtraDate().substring(0, unique.getNewExtraDate().length() - 4);
 //                                    MiLog.i("银联记录 附加数据",FileUtils.stringToAsc(rescode));
                                     unique.setNewExtraDate(ex + FileUtils.formatHexStringToByteString(2, rescode));
-                                    MiLog.i("银联记录 附加数据", unique.getExtraDate() + "   " + unique.getNewExtraDate());
+                                    MiLog.i("银联", "记录 附加数据：" + unique.getExtraDate() + "   " + unique.getNewExtraDate());
                                 }
                                 //记录异步修改
                                 DBManagerZB.saveRecord(unique);
@@ -219,26 +219,26 @@ public class UnionPay {
         }
     }
 
-    public byte[] exeSyncSSL(byte[] sendData) {
-        String url = BusllPosManage.getPosManager().getUnionPayUrl();
-        Request<byte[]> request = NoHttp.createByteArrayRequest(url, RequestMethod.POST);
-        request.setHeader("User-Agent", "Donjin Http 0.1");
-        request.setHeader("Cache-Control", "no-cache");
-        request.setHeader("Accept", "*/*");
-        request.setHeader("Accept-Encoding", "*");
-        request.setHeader("Connection", "close");
-        request.setHeader("HOST", "120.204.69.139:30000");
-
-        InputStream stream = new ByteArrayInputStream(sendData);
-        request.setDefineRequestBody(stream, "x-ISO-TPDU/x-auth");
-        SSLContext sslContext = SSLContextUtil.getSSLContext(BusApp.getInstance().getApplicationContext());
-        request.setHostnameVerifier(SSLContextUtil.getHostnameVerifier());
-
-        SSLSocketFactory socketFactory = sslContext.getSocketFactory();
-        request.setSSLSocketFactory(socketFactory);
-        Response<byte[]> execute = SyncRequestExecutor.INSTANCE.execute(request);
-        return execute.get();
-    }
+//    public byte[] exeSyncSSL(byte[] sendData) {
+//        String url = BusllPosManage.getPosManager().getUnionPayUrl();
+//        Request<byte[]> request = NoHttp.createByteArrayRequest(url, RequestMethod.POST);
+//        request.setHeader("User-Agent", "Donjin Http 0.1");
+//        request.setHeader("Cache-Control", "no-cache");
+//        request.setHeader("Accept", "*/*");
+//        request.setHeader("Accept-Encoding", "*");
+//        request.setHeader("Connection", "close");
+//        request.setHeader("HOST", "120.204.69.139:30000");
+//
+//        InputStream stream = new ByteArrayInputStream(sendData);
+//        request.setDefineRequestBody(stream, "x-ISO-TPDU/x-auth");
+//        SSLContext sslContext = SSLContextUtil.getSSLContext(BusApp.getInstance().());
+//        request.setHostnameVerifier(SSLContextUtil.getHostnameVerifier());
+//
+//        SSLSocketFactory socketFactory = sslContext.getSocketFactory();
+//        request.setSSLSocketFactory(socketFactory);
+//        Response<byte[]> execute = SyncRequestExecutor.INSTANCE.execute(request);
+//        return execute.get();
+//    }
 
 
 }

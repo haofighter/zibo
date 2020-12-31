@@ -4,7 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
-import com.hao.lib.Util.MiLog;
+import com.szxb.lib.Util.MiLog;
 import com.szxb.zibo.moudle.init.InitActiivty;
 
 public class BootBroadcastReceiver extends BroadcastReceiver {

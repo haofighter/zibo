@@ -1,23 +1,24 @@
 package com.szxb.zibo.moudle.zibo;
 
 import android.content.Intent;
-import android.support.annotation.NonNull;
-import android.support.v4.content.ContextCompat;
 import android.os.Bundle;
-import android.support.v7.widget.LinearLayoutManager;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+
 import com.alibaba.fastjson.JSONObject;
-import com.hao.lib.Util.StatusBarUtil;
-import com.hao.lib.base.MI2App;
-import com.hao.lib.base.Rx.Rx;
-import com.hao.lib.base.Rx.RxMessage;
-import com.hao.lib.view.RecycleView;
+import com.szxb.lib.Util.MiLog;
+import com.szxb.lib.Util.StatusBarUtil;
+import com.szxb.lib.base.MI2App;
+import com.szxb.lib.base.Rx.Rx;
+import com.szxb.lib.base.Rx.RxMessage;
+import com.szxb.lib.view.RecycleView;
 import com.szxb.zibo.R;
 import com.szxb.zibo.base.BaseActivity;
 import com.szxb.zibo.base.BusApp;
@@ -42,7 +43,7 @@ public class SelectLineActivity extends BaseActivity implements RxMessage {
     protected void onCreate(Bundle savedInstanceState) {
         StatusBarUtil.setColor(this, ContextCompat.getColor(this, R.color.black));
         super.onCreate(savedInstanceState);
-        MI2App.getInstance().addActivity(this);
+        BusApp.getInstance().addActivity(this);
         setContentView(R.layout.activity_selcect_line);
         recycleView = findViewById(R.id.recycle_view);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
@@ -73,6 +74,7 @@ public class SelectLineActivity extends BaseActivity implements RxMessage {
                     BusApp.getPosManager().setLineName(zbLineInfo.getRoutename());
                     BusApp.getPosManager().setLineNo(zbLineInfo.getRouteno());
                     BusApp.getPosManager().setBasePrice(0);
+                    MiLog.i("流程", "选择线路  初始化 票价版本  线路版本");
                     BusApp.getPosManager().setFarver("00000000000000");
                     BusApp.getPosManager().setLinver("00000000000000");
                     BusToast.showToast("下载线路", true);
@@ -108,7 +110,7 @@ public class SelectLineActivity extends BaseActivity implements RxMessage {
         @NonNull
         @Override
         public LineHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
-            View view = LayoutInflater.from(BusApp.getInstance()).inflate(R.layout.linelist_item, null);
+            View view = LayoutInflater.from(BusApp.getInstance().getApplication()).inflate(R.layout.linelist_item, null);
             view.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
             return new LineHolder(view);
         }
@@ -143,10 +145,10 @@ public class SelectLineActivity extends BaseActivity implements RxMessage {
             ((TextView) viewHolder.itemView.findViewById(R.id.textview)).setText(lineInfos.get(i).getRouteno() + "      " + lineInfos.get(i).getRoutename());
             if (i == select) {
                 viewHolder.itemView.setBackgroundResource(R.drawable.shape_coner_white_5dp);
-                ((TextView) viewHolder.itemView.findViewById(R.id.textview)).setTextColor(ContextCompat.getColor(BusApp.getInstance(), R.color.black));
+                ((TextView) viewHolder.itemView.findViewById(R.id.textview)).setTextColor(ContextCompat.getColor(BusApp.getInstance().getApplication(), R.color.black));
             } else {
                 viewHolder.itemView.setBackgroundResource(R.color.transparent);
-                ((TextView) viewHolder.itemView.findViewById(R.id.textview)).setTextColor(ContextCompat.getColor(BusApp.getInstance(), R.color.white));
+                ((TextView) viewHolder.itemView.findViewById(R.id.textview)).setTextColor(ContextCompat.getColor(BusApp.getInstance().getApplication(), R.color.white));
             }
 
         }

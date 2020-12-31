@@ -1,7 +1,6 @@
 package com.szxb.zibo.base;
 
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,10 +9,12 @@ import android.view.animation.Animation;
 import android.view.animation.TranslateAnimation;
 import android.widget.RelativeLayout;
 
-import com.hao.lib.base.MI2App;
-import com.hao.lib.base.Rx.Rx;
-import com.hao.lib.base.Rx.RxMessage;
+import androidx.appcompat.app.AppCompatActivity;
 
+
+import com.szxb.lib.base.MI2App;
+import com.szxb.lib.base.Rx.Rx;
+import com.szxb.lib.base.Rx.RxMessage;
 import com.szxb.zibo.R;
 
 public class BaseActivity extends AppCompatActivity implements RxMessage {
@@ -26,7 +27,7 @@ public class BaseActivity extends AppCompatActivity implements RxMessage {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_base);
-        MI2App.getInstance().addActivity(this);
+        BusApp.getInstance().addActivity(this);
         Log.i("流程", "base");
 
     }

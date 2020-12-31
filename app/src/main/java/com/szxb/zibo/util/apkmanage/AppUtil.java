@@ -3,22 +3,15 @@ package com.szxb.zibo.util.apkmanage;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageInstaller;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 
-import android.net.Uri;
-import android.os.Build;
-import android.support.annotation.RequiresApi;
 import android.util.Log;
 
-import com.hao.lib.Util.MiLog;
 import com.szxb.zibo.base.BusApp;
 import com.szxb.zibo.util.sp.CommonSharedPreferences;
-import com.szxb.zibo.voice.SoundPoolUtil;
-import com.szxb.zibo.voice.VoiceConfig;
 
 import java.util.List;
 import java.util.Map;
@@ -66,7 +59,7 @@ public class AppUtil {
      * @return boolean
      */
     public static boolean checkNetStatus() {
-        ConnectivityManager cm = (ConnectivityManager) BusApp.getInstance().getSystemService(Context.CONNECTIVITY_SERVICE);
+        ConnectivityManager cm = (ConnectivityManager) BusApp.getInstance().getApplication().getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo networkInfo = cm.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
         Boolean isWifiConn = networkInfo.isConnected();
         NetworkInfo networkInfo_ = cm.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
@@ -126,7 +119,7 @@ public class AppUtil {
 
     public static boolean getAppProcessName(String appName) {
         //当前应用pid
-        final PackageManager packageManager = BusApp.getInstance().getPackageManager();
+        final PackageManager packageManager = BusApp.getInstance().getApplication().getPackageManager();
         final Intent mainIntent = new Intent(Intent.ACTION_MAIN, null);
         mainIntent.addCategory(Intent.CATEGORY_LAUNCHER);
         // get all apps

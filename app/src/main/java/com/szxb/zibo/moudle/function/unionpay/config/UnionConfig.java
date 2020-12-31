@@ -37,7 +37,7 @@ public class UnionConfig {
     }
 
     public static String getUnionPayUrl() {
-        return (String) CommonSharedPreferences.get("union_pay_url", "https://120.204.69.139:30000/mjc/webtrans/VPB_lb");
+        return (String) CommonSharedPreferences.get("union_pay_url", "https://140.207.168.62:30000/mjc/webtrans/VPB_lb");
     }
 
     public static String getUnionPonSn() {

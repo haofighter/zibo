@@ -2,10 +2,9 @@ package com.szxb.zibo.moudle.function.scan;
 
 import android.util.Log;
 
-import com.hao.lib.Util.FileUtils;
-
-import com.hao.lib.Util.MiLog;
 import com.szxb.java8583.module.manager.BusllPosManage;
+import com.szxb.lib.Util.FileUtils;
+import com.szxb.lib.Util.MiLog;
 import com.szxb.zibo.base.BusApp;
 import com.szxb.zibo.config.haikou.param.BuildConfigParam;
 import com.szxb.zibo.config.zibo.line.PraseLine;
@@ -45,8 +44,8 @@ public class ScanManage {
         try {
             String result = new String(qrCode);
             long time = Math.abs(scanInputTime - System.currentTimeMillis());
-            MiLog.i("二维码","   "+time+"    二维码数据："+result+"      \n"+FileUtils.bytesToHexString(qrCode));
-            if ( time<scanISpace && oldScan.equals(result)){//300ms视为一次二维码
+            MiLog.i("二维码", "   " + time + "    二维码数据：" + result + "      \n" + FileUtils.bytesToHexString(qrCode));
+            if (time < scanISpace && oldScan.equals(result)) {//300ms视为一次二维码
                 return;
             }
 
@@ -82,12 +81,18 @@ public class ScanManage {
                 if (BusApp.getPosManager().getLineNo().equals("")) {
                     BusToast.showToast("请设置线路", false);
                 } else {
-                    if (isAllNum(result) && result.length() < 50&&result.startsWith("62")) {//云闪付二维码
+                    if (isAllNum(result) && result.length() < 50 && result.startsWith("62")) {//云闪付二维码
 //                        if (!BusApp.getInstance().getNetWorkState()) {
 //                            BusToast.showToast("暂不支持此方式交易", false);
 //                            SoundPoolUtil.play(VoiceConfig.zanshibunengshiyongcifangshijiaoyi);
 //                            return;
 //                        }
+
+                        if (BusApp.getPosManager().getLineType().toUpperCase().equals("P")) {
+                            BusToast.showToast("暂不支持此方式乘车", false);
+                            SoundPoolUtil.play(VoiceConfig.zanshibunengshiyongcifangshijiaoyi);
+                            return;
+                        }
 
                         //用于未设置银联参数
                         if (FileUtils.deleteCover(BusllPosManage.getPosManager().getMacKey()).equals("")) {
@@ -111,6 +116,7 @@ public class ScanManage {
                             BusToast.showToast("无票价", false);
                             return;
                         }
+
 
                         BankQRParse qrParse = new BankQRParse();
                         BankResponse response = qrParse.parseResponse(money, result);

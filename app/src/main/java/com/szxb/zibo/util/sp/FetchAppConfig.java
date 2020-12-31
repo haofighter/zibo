@@ -136,6 +136,6 @@ public class FetchAppConfig {
     }
 
     public static String getUms_key_ver() {
-        return (String) CommonSharedPreferences.get("ums_key_ver", "000000000000000000");
+        return (String) CommonSharedPreferences.get("ums_key_ver", "00000000000000000000000000000000");
     }
 }

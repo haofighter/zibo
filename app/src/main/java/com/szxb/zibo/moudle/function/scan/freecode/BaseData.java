@@ -1,7 +1,7 @@
 package com.szxb.zibo.moudle.function.scan.freecode;
 
 
-import com.hao.lib.Util.FileUtils;
+import com.szxb.lib.Util.FileUtils;
 
 /**
  * 作者：wuxinxi on 2019/9/10

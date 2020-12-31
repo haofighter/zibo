@@ -1,5 +1,7 @@
 package com.szxb.zibo.record;
 
+import com.szxb.lib.Util.MiLog;
+
 import org.greenrobot.greendao.annotation.Entity;
 import org.greenrobot.greendao.annotation.Unique;
 import org.greenrobot.greendao.annotation.Generated;
@@ -56,6 +58,7 @@ public class AppParamInfo {
     }
 
     public void setLinNo(String linNo) {
+        MiLog.i("参数配置", "设置线路号：" + linNo);
         this.linNo = linNo;
     }
 
@@ -64,6 +67,7 @@ public class AppParamInfo {
     }
 
     public void setLinName(String linName) {
+        MiLog.i("参数配置", "设置线路名：" + linName);
         this.linName = linName;
     }
 

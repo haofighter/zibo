@@ -1,10 +1,8 @@
 package com.szxb.zibo.moudle.function.card.CPU;
 
-import android.util.Log;
-
-import com.hao.lib.Util.FileUtils;
-import com.hao.lib.Util.MiLog;
-import com.hao.lib.Util.Type;
+import com.szxb.lib.Util.FileUtils;
+import com.szxb.lib.Util.MiLog;
+import com.szxb.lib.Util.Type;
 
 import static java.lang.System.arraycopy;
 

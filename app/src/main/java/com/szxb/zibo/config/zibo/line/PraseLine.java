@@ -4,9 +4,8 @@ import android.util.Log;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.hao.lib.Util.FileUtils;
-import com.hao.lib.Util.MiLog;
-import com.hao.lib.Util.Type;
+import com.szxb.lib.Util.FileUtils;
+import com.szxb.lib.Util.MiLog;
 import com.szxb.zibo.base.BusApp;
 import com.szxb.zibo.config.haikou.Black;
 import com.szxb.zibo.config.haikou.BlackList;
@@ -62,6 +61,7 @@ public class PraseLine {
             AllLineInfo allLineInfo = new Gson().fromJson(line, AllLineInfo.class);
             DBManagerZB.savaAllLineInfo(allLineInfo.getAllline());
         } catch (Exception e) {
+            MiLog.i("流程", "praseAllLineByte  线路版本" );
             BusApp.getPosManager().setLinver("00000000000000");
             InitConfigZB.sendHeart();
             BusToast.showToast("解析线路失败\n正在重新下载", false);
@@ -74,6 +74,7 @@ public class PraseLine {
             byte[] line = FileUtils.readFile(file);
             praseLine(line);
         } catch (Exception e) {
+            MiLog.i("流程", "praseLine");
             BusApp.getPosManager().setFarver("00000000000000");
             InitConfigZB.sendHeart();
             BusToast.showToast("解析线路失败\n正在重新下载", false);
@@ -120,15 +121,13 @@ public class PraseLine {
                         BusApp.getPosManager().setBasePrice(Integer.parseInt(basicFare.getPrice()));
                         MiLog.i("参数配置", "设置基础票价：" + basicFare.getPrice());
                     }
-//                    BusApp.getPosManager().setDirection("0000");
+                    BusApp.getPosManager().setDirection("0000");
                 } else if (fareRulePlan.fareRuleType.equals("P")) {
                     GPSEvent.GPSEventOpen();
                     BusApp.getPosManager().setBasePrice(PraseLine.getMorePayPrice(null, true, true));
-//                    BusApp.getPosManager().setDirection("0001");
                 } else if (fareRulePlan.fareRuleType.equals("X")) {
                     GPSEvent.GPSEventOpen();
                     BusApp.getPosManager().setBasePrice(PraseLine.getMorePayPrice(null, true, true));
-//                    BusApp.getPosManager().setDirection("0001");
                 }
             } catch (Exception e) {
                 BusApp.getPosManager().setBasePrice(0);
@@ -355,8 +354,7 @@ public class PraseLine {
     }
 
     //卡方案生成规则  *\\far.CardPlan=1046010010000000\L1\E1\T1\C000000000\O000000000\P0001\M0\W000000000\Z1\H普通卡	010110010000\L1\E1\T1\C000000000\O000000000\P0008\M0\W000000000\Z1\H无偿献血卡	020010020000\L1\E1\T1\C000000000\O000000000\P0002\M0\W000000000\Z300\H学生卡	030010030000\L1\E1\T1\C000000000\O000000000\P0003\M0\W000000000\Z300\H老年卡	030110040000\L1\E1\T1\C000000000\O000000000\P0004\M0\W000000000\Z300\H爱心卡	040010050000\L1\E1\T1\C000000000\O000000000\P0005\M0\W000000000\Z300\H荣军卡	050010060000\L1\E1\T1\C000000000\O000000000\P0001\M0\W000000000\Z1\H拥军卡	060110070000\L1\E1\T1\C000000000\O000000000\P0006\M0\W000000000\Z300\H员工卡	061110080000\L1\E1\T1\C000000000\O000000000\P0006\M0\W000000000\Z300\H司机卡	062110090000\L1\E1\T1\C000000000\O000000000\P0006\M0\W000000000\Z300\H客服卡	180010100000\L1\E1\T1\C000000000\O000000000\P0001\M0\W000000000\Z300\H稽查卡	310010110000\L0\E0\T0\C000000000\O000000000\P0016\M0\W000000000\Z1\H微信	650110120000\L1\E1\T1\C000000000\O000000000\P0001\M0\W000000000\Z1\H城联普通卡		//*
-    private static void praseCardCase(String cardCase) {
-        cardCase = cardCase.replace("*\\\\far.CardPlan=", "").trim();
+    private static void praseCardCase(String cardCase) {cardCase = cardCase.replace("*\\\\far.CardPlan=", "").trim();
         String[] cardRules = cardCase.split("\t\t");
         List<CardPlan> cardPlans = new ArrayList<>();
         for (int i = 0; i < cardRules.length; i++) {
@@ -377,7 +375,11 @@ public class PraseLine {
                     } else if (cardInfoStr[k].startsWith("L")) {
                         cardPlan.setNeedCheckBlack(cardInfoStr[k].replace("L", ""));
                     } else if (cardInfoStr[k].startsWith("E")) {
-                        cardPlan.setNeedCheckStartTime(cardInfoStr[k].replace("E", ""));
+                        if (cardInfoStr[k].startsWith("E2")) {//身份证时间
+                            cardPlan.setNeedCheckStartTime(cardInfoStr[k].replace("E2", ""));
+                        } else {
+                            cardPlan.setNeedCheckStartTime(cardInfoStr[k].replace("E", ""));
+                        }
                     } else if (cardInfoStr[k].startsWith("T")) {
                         cardPlan.setNeedCheckEndTime(cardInfoStr[k].replace("T", ""));
                     } else if (cardInfoStr[k].startsWith("C")) {
@@ -385,7 +387,7 @@ public class PraseLine {
                     } else if (cardInfoStr[k].startsWith("A")) {
                         cardPlan.setRechargeTag(cardInfoStr[k].replace("A", ""));
                     } else if (cardInfoStr[k].startsWith("O")) {
-                        cardPlan.setNeedCheckStartTime(cardInfoStr[k].replace("O", ""));
+                        cardPlan.setOverdraw(cardInfoStr[k].replace("O", ""));
                     } else if (cardInfoStr[k].startsWith("P")) {
                         cardPlan.setVoiceType(cardInfoStr[k].replace("P", ""));
                     } else if (cardInfoStr[k].startsWith("D")) {
@@ -708,7 +710,7 @@ public class PraseLine {
                     } else {
                         price = 0;
                     }
-                    setMoreTicketInfo(cardInfoEntity, fullprice);
+                    setMoreTicketInfo(cardInfoEntity, fullprice, realpay);
                 } else {
                     boolean isSameBus = false;//表示非同一辆车
                     boolean isSameDiraction = false;//非同一个方向
@@ -732,25 +734,29 @@ public class PraseLine {
                             isSameLine = nowLine.equals(cardLine);
                         } else if (cardInfoEntity.selete_aid.equals("01")) {
                             if (cardInfoEntity.getFile1AJTBInfoEntity().getTransaction_status_1a().equals("00")) {//已完成
-                                String nowLine = BusApp.getPosManager().getLineNo().substring(2);
-                                String cardBus = cardInfoEntity.getFile1AJTBInfoEntity().getBoarding_vehicle_number_1a();
-                                String cardDir = cardInfoEntity.getFile1AJTBInfoEntity().getDirection_identity_1a();
-                                String cardLine = cardInfoEntity.getFile1AJTBInfoEntity().getBoarding_line_number_1a();
-                                isSameBus = FileUtils.formatHexStringToByteString(6, nowBus).equals(cardBus);//表示非同一辆车
+                                String nowLine = BusApp.getPosManager().getLineNo();
+                                String cardLineEnd = FileUtils.formatHexStringToByteString(2, Integer.parseInt(cardInfoEntity.getFile1AJTBInfoEntity().getAlight_lineno_1a(), 16) + "", true);
+                                String cardLineStart = FileUtils.formatHexStringToByteString(1, Integer.parseInt(cardInfoEntity.getFile1AJTBInfoEntity().getLineno(), 16) + "", true);
+                                String cardDir = cardInfoEntity.getFile1AJTBInfoEntity().getBoarding_diraction_1a();
+                                String cardBus = cardInfoEntity.getFile1AJTBInfoEntity().getAlight_carno_1a();
+                                nowBus = FileUtils.asciiToHex("00" + nowBus);
+                                isSameBus = FileUtils.formatHexStringToByteString(8, nowBus).equals(cardBus);//表示非同一辆车
                                 isSameDiraction = Integer.parseInt(cardDir) == nowDir;//非同一个方向
                                 isLimitTime = System.currentTimeMillis() - DateUtil.getDateLong(cardInfoEntity.getFile1AJTBInfoEntity().getAlight_time_1a(), "yyyyMMddHHmmss") > 5 * 60 * 60 * 1000;//间隔时间超过两小时
                                 isFiveMin = System.currentTimeMillis() - DateUtil.getDateLong(cardInfoEntity.getFile1AJTBInfoEntity().getAlight_time_1a(), "yyyyMMddHHmmss") > 10 * 60 * 1000;//间隔时间超过10分钟
-                                isSameLine = nowLine.equals(cardLine);
+                                isSameLine = nowLine.equals(cardLineStart + cardLineEnd);
                             } else {
-                                String nowLine = BusApp.getPosManager().getLineNo().substring(2);
-                                String cardBus = cardInfoEntity.getFile1AJTBInfoEntity().getBoarding_vehicle_number_1a();
-                                String cardDir = cardInfoEntity.getFile1AJTBInfoEntity().getDirection_identity_1a();
-                                String cardLine = cardInfoEntity.getFile1AJTBInfoEntity().getBoarding_line_number_1a();
-                                isSameBus = FileUtils.formatHexStringToByteString(6, nowBus).equals(cardBus);//表示非同一辆车
+                                String nowLine = BusApp.getPosManager().getLineNo();
+                                String cardLineEnd = FileUtils.formatHexStringToByteString(2, Integer.parseInt(cardInfoEntity.getFile1AJTBInfoEntity().getBoarding_lineno_1a(), 16) + "", true);
+                                String cardLineStart = FileUtils.formatHexStringToByteString(1, Integer.parseInt(cardInfoEntity.getFile1AJTBInfoEntity().getLineno(), 16) + "", true);
+                                String cardDir = cardInfoEntity.getFile1AJTBInfoEntity().getBoarding_diraction_1a();
+                                String cardBus = cardInfoEntity.getFile1AJTBInfoEntity().getBoarding_carno_1a();
+                                nowBus = FileUtils.asciiToHex("00" + nowBus);
+                                isSameBus = FileUtils.formatHexStringToByteString(8, nowBus).equals(cardBus);//表示非同一辆车
                                 isSameDiraction = Integer.parseInt(cardDir) == nowDir;//非同一个方向
                                 isLimitTime = System.currentTimeMillis() - DateUtil.getDateLong(cardInfoEntity.getFile1AJTBInfoEntity().getBoarding_time_1a(), "yyyyMMddHHmmss") > 5 * 60 * 60 * 1000;//间隔时间超过两小时
                                 isFiveMin = System.currentTimeMillis() - DateUtil.getDateLong(cardInfoEntity.getFile1AJTBInfoEntity().getBoarding_time_1a(), "yyyyMMddHHmmss") > 10 * 60 * 1000;//间隔时间超过10分钟
-                                isSameLine = nowLine.equals(cardLine);
+                                isSameLine = nowLine.equals(cardLineStart + cardLineEnd);
                             }
                         } else {
                             String nowLine = BusApp.getPosManager().getM1Line();
@@ -764,6 +770,7 @@ public class PraseLine {
                             isSameLine = nowLine.equals(cardLine);
                         }
                     } catch (Exception e) {
+                        MiLog.i("错误", e.getMessage());
                     }
 
                     int fullPrice = cardInfoEntity.getFull_fare();//卡记录中的优惠前的金额
@@ -775,7 +782,7 @@ public class PraseLine {
                         if (cardInfoEntity.getComplete_mark().equals("01")) {//表示交易未完成 当前为补票
                             cardInfoEntity.setComplete_mark("00");
                             cardInfoEntity.setTranseType(3);
-                            setMoreTicketInfo(cardInfoEntity, fullPrice);
+                            setMoreTicketInfo(cardInfoEntity, fullPrice, cardRealPrice);
                             if (cardInfoEntity.getFull_fare() > 5000) {
                                 cardInfoEntity.setPayAllPrice(cardRealPrice);
                             } else {
@@ -788,7 +795,7 @@ public class PraseLine {
                         } else {
                             cardInfoEntity.setComplete_mark("00");
                             cardInfoEntity.setPayAllPrice(fullPrice);
-                            setMoreTicketInfo(cardInfoEntity, fullPrice);
+                            setMoreTicketInfo(cardInfoEntity, fullPrice, cardRealPrice);
                             cardInfoEntity.setTranseType(3);
                             return 0;
                         }
@@ -809,7 +816,7 @@ public class PraseLine {
 //                            } else {
                             if (!isSameDiraction && nowStation == 1) {//如果当前站为起点站 则下车不需要判定方向 直接扣除总票价
                                 cardInfoEntity.setComplete_mark("00");
-                                setMoreTicketInfo(cardInfoEntity, fullPrice);
+                                setMoreTicketInfo(cardInfoEntity, fullPrice, cardRealPrice);
                                 cardInfoEntity.setTranseType(2);
                                 if (cardInfoEntity.getFull_fare() > 5000) {
                                     cardInfoEntity.setPayAllPrice(cardRealPrice);
@@ -846,7 +853,7 @@ public class PraseLine {
     }
 
     //填充多票消费数据
-    public static void setMoreTicketInfo(CardInfoEntity cardInfoEntity, int fullPrice) {
+    public static void setMoreTicketInfo(CardInfoEntity cardInfoEntity, int fullPrice, int discountFullPrice) {
         if (cardInfoEntity.selete_aid.equals("02")) {
             cardInfoEntity.getnewCPUMorePriceInfo().setDriver_direction(BusApp.getPosManager().getDirection());
             cardInfoEntity.getnewCPUMorePriceInfo().setVehicle_number(BusApp.getPosManager().getBusNo());
@@ -859,37 +866,49 @@ public class PraseLine {
         } else if (cardInfoEntity.selete_aid.equals("01")) {
             cardInfoEntity.getFile1AJTBInfoEntity().setTrade_serial_number_1a(BusApp.getPosManager().getmchTrxId() + "");
             if (cardInfoEntity.getTranseType() == 1) {//上车
-                cardInfoEntity.getFile1AJTBInfoEntity().setBoarding_city_code_1a("0000");
-                cardInfoEntity.getFile1AJTBInfoEntity().setAlight_city_code_1a("4530");
+                cardInfoEntity.getFile1AJTBInfoEntity().setBoarding_city_code_1a("4530");
                 cardInfoEntity.getFile1AJTBInfoEntity().setBoarding_mark_1a(FileUtils.hexStringFromatByF(8, "13664530", false));
-                cardInfoEntity.getFile1AJTBInfoEntity().setAlight_mark_1a("00000000");
-                cardInfoEntity.getFile1AJTBInfoEntity().setBoarding_the_site_1a(BusApp.getPosManager().getStationID());
-                cardInfoEntity.getFile1AJTBInfoEntity().setAlight_the_site_1a("00");
-                cardInfoEntity.getFile1AJTBInfoEntity().setBoarding_terminal_number_1a(BusApp.getPosManager().getJTBpsam());
-                cardInfoEntity.getFile1AJTBInfoEntity().setAlight_terminal_number_1a("00000000");
+                cardInfoEntity.getFile1AJTBInfoEntity().setBoarding_lineno_1a(FileUtils.int2ByteStr(Integer.parseInt(BusApp.getPosManager().getLineNo().substring(2, 6)), 2));
+                cardInfoEntity.getFile1AJTBInfoEntity().setBoarding_station_1a(BusApp.getPosManager().getStationID());
+                cardInfoEntity.getFile1AJTBInfoEntity().setBoarding_carno_1a(FileUtils.asciiToHex("00" + BusApp.getPosManager().getBusNo()));
+                cardInfoEntity.getFile1AJTBInfoEntity().setBoarding_possn_1a(BusApp.getPosManager().getJTBpsam());
                 cardInfoEntity.getFile1AJTBInfoEntity().setBoarding_time_1a(DateUtil.getCurrentDate2());
+
+                cardInfoEntity.getFile1AJTBInfoEntity().setAlight_city_code_1a("0000");
+                cardInfoEntity.getFile1AJTBInfoEntity().setAlight_mark_1a("00000000");
+                cardInfoEntity.getFile1AJTBInfoEntity().setAlight_lineno_1a("00");
+                cardInfoEntity.getFile1AJTBInfoEntity().setAlight_station_1a(0);
+                cardInfoEntity.getFile1AJTBInfoEntity().setAlight_carno_1a("00000000");
+                cardInfoEntity.getFile1AJTBInfoEntity().setAlight_possn_1a("00000000");
                 cardInfoEntity.getFile1AJTBInfoEntity().setAlight_time_1a("0");
-                cardInfoEntity.getFile1AJTBInfoEntity().setBoarding_max_amount_1a(fullPrice);
-                String nowLineDir = FileUtils.formatHexStringToByteString(1, BusApp.getPosManager().getDirection());
-                cardInfoEntity.getFile1AJTBInfoEntity().setDirection_identity_1a(nowLineDir.equals("01") ? "00" : "01");
-                cardInfoEntity.getFile1AJTBInfoEntity().setBoarding_line_number_1a(BusApp.getPosManager().getLineNo().substring(2, 6));
-                cardInfoEntity.getFile1AJTBInfoEntity().setBoarding_vehicle_number_1a(BusApp.getPosManager().getBusNo());
+                cardInfoEntity.getFile1AJTBInfoEntity().setBoarding_pay_all_1a(discountFullPrice);
+
+                cardInfoEntity.getFile1AJTBInfoEntity().setDriverno(BusApp.getPosManager().getDriverNo());
+                cardInfoEntity.getFile1AJTBInfoEntity().setDiraction_1a(BusApp.getPosManager().getDirection());
+                cardInfoEntity.getFile1AJTBInfoEntity().setLineno(FileUtils.int2ByteStr(Integer.parseInt(BusApp.getPosManager().getLineNo().substring(0, 2)), 1));
+                cardInfoEntity.getFile1AJTBInfoEntity().setAllpay(fullPrice);
             } else {//下车
-                cardInfoEntity.getFile1AJTBInfoEntity().setBoarding_city_code_1a("0000");
                 cardInfoEntity.getFile1AJTBInfoEntity().setAlight_city_code_1a("4530");
-                cardInfoEntity.getFile1AJTBInfoEntity().setBoarding_mark_1a("00000000");
                 cardInfoEntity.getFile1AJTBInfoEntity().setAlight_mark_1a(FileUtils.hexStringFromatByF(8, "13664530", false));
-                cardInfoEntity.getFile1AJTBInfoEntity().setBoarding_the_site_1a("00");
-                cardInfoEntity.getFile1AJTBInfoEntity().setAlight_the_site_1a(BusApp.getPosManager().getStationID());
-                cardInfoEntity.getFile1AJTBInfoEntity().setBoarding_terminal_number_1a("00000000");
-                cardInfoEntity.getFile1AJTBInfoEntity().setAlight_terminal_number_1a(BusApp.getPosManager().getJTBpsam());
-                cardInfoEntity.getFile1AJTBInfoEntity().setBoarding_time_1a("0");
+                cardInfoEntity.getFile1AJTBInfoEntity().setAlight_lineno_1a(FileUtils.int2ByteStr(Integer.parseInt(BusApp.getPosManager().getLineNo().substring(2, 6)), 2));
+                cardInfoEntity.getFile1AJTBInfoEntity().setAlight_station_1a(BusApp.getPosManager().getStationID());
+                cardInfoEntity.getFile1AJTBInfoEntity().setAlight_carno_1a(FileUtils.asciiToHex("00" + BusApp.getPosManager().getBusNo()));
+                cardInfoEntity.getFile1AJTBInfoEntity().setAlight_possn_1a(BusApp.getPosManager().getJTBpsam());
                 cardInfoEntity.getFile1AJTBInfoEntity().setAlight_time_1a(DateUtil.getCurrentDate2());
-                cardInfoEntity.getFile1AJTBInfoEntity().setBoarding_max_amount_1a(fullPrice);
-                String nowLineDir = FileUtils.formatHexStringToByteString(1, BusApp.getPosManager().getDirection());
-                cardInfoEntity.getFile1AJTBInfoEntity().setDirection_identity_1a(nowLineDir.equals("01") ? "00" : "01");
-                cardInfoEntity.getFile1AJTBInfoEntity().setBoarding_line_number_1a(BusApp.getPosManager().getLineNo().substring(2, 6));
-                cardInfoEntity.getFile1AJTBInfoEntity().setBoarding_vehicle_number_1a(BusApp.getPosManager().getBusNo());
+
+                cardInfoEntity.getFile1AJTBInfoEntity().setBoarding_city_code_1a("0000");
+                cardInfoEntity.getFile1AJTBInfoEntity().setBoarding_mark_1a("00000000");
+                cardInfoEntity.getFile1AJTBInfoEntity().setBoarding_lineno_1a("00");
+                cardInfoEntity.getFile1AJTBInfoEntity().setBoarding_station_1a(0);
+                cardInfoEntity.getFile1AJTBInfoEntity().setBoarding_carno_1a("00000000");
+                cardInfoEntity.getFile1AJTBInfoEntity().setBoarding_possn_1a("00000000");
+                cardInfoEntity.getFile1AJTBInfoEntity().setBoarding_time_1a("0");
+                cardInfoEntity.getFile1AJTBInfoEntity().setBoarding_pay_all_1a(discountFullPrice);
+
+                cardInfoEntity.getFile1AJTBInfoEntity().setDriverno(BusApp.getPosManager().getDriverNo());
+                cardInfoEntity.getFile1AJTBInfoEntity().setDiraction_1a(BusApp.getPosManager().getDirection());
+                cardInfoEntity.getFile1AJTBInfoEntity().setLineno(FileUtils.int2ByteStr(Integer.parseInt(BusApp.getPosManager().getLineNo().substring(0, 2)), 1));
+                cardInfoEntity.getFile1AJTBInfoEntity().setAllpay(fullPrice);
             }
         } else {
             cardInfoEntity.getMorePriceInfo().setDriver_direction(BusApp.getPosManager().getDirection());

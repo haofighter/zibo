@@ -5,9 +5,8 @@ import android.util.Log;
 
 import com.example.zhoukai.modemtooltest.ModemToolTest;
 import com.google.gson.Gson;
-import com.hao.lib.Util.FileUtils;
-import com.hao.lib.Util.MiLog;
-import com.hao.lib.base.Rx.Rx;
+import com.szxb.lib.Util.FileUtils;
+import com.szxb.lib.Util.MiLog;
 import com.szxb.zibo.base.BusApp;
 import com.szxb.zibo.config.zibo.DBManagerZB;
 import com.szxb.zibo.config.zibo.line.StationName;
@@ -40,6 +39,7 @@ public class PosManager implements IPosManager, IAddRess, ISwitch {
     private String keybroadAddress = "1234";//键盘地址
     private String myselfkeybroadAddress = "5678";//键盘地址
     private String myselfkeybroadAddressCache = "5678";//键盘地址
+    private String UpDateInfo = "";//更新信息
 
     /**
      * 操作状态 主要针对 多票和分段
@@ -158,7 +158,7 @@ public class PosManager implements IPosManager, IAddRess, ISwitch {
     private String lib_ver = "00000000000000";//动态库版本
     private String ums_terminal_no;  //银联终端号
     private String ums_tenant_no;// 银联商户号
-    private String ums_key_ver;//银联秘钥MD5值
+    private String ums_key_ver = "00000000000000000000000000000000";//银联秘钥MD5值
     private String blk_ver = "00000000000000";   // ODA黑名单版本
 
 
@@ -208,6 +208,7 @@ public class PosManager implements IPosManager, IAddRess, ISwitch {
 
     private String mainPSAM;
     private int GPSStatus;
+    private String downloadApkName;
 
     @Override
     public void loadFromPrefs(final int city, final String bin) {
@@ -270,7 +271,7 @@ public class PosManager implements IPosManager, IAddRess, ISwitch {
     }
 
     private void config(int city) {
-        String config = Util.readAssetsFile("config.json", BusApp.getInstance().getApplicationContext());
+        String config = Util.readAssetsFile("config.json", BusApp.getInstance().getApplication());
         ConfigParam configParam = new Gson().fromJson(config, ConfigParam.class);
         List<ConfigParam.ConfigBean> configList = configParam.getConfig();
         ConfigParam.ConfigBean configBean = configList.get(city);
@@ -374,7 +375,6 @@ public class PosManager implements IPosManager, IAddRess, ISwitch {
         ZBLineInfo zbLineInfo = DBManagerZB.checkedLineInfo(var1);
 
         if (zbLineInfo != null) {
-            Log.i("线路设置", zbLineInfo.getRoutename());
             appParamInfo.setLinName(zbLineInfo.getRoutename());
         }
         DBManagerZB.saveAppParamInfo(appParamInfo);
@@ -500,8 +500,10 @@ public class PosManager implements IPosManager, IAddRess, ISwitch {
 
     @Override
     public void setDirection(String direction) {
-        if (direction.equals("0000")) {
-            direction = "0001";
+        if (!getLineType().equals("O")) {
+            if (direction.equals("0000")) {
+                direction = "0001";
+            }
         }
         this.direction = FileUtils.formatHexStringToByteString(2, direction);
         CommonSharedPreferences.put("direction", this.direction);
@@ -509,8 +511,10 @@ public class PosManager implements IPosManager, IAddRess, ISwitch {
 
     @Override
     public String getDirection() {
-        if (direction.equals("0000")) {
-            direction = "0001";
+        if (!getLineType().equals("O")) {
+            if (direction.equals("0000")) {
+                direction = "0001";
+            }
         }
         return direction;
     }
@@ -710,6 +714,7 @@ public class PosManager implements IPosManager, IAddRess, ISwitch {
     public void setCsnVer(String csnVer) {
         this.csnVer = csnVer;
         CommonSharedPreferences.put("csnVer", csnVer);
+        BusApp.getInstance().saveBackeUp();//保存基本配置
     }
 
     public String getWhlVer() {
@@ -718,6 +723,7 @@ public class PosManager implements IPosManager, IAddRess, ISwitch {
 
     public void setWhlVer(String whlVer) {
         this.whlVer = whlVer;
+        BusApp.getInstance().saveBackeUp();//保存基本配置
     }
 
     public String getFarver() {
@@ -725,6 +731,7 @@ public class PosManager implements IPosManager, IAddRess, ISwitch {
     }
 
     public void setFarver(String farver) {
+        MiLog.i("流程", "设置线路版本：" + farver);
         this.farver = farver;
         CommonSharedPreferences.put("farver", farver);
     }
@@ -743,7 +750,8 @@ public class PosManager implements IPosManager, IAddRess, ISwitch {
 
     public void setUsrver(String usrver) {
         this.usrver = usrver;
-        CommonSharedPreferences.put("usrver", farver);
+        CommonSharedPreferences.put("usrver", usrver);
+        BusApp.getInstance().saveBackeUp();//保存基本配置
     }
 
 
@@ -780,7 +788,7 @@ public class PosManager implements IPosManager, IAddRess, ISwitch {
 
     public String getUms_key_ver() {
         if (ums_key_ver == null || ums_key_ver.equals("")) {
-            ums_key_ver = "000000000000000000";
+            ums_key_ver = "00000000000000000000000000000000";
         }
         return ums_key_ver;
     }
@@ -788,6 +796,7 @@ public class PosManager implements IPosManager, IAddRess, ISwitch {
     public void setUms_key_ver(String ums_key_ver) {
         this.ums_key_ver = ums_key_ver;
         CommonSharedPreferences.put("ums_key_ver", ums_key_ver);
+        BusApp.getInstance().saveBackeUp();//保存基本配置
     }
 
     public String getBlk_ver() {
@@ -821,6 +830,7 @@ public class PosManager implements IPosManager, IAddRess, ISwitch {
     public void setPub_ver(String pub_ver) {
         this.pub_ver = pub_ver;
         CommonSharedPreferences.put("pub_ver", pub_ver);
+        BusApp.getInstance().saveBackeUp();//保存基本配置
     }
 
     public String getLinver() {
@@ -829,6 +839,7 @@ public class PosManager implements IPosManager, IAddRess, ISwitch {
 
     public void setLinver(String linver) {
         Linver = linver;
+        MiLog.i("流程", "线路版本：" + linver);
         AppParamInfo appParamInfo = DBManagerZB.checkAppParamInfo();
         appParamInfo.setLinVer(linver);
         DBManagerZB.saveAppParamInfo(appParamInfo);
@@ -850,7 +861,7 @@ public class PosManager implements IPosManager, IAddRess, ISwitch {
 
     public void setMchID(String mchID) {
         this.mchID = mchID;
-        CommonSharedPreferences.put("mchID", unitno);
+        CommonSharedPreferences.put("mchID", mchID);
     }
 
     public String getMainPSAM() {
@@ -862,7 +873,7 @@ public class PosManager implements IPosManager, IAddRess, ISwitch {
 
     public void setMainPSAM(String psamNo) {
         mainPSAM = psamNo;
-        CommonSharedPreferences.put("mainPSAM", unitno);
+        CommonSharedPreferences.put("mainPSAM", mainPSAM);
     }
 
     public void setM1psam(String m1psam) {
@@ -962,9 +973,11 @@ public class PosManager implements IPosManager, IAddRess, ISwitch {
         setWavVer(manager.wavVer);
         setCsnVer(manager.csnVer);
         setWhlVer(manager.whlVer);
+        MiLog.i("流程", "线路版本 初始化数据");
         setFarver("00000000000000");
         setParver(manager.parver);
         setUsrver(manager.usrver);
+        MiLog.i("流程", "posmanager 初始化  线路版本");
         setLinver(manager.Linver);
         setUnitno(manager.unitno);
         setMchID(manager.mchID);
@@ -1015,6 +1028,44 @@ public class PosManager implements IPosManager, IAddRess, ISwitch {
 
     public void setMyselfkeybroadAddressCache(String myselfkeybroadAddressCache) {
         this.myselfkeybroadAddressCache = myselfkeybroadAddressCache;
+    }
+
+    /**
+     * 清除版本信息
+     */
+    public void clearRunParam() {
+        setUsrver("00000000000000");
+        setCsnVer("00000000000000");
+        setUms_key_ver("00000000000000000000000000000000");
+        setPub_ver("00000000000000");
+        setFarver("00000000000000");
+        setLinver("00000000000000");
+    }
+
+    public void saveDownApkName(String apkname) {
+        this.downloadApkName = apkname;
+    }
+
+    public String getDownloadApkName() {
+        return downloadApkName;
+    }
+
+    public void setIsClean(boolean b) {
+        CommonSharedPreferences.put("IsClean", b);
+        setUpDateInfo("加载补丁失败,回退版本");
+    }
+
+    public boolean getIsClean() {
+        return (boolean) CommonSharedPreferences.get("IsClean", false);
+    }
+
+
+    public void setUpDateInfo(String s) {
+        UpDateInfo = s;
+    }
+
+    public String getUpDateInfo() {
+        return UpDateInfo;
     }
 }
 

@@ -2,8 +2,9 @@ package com.szxb.zibo.moudle.function.card.CPU;
 
 import android.util.Log;
 
-import com.hao.lib.Util.FileUtils;
-import com.hao.lib.Util.Type;
+
+import com.szxb.lib.Util.FileUtils;
+import com.szxb.lib.Util.Type;
 
 import static java.lang.System.arraycopy;
 
@@ -27,7 +28,7 @@ public class File15LocalInfoEntity {
 
 
     public int praseFile15Local(int i, byte[] date) {
-        Log.i("File15LocalInfoEntity",FileUtils.bytesToHexString(date));
+        Log.i("File15LocalInfoEntity", FileUtils.bytesToHexString(date));
         //发卡机构标识
         byte[] card_issuer = new byte[8];
         arraycopy(date, i, card_issuer, 0, card_issuer.length);

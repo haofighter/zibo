@@ -21,7 +21,7 @@ public class MMKVManager {
     private MMKV mmkv;
 
     private MMKVManager() {
-        MMKV.initialize(BusApp.getInstance());
+        MMKV.initialize(BusApp.getInstance().getApplication());
         mmkv = MMKV.defaultMMKV();
     }
 

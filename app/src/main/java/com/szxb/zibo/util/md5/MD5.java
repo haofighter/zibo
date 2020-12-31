@@ -13,6 +13,7 @@ public class MD5 {
     //盐，用于混交md5
     private static final String slat = "chezaijitogprs";
 
+    //JDKMD5
     public static String md5(String dataStr) {
         MessageDigest md5 = null;
         try {

@@ -4,8 +4,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 
-import com.hao.lib.Util.FileUtils;
-import com.hao.lib.Util.MiLog;
 import com.szxb.zibo.base.BusApp;
 
 import java.io.File;
@@ -29,7 +27,7 @@ public class CommonSharedPreferences {
 
     public static void put(String key, Object value) {
 
-        SharedPreferences sp = BusApp.getInstance().getSharedPreferences(FILE_NAME, Context.MODE_WORLD_READABLE);
+        SharedPreferences sp = BusApp.getInstance().getApplication().getSharedPreferences(FILE_NAME, Context.MODE_WORLD_READABLE);
         SharedPreferences.Editor editor = sp.edit();
 
         if (value instanceof Boolean) {
@@ -45,7 +43,7 @@ public class CommonSharedPreferences {
 
 
     public static Object get(String key, Object defaultValue) {
-        SharedPreferences sp = BusApp.getInstance().getSharedPreferences(FILE_NAME, Context.MODE_WORLD_READABLE);
+        SharedPreferences sp = BusApp.getInstance().getApplication().getSharedPreferences(FILE_NAME, Context.MODE_WORLD_READABLE);
         if (defaultValue instanceof Boolean)
             return sp.getBoolean(key, (Boolean) defaultValue);
         else if (defaultValue instanceof Long)

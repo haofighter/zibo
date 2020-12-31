@@ -2,8 +2,6 @@ package com.szxb.zibo.cmd;
 
 import android.util.Log;
 
-import com.hao.lib.Util.FileUtils;
-import com.hao.lib.Util.MiLog;
 
 import static com.szxb.jni.SerialCom.CRC32;
 
@@ -116,6 +114,7 @@ public class devCmd {
                     DoCmd.doQRcode(devCmd.this);
                     break;
                 case (byte) 0x86://寻卡
+                    DoCmd.isDelay = true;
                     DoCmd.doCard(devCmd.this);
                     break;
                 case (byte) 0x05://PSAM卡检测返回结果
@@ -125,7 +124,11 @@ public class devCmd {
                     DoCmd.doKeyPress(devCmd.this);
                     break;
                 case (byte) 0x8e://外接键盘
-                    DoCmd.dokeyboard(devCmd.this);
+                    if (ins == 0x01) {
+                        DoCmd.doIdentityCard(devCmd.this);
+                    } else {
+                        DoCmd.dokeyboard(devCmd.this);
+                    }
                     break;
             }
         } else {

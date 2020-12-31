@@ -3,14 +3,14 @@ package com.szxb.zibo.moudle.function.unionpay.dispose;
 import android.os.SystemClock;
 import android.util.Log;
 
-import com.hao.lib.Util.FileUtils;
-import com.hao.lib.Util.MiLog;
-import com.hao.lib.Util.ThreadUtils;
 import com.szxb.java8583.core.Iso8583Message;
 import com.szxb.java8583.core.Iso8583MessageFactory;
 import com.szxb.java8583.module.SignIn;
 import com.szxb.java8583.module.manager.BusllPosManage;
 import com.szxb.java8583.quickstart.SingletonFactory;
+import com.szxb.lib.Util.FileUtils;
+import com.szxb.lib.Util.MiLog;
+import com.szxb.lib.Util.ThreadUtils;
 import com.szxb.zibo.config.zibo.DBManagerZB;
 import com.szxb.zibo.db.dao.UnionPayEntityDao;
 import com.szxb.zibo.db.dao.XdRecordDao;
@@ -72,7 +72,7 @@ public class SyncSSLRequest {
 //            ThreadUtils.getInstance().createSch("bankRefund").schedule(new Runnable() {
 //                @Override
 //                public void run() {
-//                    new BankRefund().run();
+////                    new BankRefund().run();
 //                }
 //            }, 3, TimeUnit.SECONDS);
         }
@@ -87,7 +87,6 @@ public class SyncSSLRequest {
      * @param message0810 返回的报文
      */
     private void doDispose(int type, BankResponse icResponse, Iso8583Message message0810) throws Exception {
-        int pay_fee = Integer.parseInt(message0810.getValue(4).getValue());
         String resCode = message0810.getValue(39).getValue();
         String tradeSeq = message0810.getValue(11).getValue();
         String batchNum = message0810.getValue(60).getValue().substring(2, 8);
@@ -96,7 +95,7 @@ public class SyncSSLRequest {
         XdRecord unique = dao.queryBuilder()
                 .where(XdRecordDao.Properties.Flag.eq(uniqueFlag))
                 .limit(1).build().unique();
-
+        unique.setRes4(batchNum);
         if (unique != null) {
             switch (resCode) {
                 case "00":
@@ -111,7 +110,9 @@ public class SyncSSLRequest {
                         //银联卡返回2域
                         icResponse.setMainCardNo(message0810.getValue(2).getValue());
                     }
-                    SoundPoolUtil.play(VoiceConfig.yinhangshanfuka);
+                    unique.setRealFree(amount);
+                    SoundPoolUtil.play(VoiceConfig.shuamachenggong);
+//                    SoundPoolUtil.play(VoiceConfig.yinhangshanfuka);
                     icResponse.setMsg("扣款成功\n扣款金额" + yuan2Fen(amount) + "元");
                     icResponse.setLastTime(SystemClock.elapsedRealtime());
                     break;
@@ -139,21 +140,22 @@ public class SyncSSLRequest {
                     icResponse.setMsg((type == UnionUtil.PAY_TYPE_BANK_IC ? "刷卡" : "扫码") + "失败[" + UnionUtil.unionPayStatus(resCode) + "]");
                     break;
             }
+            unique.setUnionPayStatus(resCode);
             BusToast.showToast(icResponse.getMsg(), true);
             if (unique.getNewExtraDate().endsWith(FileUtils.bytesToHexString("DD".getBytes()))) {
-                MiLog.i("银联记录 附加数据", unique.getNewExtraDate());
+                MiLog.i("银联", "二维码 记录 附加数据：" + unique.getNewExtraDate());
                 String rescode = FileUtils.bytesToHexString(resCode.getBytes());
                 String ex = unique.getNewExtraDate().substring(0, unique.getNewExtraDate().length() - 4);
 //                                    MiLog.i("银联记录 附加数据",FileUtils.stringToAsc(rescode));
                 unique.setNewExtraDate(ex + FileUtils.formatHexStringToByteString(2, rescode));
-                MiLog.i("银联记录 附加数据", unique.getExtraDate() + "   " + unique.getNewExtraDate());
+                MiLog.i("银联", "二维码 记录 附加数据:" + unique.getExtraDate() + "   " + unique.getNewExtraDate());
             }
             //记录异步修改
             DBManagerZB.saveRecord(unique);
             try {
                 RecordUpload.uploadRecord(unique);
             } catch (Exception e) {
-                Log.i("上送数据报错", "错误：" + e.getMessage());
+                Log.i("银联", "上送数据报错 错误：" + e.getMessage());
             }
         }
     }

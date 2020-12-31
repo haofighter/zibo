@@ -56,7 +56,7 @@ public class BankPay {
     }
 
 
-    private Iso8583Message payMessageData(BusCard busCard) {
+    private Iso8583Message  payMessageData(BusCard busCard) {
         Iso8583Message message = new Iso8583Message(BaseFactory.payBaseFactory());
         message.setMti("0200")
                 .setValue(2, busCard.getMainCardNo())//主账号

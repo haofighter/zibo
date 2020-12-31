@@ -2,6 +2,7 @@ package com.szxb.zibo.moudle.function.unionpay.dispose;
 
 import android.text.TextUtils;
 import android.util.Log;
+
 import com.szxb.java8583.core.Iso8583Message;
 import com.szxb.java8583.core.Iso8583MessageFactory;
 import com.szxb.java8583.module.PosRefund;
@@ -9,12 +10,18 @@ import com.szxb.java8583.module.PosScanRefund;
 import com.szxb.java8583.module.manager.BusllPosManage;
 import com.szxb.java8583.quickstart.SingletonFactory;
 import com.szxb.java8583.quickstart.special.SpecialField62;
+import com.szxb.lib.Util.FileUtils;
+import com.szxb.lib.Util.MiLog;
+import com.szxb.zibo.config.zibo.DBManagerZB;
 import com.szxb.zibo.db.dao.UnionPayEntityDao;
+import com.szxb.zibo.db.dao.XdRecordDao;
 import com.szxb.zibo.db.manage.DBCore;
 import com.szxb.zibo.moudle.function.unionpay.entity.UnionPayEntity;
 import com.szxb.zibo.moudle.function.unionpay.http.BaseByteRequest;
 import com.szxb.zibo.moudle.function.unionpay.http.CallServer;
 import com.szxb.zibo.moudle.function.unionpay.http.HttpListener;
+import com.szxb.zibo.moudle.function.unionpay.http.HttpResponseListener;
+import com.szxb.zibo.record.XdRecord;
 import com.szxb.zibo.util.apkmanage.AppUtil;
 import com.szxb.zibo.util.DateUtil;
 import com.yanzhenjie.nohttp.RequestMethod;
@@ -44,46 +51,63 @@ public class BankRefund extends Thread {
             }
 
             String[] time = DateUtil.time(1);
-            UnionPayEntityDao unionPayEntityDao = DBCore.getDaoSession().getUnionPayEntityDao();
-            List<UnionPayEntity> list = unionPayEntityDao.queryBuilder()
-                    .where(UnionPayEntityDao.Properties.Time.between(time[0], time[1]))
-                    .where(UnionPayEntityDao.Properties.ResCode.eq("408"))
-                    .where(UnionPayEntityDao.Properties.Reserve_1.isNotNull())
-                    .orderDesc(UnionPayEntityDao.Properties.Id).limit(5).build().list();
-
+            XdRecordDao xdRecord = DBCore.getDaoSession().getXdRecordDao();
+            List<XdRecord> list = xdRecord.queryBuilder()
+                    .where(XdRecordDao.Properties.MainCardType.in("41", "42"))
+                    .where(XdRecordDao.Properties.ChildCardType.in("00", "00"))
+                    .where(XdRecordDao.Properties.UnionPayStatus.notIn("FD", "FF", "FE", "00", "A2", "A4", "A5", "A6"))
+                    .where(XdRecordDao.Properties.CreatTime.lt(System.currentTimeMillis() - 2*60 * 1000))
+                    .limit(5).build().list();
+            MiLog.i("银联", "冲正数据条数：" + list.size());
             AtomicInteger what = new AtomicInteger(111);
-            for (UnionPayEntity payEntity : list) {
+            for (XdRecord payEntity : list) {
+
                 Iso8583Message refund = getIso8583Message(payEntity);
+                MiLog.i("银联", "数据冲正请求：" + refund.toFormatString());
                 requestRefund(what.get(), refund.getBytes(), payEntity);
                 what.getAndDecrement();
             }
 
         } catch (Exception e) {
             e.printStackTrace();
-            Log.e("BankRefund", "(run.java:76)" + e.toString());
+            MiLog.i("银联", "错误(run.java:76)" + e.toString());
         }
     }
 
 
-    private Iso8583Message getIso8583Message(UnionPayEntity payEntity) {
-        return TextUtils.isEmpty(payEntity.getReserve_2())
-                ? PosRefund.getInstance().refund(payEntity.getMainCardNo(), payEntity.getReserve_1(), payEntity.getTradeSeq(), BusllPosManage.getPosManager().getBatchNum(), "00", payEntity.getTotalFee())
-                : PosScanRefund.getInstance().refun(payEntity.getTradeSeq(), payEntity.getMainCardNo(), "00", payEntity.getTotalFee());
+    /**
+     * 组装冲正数据
+     *
+     * @param xdRecord
+     * @return
+     */
+    private Iso8583Message getIso8583Message(XdRecord xdRecord) {
+        if (xdRecord.getMainCardType().equals("42") && xdRecord.getChildCardType().equals("00")) {
+            MiLog.i("银联", "冲正，刷卡   卡号：" + xdRecord.getUseCardnum() + "   流水号：" + xdRecord.getRes3() + "       " + xdRecord.getRes4() + "  交易金额：" + Long.parseLong(FileUtils.strHto(xdRecord.getTradePay()), 16));
+            return PosRefund.getInstance().refund(xdRecord.getRes2(), xdRecord.getRes1(), Integer.parseInt(xdRecord.getRes3()), xdRecord.getRes4(), "00", Integer.parseInt(FileUtils.strHto(xdRecord.getTradePay()), 16));
+        } else if (xdRecord.getMainCardType().equals("41") && xdRecord.getChildCardType().equals("00")) {
+            MiLog.i("银联", "冲正，二维码   卡号：" + xdRecord.getUseCardnum() + "   流水号：" + xdRecord.getRes3() + "  交易金额：" + Integer.parseInt(FileUtils.strHto(xdRecord.getTradePay())));
+            return PosScanRefund.getInstance().refun(Integer.parseInt(xdRecord.getRes3()), xdRecord.getRes2(), "00", Integer.parseInt(FileUtils.strHto(xdRecord.getTradePay())));
+        } else {
+            return null;
+        }
     }
 
-    private void requestRefund(int what, byte[] sendData, UnionPayEntity entity) {
+
+    private void requestRefund(int what, byte[] sendData, XdRecord entity) {
         String url = BusllPosManage.getPosManager().getUnionPayUrl();
         BaseByteRequest request = new BaseByteRequest(url, RequestMethod.POST);
         InputStream stream = new ByteArrayInputStream(sendData);
         request.setDefineRequestBody(stream, "x-ISO-TPDU/x-auth");
-        CallServer.getHttpclient().add(what, request, new HttpResponseListener(entity));
+        CallServer.getHttpclient().add(what, request, new HttpResponseXdListener(entity));
     }
 
-    private class HttpResponseListener implements HttpListener<byte[]> {
 
-        private UnionPayEntity payEntity;
+    private class HttpResponseXdListener implements HttpListener<byte[]> {
 
-        public HttpResponseListener(UnionPayEntity payEntity) {
+        private XdRecord payEntity;
+
+        public HttpResponseXdListener(XdRecord payEntity) {
             this.payEntity = payEntity;
         }
 
@@ -92,22 +116,27 @@ public class BankRefund extends Thread {
             Iso8583MessageFactory factory = SingletonFactory.forQuickStart();
             factory.setSpecialFieldHandle(62, new SpecialField62());
             Iso8583Message message0810 = factory.parse(response.get());
-            Log.d("HttpResponseListener", "(success.java:97)" + message0810.toFormatString());
+            MiLog.i("银联", "冲正返回" + message0810.toFormatString());
             String value = message0810.getValue(39).getValue();
             if (value.equals("00") || value.equals("25") || value.equals("12")) {
                 //冲正成功
-                payEntity.setResCode("444");
-                payEntity.setUpStatus(1);
-                //TODO 数据库更新 payEntity
+                payEntity.setUnionPayStatus("FE");
+                payEntity.setRes2(value);
+                payEntity.setUpdateFlag("0");
+                DBManagerZB.saveRecord(payEntity);
             } else {
-                payEntity.setResCode(value + "[ERROR]");
-                //TODO 数据库更新 payEntity
+                MiLog.i("银联", "冲正失败" + value);
+                payEntity.setUpdateFlag("0");
+                payEntity.setUnionPayStatus("FD");
+                payEntity.setRes2(value);
+                MiLog.i("银联", "冲正失败数据：" + payEntity.getCreatTime() + "    " + payEntity.getUnionPayStatus());
+                DBManagerZB.saveRecord(payEntity);
             }
         }
 
         @Override
         public void fail(int what, String e) {
-            Log.d("HttpResponseListener", "(fail.java:122)" + e);
+            Log.d("银联", "(fail.java:122)" + e);
         }
     }
 }

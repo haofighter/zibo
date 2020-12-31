@@ -2,8 +2,8 @@ package com.szxb.zibo.config.zibo;
 
 import android.util.Log;
 
-import com.hao.lib.Util.FileUtils;
-import com.hao.lib.Util.MiLog;
+import com.szxb.lib.Util.FileUtils;
+import com.szxb.lib.Util.MiLog;
 import com.szxb.zibo.base.BusApp;
 import com.szxb.zibo.config.haikou.Black;
 import com.szxb.zibo.config.haikou.BlackList;
@@ -27,6 +27,7 @@ import com.szxb.zibo.db.dao.PublicKeyDao;
 import com.szxb.zibo.db.dao.StationNameDao;
 import com.szxb.zibo.db.dao.StationPayPriceDao;
 import com.szxb.zibo.db.dao.UnionPayEntityDao;
+import com.szxb.zibo.db.dao.WhitelistDao;
 import com.szxb.zibo.db.dao.XdRecordDao;
 import com.szxb.zibo.db.dao.ZBLineInfoDao;
 import com.szxb.zibo.db.manage.DBCore;
@@ -48,6 +49,7 @@ import static com.szxb.zibo.db.manage.DBCore.getDaoSession;
 public class DBManagerZB {
 
     public static void saveAppParamInfo(AppParamInfo runParam) {
+        MiLog.i("参数配置", "保存配置：" + runParam.getLinNo() + "    " + runParam.getLinName());
         runParam.setRunId(1);
         getDaoSession().getAppParamInfoDao().insertOrReplaceInTx(runParam);
         BusApp.getInstance().saveBackeUp();//保存基本配置
@@ -209,9 +211,9 @@ public class DBManagerZB {
     }
 
     public static void saveRecord(XdRecord xdRecord) {
-        MiLog.i("刷卡", "卡交易序号   当前记录id：" + xdRecord.getRecordTag() + "    当前记录的状态：" + xdRecord.getStatus());
+        MiLog.i("刷卡", "卡交易序号   当前记录id：" + xdRecord.getRecordTag() + "    当前记录的状态：" + xdRecord.getStatus() + "      " + xdRecord.getUnionPayStatus());
         MiLog.i("刷卡", "记录保存时的卡交易序号：" + xdRecord.getCardTradeCount() + "  卡余额：" + xdRecord.getBalance() + "    卡号：" + xdRecord.getUseCardnum());
-        DBCore.getDaoSession().getXdRecordDao().insertOrReplace(xdRecord);
+        MiLog.i("刷卡", "保存记录条数" + DBCore.getDaoSession().getXdRecordDao().insertOrReplace(xdRecord));
     }
 
     public static void updateXdRecord(XdRecord xdRecord) {
@@ -352,6 +354,17 @@ public class DBManagerZB {
         ).orderDesc(XdRecordDao.Properties.CreatTime).limit(1).unique();
     }
 
+    public static XdRecord checkICCardRecordNearNow(String cardNo, int limitTime) {
+        XdRecordDao xdRecordDao = getDaoSession().getXdRecordDao();
+        Log.i("查询数据", cardNo);
+        cardNo = FileUtils.deleteCover(cardNo);
+        return xdRecordDao.queryBuilder().where(
+                XdRecordDao.Properties.UseCardnum.like("%" + cardNo),
+                XdRecordDao.Properties.RecordVersion.notEq("0005")
+                , XdRecordDao.Properties.CreatTime.gt(System.currentTimeMillis() - limitTime * 1000)
+        ).orderDesc(XdRecordDao.Properties.CreatTime).limit(1).unique();
+    }
+
     //插入批量黑名单
     public static void insertBlackList(List<BlackList> blackLists) {
         getDaoSession().getBlackListDao().insertOrReplaceInTx(blackLists);
@@ -426,11 +439,13 @@ public class DBManagerZB {
         return xdRecordDao.queryBuilder().where(XdRecordDao.Properties.QrCode.eq(bytesToHexString)).orderDesc(XdRecordDao.Properties.CreatTime).limit(1).unique();
     }
 
+
     public static XdRecord checkRecordNoUp() {
         XdRecordDao xdRecordDao = getDaoSession().getXdRecordDao();
         return xdRecordDao.queryBuilder().where(
                 XdRecordDao.Properties.UpdateFlag.eq("0"),
-                XdRecordDao.Properties.Status.eq("00")
+                XdRecordDao.Properties.Status.eq("00"),
+                XdRecordDao.Properties.UnionPayStatus.in("FD", "FF", "00", "A2", "A4", "A5", "A6", "FE")
         ).orderAsc(XdRecordDao.Properties.CreatTime).limit(1).unique();
     }
 
@@ -485,5 +500,22 @@ public class DBManagerZB {
     //删除单个黑名单
     public static void deleteWhite() {
         getDaoSession().getWhitelistDao().deleteAll();
+    }
+
+    public static boolean checkedWhite(String card_issuer) {
+        return getDaoSession().getWhitelistDao().queryBuilder().where(WhitelistDao.Properties.Cardno.like("%" + card_issuer)).list().size() > 0;
+    }
+
+    public static long checkXdRecordUpload() {
+        //查询已上传的记录数量
+        return getDaoSession().getXdRecordDao().queryBuilder().where(XdRecordDao.Properties.UpdateFlag.eq(1)).count();
+    }
+
+    public static List<XdRecord> checkXdRecordUploadList() {
+        return getDaoSession().getXdRecordDao().queryBuilder().where(XdRecordDao.Properties.UpdateFlag.eq(1)).list();
+    }
+
+    public static void deleteXdRecord() {
+        getDaoSession().getXdRecordDao().deleteAll();
     }
 }

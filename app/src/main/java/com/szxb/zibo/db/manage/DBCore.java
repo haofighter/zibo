@@ -30,7 +30,7 @@ public class DBCore {
         if (context == null) {
             throw new IllegalArgumentException("context can't be null");
         }
-        mContext = context.getApplicationContext();
+        mContext = context;
         DB_NAME = dbName;
     }
 

@@ -3,7 +3,6 @@ package com.szxb.zibo.config.zibo.RequestDate;
 import android.util.Log;
 
 import com.google.gson.Gson;
-import com.hao.lib.Util.MiLog;
 import com.szxb.zibo.base.BusApp;
 import com.szxb.zibo.util.DateUtil;
 import com.szxb.zibo.util.md5.MD5;

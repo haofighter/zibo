@@ -7,23 +7,23 @@ import android.os.Build;
 import android.os.Environment;
 import android.os.Message;
 import android.os.SystemClock;
-import android.support.annotation.RequiresApi;
 import android.text.TextUtils;
 import android.util.Log;
 import android.widget.Toast;
 
+import androidx.annotation.RequiresApi;
+
 import com.alibaba.fastjson.JSONObject;
 import com.google.gson.Gson;
-import com.hao.lib.Util.DataUtils;
-import com.hao.lib.Util.FileUtils;
-import com.hao.lib.Util.MiLog;
 import com.hao.lib.Util.SystemUtils;
-import com.hao.lib.base.Rx.Rx;
 import com.szxb.java8583.core.Iso8583Message;
 import com.szxb.java8583.module.SignIn;
 import com.szxb.java8583.module.manager.BusllPosManage;
 import com.szxb.jni.SerialCom;
 import com.szxb.jni.Ymodem;
+import com.szxb.lib.Util.FileUtils;
+import com.szxb.lib.Util.MiLog;
+import com.szxb.lib.base.Rx.Rx;
 import com.szxb.zibo.BuildConfig;
 import com.szxb.zibo.base.BusApp;
 import com.szxb.zibo.base.Task;
@@ -54,6 +54,8 @@ import com.szxb.zibo.util.BusToast;
 import com.szxb.zibo.util.DateUtil;
 import com.szxb.zibo.util.Util;
 import com.szxb.zibo.util.sp.CommonSharedPreferences;
+import com.tencent.tinker.lib.tinker.TinkerInstaller;
+import com.tencent.tinker.loader.shareutil.SharePatchFileUtil;
 import com.yanzhenjie.nohttp.FileBinary;
 import com.yanzhenjie.nohttp.HandlerDelivery;
 import com.yanzhenjie.nohttp.Headers;
@@ -121,6 +123,13 @@ public class InitConfigZB {
                         BusApp.getInstance().getHandler().sendMessage(message);
                         subscriber.onNext(true);
                     }
+
+                    if (BusApp.getPosManager().getIsClean()) {
+                        BusApp.getInstance().loadPatch("/storage/sdcard0/oldVersion.apk");
+                        if (BusApp.getPosManager().getUpDateInfo().equals("当前已更新新版本,请重启")) {
+                            BusApp.getPosManager().setUpDateInfo("版本回退成功，请重启");
+                        }
+                    }
                 } catch (Exception e) {
                     message.obj = "卸载出错";
                     subscriber.onNext(false);
@@ -128,7 +137,6 @@ public class InitConfigZB {
                 subscriber.onNext(backStatus);
             }
         });
-
     }
 
     //加载bin文件
@@ -144,7 +152,7 @@ public class InitConfigZB {
                     message.obj = binName;
                     if (!TextUtils.equals(BusApp.getPosManager().getLastVersion(), binName)) {
                         MiLog.i("流程", "开始更新");
-                        AssetManager ass = BusApp.getInstance().getAssets();
+                        AssetManager ass = BusApp.getInstance().getApplication().getAssets();
                         int k = Ymodem.ymodemUpdate(ass, binName);
                         if (k == 0) {
                             backStatus = true;
@@ -267,7 +275,7 @@ public class InitConfigZB {
 
     public static void downLoadFile(Result result, final String taskNo) {
         try {
-            MiLog.i("流程", "下载任务：" + taskNo);
+            MiLog.i("流程", "下载任务：" + taskNo + "    result：" + result);
             String url = result.getTrans_data().getRequest_content().getHttpUrl();
             if (url == null) {
                 return;
@@ -279,7 +287,17 @@ public class InitConfigZB {
             url = urls[0] + "." + tag;//当前文件的下载地址
             String linVer;
             if (tag.equals("apk")) {
-                linVer = "zibo." + tag;//保存的文件地址
+                if (urls[1].contains("zibo")) {
+                    try {
+                        String apkname = urls[1].split("/")[1];
+                        BusApp.getPosManager().saveDownApkName(apkname);
+                    } catch (Exception e) {
+                        MiLog.i("请求", "apk下载  文件名保存失败");
+                    }
+                    linVer = "zibo." + tag;//保存的文件地址
+                } else {
+                    linVer = urls[1] + "." + tag;//保存的文件地址
+                }
             } else {
                 linVer = urls[1] + "." + tag;//保存的文件地址
             }
@@ -331,14 +349,16 @@ public class InitConfigZB {
 
                 @Override
                 public void onFinish(int what, final String filePath) {
+                    File file = new File(filePath);
+                    MiLog.i("流程", "文件：" + filePath + "      大小:" + file.length());
                     if (filePath.endsWith("lin")) {//线路
-                        MiLog.i("流程", "线路：" + filePath + "    " + (urls[1].replace("/", "")));
+                        MiLog.i("流程", "线路：" + filePath + "    线路版本：" + (urls[1].replace("/", "")));
                         BusToast.showToast("线路下载成功", true);
                         BusApp.getPosManager().setLinver(urls[1].replace("/", ""));
                         PraseLine.praseAllLine(new File(filePath));
                         Rx.getInstance().sendMessage("selectLine");
                     } else if (filePath.endsWith("far")) {//票价
-                        MiLog.i("流程", "票价：" + filePath);
+                        MiLog.i("流程", "票价：" + filePath + "      onFinish 设置票价版本");
                         BusApp.getPosManager().setFarver(urls[1].replace("/", ""));
                         PraseLine.praseLine(new File(filePath));
                     } else if (filePath.endsWith("pub")) {//密钥
@@ -358,7 +378,7 @@ public class InitConfigZB {
                                 PraseLine.praseCsn(new File(filePath));
                             }
                         }, 0, TimeUnit.SECONDS);
-                    } else if (filePath.endsWith("usr")) {//线路
+                    } else if (filePath.endsWith("usr")) {//
                         MiLog.i("流程", "白名单：" + filePath + "    " + (urls[1].replace("/", "")));
                         String whiteVer = urls[1].replace("/", "");
                         if (whiteVer.split("_").length > 1) {
@@ -373,18 +393,33 @@ public class InitConfigZB {
                         }, 0, TimeUnit.SECONDS);
                     } else if (filePath.endsWith("apk")) {//下载APK
                         try {
-                            MiLog.i("流程", "下载APK：" + filePath);
-                            MiLog.i("请求", "下载安装:" + "正在安装：" + filePath);
                             BusApp.getPosManager().setIntallApkPath(filePath);
                             BusApp.getPosManager().setNeedIntallApk(true);
-                            new Thread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    PackageManager packageManager = BusApp.getInstance().getPackageManager();
-                                    Intent it = packageManager.getLaunchIntentForPackage("com.szxb.installapk");
-                                    BusApp.getInstance().startActivity(it);
+                            if (file.exists()) {
+                                if (file.length() / 1024 / 1024 > 10) {
+                                    new Thread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            PackageManager packageManager = BusApp.getInstance().getApplication().getPackageManager();
+                                            Intent it = packageManager.getLaunchIntentForPackage("com.szxb.installapk");
+                                            BusApp.getInstance().getApplication().startActivity(it);
+                                        }
+                                    }).start();
+                                } else {
+                                    String[] apkName = BusApp.getPosManager().getDownloadApkName().split("_");
+                                    if (apkName.length == 1 || BusApp.getPosManager().getDownloadApkName().contains(SharePatchFileUtil.getMD5(new File(filePath)))) {
+                                        new Thread(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                BusApp.getInstance().loadPatch(filePath);
+                                            }
+                                        }).start();
+                                    } else {
+                                        return;
+                                    }
                                 }
-                            }).start();
+                            }
+                            MiLog.i("流程", "下载APK：" + filePath);
                         } catch (Exception e) {
                             MiLog.i("请求", "下载安装:" + "安装出错" + e.getMessage());
                         }
@@ -397,7 +432,6 @@ public class InitConfigZB {
                                 sendInfoToServer(INFO_UP);
                             } catch (Exception e) {
                             }
-
                         }
                     });
                 }
@@ -435,7 +469,7 @@ public class InitConfigZB {
                     } else if ("up_log".equals(result.getTrans_data().getRequest_code())) {//银联参数
 
                         FileUtils.copyDir(
-                                "data/data/" + BusApp.getInstance().getPackageName(),
+                                "data/data/" + BusApp.getInstance().getApplication().getPackageName(),
                                 Environment.getExternalStorageDirectory().toString() + "/log/"
                         );
 
@@ -481,6 +515,7 @@ public class InitConfigZB {
             posInfoDate.setBase_price(BusApp.getPosManager().getBasePrice() + "");
             posInfoDate.setBus_no(BusApp.getPosManager().getBusNo().toString());
             posInfoDate.setCert_ver("0");
+            posInfoDate.setWav_ver("1");
             posInfoDate.setCsn_ver(BusApp.getPosManager().getCsnVer());
             posInfoDate.setCurrent_time(DateUtil.getCurrentDate2());
             posInfoDate.setDriver_no(BusApp.getPosManager().getDriverNo().toString());
@@ -490,7 +525,7 @@ public class InitConfigZB {
             posInfoDate.setLin_ver(BusApp.getPosManager().getLinver());
             posInfoDate.setLocation_info(GPSEvent.bdLocation == null ? "0" : (GPSEvent.bdLocation.getLongitude() + "," + GPSEvent.bdLocation.getLatitude()));
             posInfoDate.setMax_pos_sn(BusApp.getPosManager().getmchTrxIdNow() + "");
-            posInfoDate.setPsamInf(BusApp.getPosManager().getM1psam() + "," + BusApp.getPosManager().getCpupsam());
+            posInfoDate.setPsamInf(BusApp.getPosManager().getM1psam() + "," + BusApp.getPosManager().getCpupsam() + "," + BusApp.getPosManager().getJTBpsam());
             posInfoDate.setPsam_no(BusApp.getPosManager().getPsamNo());
             posInfoDate.setPub_ver(BusApp.getPosManager().getPub_ver());
             posInfoDate.setSoftwar_ver(BusApp.getInstance().getPakageVersion());
@@ -498,21 +533,24 @@ public class InitConfigZB {
             posInfoDate.setUnion_term_no(BusllPosManage.getPosManager().getPosSn());
             posInfoDate.setUn_upload_num(DBManagerZB.checkUnUp() + "");
             posInfoDate.setUsr_ver(BusApp.getPosManager().getUsrver());
-            posInfoDate.setUms_key_ver(BusApp.getPosManager().getUms_key_ver());
+
+//            posInfoDate.setWhl_ver(BusApp.getPosManager().getUsrver());
+            String userKeyVer = (TextUtils.isEmpty(BusllPosManage.getPosManager().getPosSn()) || "00000000".equals(BusllPosManage.getPosManager().getPosSn())) ? "00000000000000000000000000000000" : BusApp.getPosManager().getUms_key_ver();
+            posInfoDate.setUms_key_ver(userKeyVer);
             Log.i("线路版本", BusApp.getPosManager().getLinver());
-            MiLog.i("请求", "心跳信息上报");
+            Log.i("线路版本", "md5:" + BusllPosManage.getPosManager().getKey() + "    密钥：" + posInfoDate.getUms_key_ver());
+            MiLog.i("请求", "流程 心跳信息上报");
         } else if (type.equals(HEART)) {
-            MiLog.i("请求", "心跳上送");
+            MiLog.i("请求", "流程 心跳上送");
             posInfoDate.setSoft_ver(BusApp.getInstance().getPakageVersion());
         }
 
         macRequest.setDefineRequestBodyForJson(RequestParam.getRequestParam(posInfoDate, type));
-        MiLog.i("请求", "数据：" + RequestParam.getRequestParam(posInfoDate, type));
+        MiLog.i("请求", "流程 数据：" + RequestParam.getRequestParam(posInfoDate, type));
         Response<JSONObject> execute = SyncRequestExecutor.INSTANCE.execute(macRequest);
-        MiLog.i("请求", "返回：" + execute.get().toString());
+        MiLog.i("请求", "流程 返回：" + execute.get().toString());
         if (execute.isSucceed()) {
             if (!type.equals(HEART)) {
-                MiLog.i("流程", "请求 重新发送心跳");
                 sendHeart();
             } else {
                 String result = execute.get().toJSONString();
@@ -564,7 +602,7 @@ public class InitConfigZB {
                     return;
                 }
 
-                MiLog.i("参数配置", "银联参数：" + unionStr);
+                MiLog.i("流程", "银联参数：" + unionStr);
                 try {
                     regeistUnion(unionStr);
                     MiLog.i("流程", "银联签到");
@@ -646,7 +684,7 @@ public class InitConfigZB {
             public void subscribe(ObservableEmitter<Boolean> subscriber) throws Exception {
                 AppParamInfo appParamInfo = DBManagerZB.checkAppParamInfo();
                 if (appParamInfo == null || appParamInfo.getLinVer().equals("00000000000000")) {
-                    byte[] bytes = FileUtils.readAssetsFileTobyte("20191227151906_91AB.lin", BusApp.getInstance());
+                    byte[] bytes = FileUtils.readAssetsFileTobyte("20191227151906_91AB.lin", BusApp.getInstance().getApplication());
                     PraseLine.praseAllLineByte(bytes);
                     subscriber.onNext(true);
                 }
@@ -709,7 +747,7 @@ public class InitConfigZB {
                 String old = BusApp.getPosManager().getInstallApk();
                 if (!now.equals(old)) {
                     try {
-                        byte[] bytes = FileUtils.readAssetsFileTobyte(BuildConfig.InstallApk, BusApp.getInstance());
+                        byte[] bytes = FileUtils.readAssetsFileTobyte(BuildConfig.InstallApk, BusApp.getInstance().getApplication());
                         if (FileUtils.byteToFile(bytes, new File(Environment.getExternalStorageDirectory() + "/install.apk"))) {
                             MiLog.i("安装", "apk保存成功");
                             BusApp.getInstance().getmService().apkInstall(Environment.getExternalStorageDirectory() + "/install.apk");

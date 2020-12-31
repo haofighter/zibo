@@ -1,11 +1,12 @@
 package com.szxb.zibo.moudle.zibo;
 
 import android.os.Bundle;
-import android.support.v4.content.ContextCompat;
 import android.widget.TextView;
 
-import com.hao.lib.base.Rx.RxMessage;
+import androidx.core.content.ContextCompat;
+
 import com.szxb.java8583.module.manager.BusllPosManage;
+import com.szxb.lib.base.Rx.RxMessage;
 import com.szxb.zibo.R;
 import com.szxb.zibo.base.BusApp;
 

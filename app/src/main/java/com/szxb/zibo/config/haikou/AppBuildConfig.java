@@ -4,8 +4,8 @@ import android.util.Log;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.hao.lib.Util.FileUtils;
 
+import com.szxb.lib.Util.FileUtils;
 import com.szxb.zibo.base.BusApp;
 import com.szxb.zibo.config.haikou.param.BuildConfigParam;
 import com.szxb.zibo.db.manage.DBCore;
@@ -20,7 +20,7 @@ public class AppBuildConfig {
 
     //获取当前的配置信息
     public static void createConfig(int city) {
-        String config = FileUtils.readAssetsFile("config.json", BusApp.getInstance().getApplicationContext());
+        String config = FileUtils.readAssetsFile("config.json", BusApp.getInstance().getApplication());
         Log.i("config", config);
         List<BuildConfigParam> configParam = new Gson().fromJson(config, new TypeToken<List<BuildConfigParam>>() {
         }.getType());

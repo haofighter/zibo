@@ -3,8 +3,8 @@ package com.szxb.zibo.moudle.function.scan.freecode;
 import android.text.TextUtils;
 import android.util.Log;
 
-import com.hao.lib.Util.FileUtils;
 import com.szxb.jni.JTQR;
+import com.szxb.lib.Util.FileUtils;
 import com.szxb.zibo.config.zibo.DBManagerZB;
 import com.szxb.zibo.config.zibo.PublicKey;
 import com.szxb.zibo.manager.PosManager;

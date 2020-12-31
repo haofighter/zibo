@@ -10,7 +10,7 @@ import android.graphics.drawable.Drawable;
 import android.os.RemoteException;
 import android.util.Log;
 
-import com.hao.lib.Util.MiLog;
+import com.szxb.lib.Util.MiLog;
 import com.szxb.zibo.base.BusApp;
 import com.szxb.zibo.util.PakageMod;
 
@@ -61,7 +61,7 @@ public class ApkUtilImpl implements IApkUtil {
     public String getVersionName(String packageName) {
         String code = "";
         try {
-            PackageInfo pi = mp.getPackageManager().getPackageInfo(packageName, 0);
+            PackageInfo pi = mp.getApplication().getPackageManager().getPackageInfo(packageName, 0);
             code = pi.versionName;
         } catch (PackageManager.NameNotFoundException e) {
             e.printStackTrace();
@@ -113,9 +113,9 @@ public class ApkUtilImpl implements IApkUtil {
     public void startOtherApp(String packagename) {
         Intent intent = null;
         try {
-            PackageManager pm = mp.getPackageManager();
+            PackageManager pm = mp.getApplication().getPackageManager();
             intent = pm.getLaunchIntentForPackage(packagename);
-            mp.startActivity(intent);
+            mp.getApplication().startActivity(intent);
         } catch (Exception e) {
             MiLog.i("startExection","startExection:" + e.getMessage() + " 此应用无入口Activity");
         }
@@ -126,7 +126,7 @@ public class ApkUtilImpl implements IApkUtil {
     public List<PakageMod> loadApps() {
         Intent mainIntent = new Intent(Intent.ACTION_MAIN, null);
         mainIntent.addCategory(Intent.CATEGORY_LAUNCHER);
-        PackageManager pc = mp.getPackageManager();
+        PackageManager pc = mp.getApplication().getPackageManager();
         List<PackageInfo> appList = getThirdPartyApp();
         List<PakageMod> mApps = new ArrayList<PakageMod>();
         for (int i = 0; i < appList.size(); i++) {
@@ -152,7 +152,7 @@ public class ApkUtilImpl implements IApkUtil {
      */
     private List<PackageInfo> getThirdPartyApp() {
         List<PackageInfo> apps = new ArrayList<PackageInfo>();
-        PackageManager pManager = mp.getPackageManager();
+        PackageManager pManager = mp.getApplication().getPackageManager();
         // 获取手机内所有应用
         List<PackageInfo> packlist = pManager.getInstalledPackages(0);
         for (int i = 0; i < packlist.size(); i++) {
@@ -173,7 +173,7 @@ public class ApkUtilImpl implements IApkUtil {
     @Override
     public Map getNotInsatllInformation(String path, int flag) {
         Map m = new HashMap();
-        PackageManager pm = mp.getPackageManager();
+        PackageManager pm = mp.getApplication().getPackageManager();
         PackageInfo pkgInfo = pm.getPackageArchiveInfo(path, PackageManager.GET_ACTIVITIES);
         if (pkgInfo != null) {
             ApplicationInfo appInfo = pkgInfo.applicationInfo;
@@ -193,7 +193,7 @@ public class ApkUtilImpl implements IApkUtil {
     @Override
     public List<Map> getThirdPartyInformation(int flag) {
         List<Map> apps = new ArrayList();
-        PackageManager pManager = mp.getPackageManager();
+        PackageManager pManager = mp.getApplication().getPackageManager();
         // 获取手机内所有应用
         List<PackageInfo> packlist = pManager.getInstalledPackages(0);
         for (int i = 0; i < packlist.size(); i++) {

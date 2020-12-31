@@ -2,8 +2,8 @@ package com.szxb.zibo.moudle.function.card;
 
 import android.util.Log;
 
-import com.hao.lib.Util.FileUtils;
-import com.hao.lib.Util.Type;
+import com.szxb.lib.Util.FileUtils;
+import com.szxb.lib.Util.Type;
 import com.szxb.zibo.moudle.function.card.CPU.FileCpuPayResult;
 import com.szxb.zibo.moudle.function.card.JTB.FileJTBPay;
 import com.szxb.zibo.moudle.function.card.JTB.FileJTBPayResult;

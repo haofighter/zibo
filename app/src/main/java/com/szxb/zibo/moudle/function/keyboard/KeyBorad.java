@@ -1,7 +1,7 @@
 package com.szxb.zibo.moudle.function.keyboard;
 
-import com.hao.lib.Util.FileUtils;
-import com.hao.lib.Util.MiLog;
+import com.szxb.lib.Util.FileUtils;
+import com.szxb.lib.Util.MiLog;
 import com.szxb.zibo.util.md5.Crc;
 
 import java.io.File;

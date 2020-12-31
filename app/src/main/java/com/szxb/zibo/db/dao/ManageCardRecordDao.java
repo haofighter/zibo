@@ -41,6 +41,16 @@ public class ManageCardRecordDao extends AbstractDao<ManageCardRecord, Long> {
         public final static Property JobNO = new Property(14, String.class, "jobNO", false, "JOB_NO");
         public final static Property UpStatus = new Property(15, int.class, "UpStatus", false, "UP_STATUS");
         public final static Property CreateTime = new Property(16, int.class, "createTime", false, "CREATE_TIME");
+        public final static Property Rev1 = new Property(17, String.class, "rev1", false, "REV1");
+        public final static Property Rev2 = new Property(18, String.class, "rev2", false, "REV2");
+        public final static Property Rev3 = new Property(19, String.class, "rev3", false, "REV3");
+        public final static Property Rev4 = new Property(20, String.class, "rev4", false, "REV4");
+        public final static Property Rev5 = new Property(21, String.class, "rev5", false, "REV5");
+        public final static Property Rev6 = new Property(22, String.class, "rev6", false, "REV6");
+        public final static Property Rev7 = new Property(23, String.class, "rev7", false, "REV7");
+        public final static Property Rev8 = new Property(24, String.class, "rev8", false, "REV8");
+        public final static Property Rev9 = new Property(25, String.class, "rev9", false, "REV9");
+        public final static Property Rev10 = new Property(26, String.class, "rev10", false, "REV10");
     }
 
 
@@ -72,7 +82,17 @@ public class ManageCardRecordDao extends AbstractDao<ManageCardRecord, Long> {
                 "\"CARD_ID\" TEXT," + // 13: cardId
                 "\"JOB_NO\" TEXT," + // 14: jobNO
                 "\"UP_STATUS\" INTEGER NOT NULL ," + // 15: UpStatus
-                "\"CREATE_TIME\" INTEGER NOT NULL );"); // 16: createTime
+                "\"CREATE_TIME\" INTEGER NOT NULL ," + // 16: createTime
+                "\"REV1\" TEXT," + // 17: rev1
+                "\"REV2\" TEXT," + // 18: rev2
+                "\"REV3\" TEXT," + // 19: rev3
+                "\"REV4\" TEXT," + // 20: rev4
+                "\"REV5\" TEXT," + // 21: rev5
+                "\"REV6\" TEXT," + // 22: rev6
+                "\"REV7\" TEXT," + // 23: rev7
+                "\"REV8\" TEXT," + // 24: rev8
+                "\"REV9\" TEXT," + // 25: rev9
+                "\"REV10\" TEXT);"); // 26: rev10
     }
 
     /** Drops the underlying database table. */
@@ -161,6 +181,56 @@ public class ManageCardRecordDao extends AbstractDao<ManageCardRecord, Long> {
         }
         stmt.bindLong(16, entity.getUpStatus());
         stmt.bindLong(17, entity.getCreateTime());
+ 
+        String rev1 = entity.getRev1();
+        if (rev1 != null) {
+            stmt.bindString(18, rev1);
+        }
+ 
+        String rev2 = entity.getRev2();
+        if (rev2 != null) {
+            stmt.bindString(19, rev2);
+        }
+ 
+        String rev3 = entity.getRev3();
+        if (rev3 != null) {
+            stmt.bindString(20, rev3);
+        }
+ 
+        String rev4 = entity.getRev4();
+        if (rev4 != null) {
+            stmt.bindString(21, rev4);
+        }
+ 
+        String rev5 = entity.getRev5();
+        if (rev5 != null) {
+            stmt.bindString(22, rev5);
+        }
+ 
+        String rev6 = entity.getRev6();
+        if (rev6 != null) {
+            stmt.bindString(23, rev6);
+        }
+ 
+        String rev7 = entity.getRev7();
+        if (rev7 != null) {
+            stmt.bindString(24, rev7);
+        }
+ 
+        String rev8 = entity.getRev8();
+        if (rev8 != null) {
+            stmt.bindString(25, rev8);
+        }
+ 
+        String rev9 = entity.getRev9();
+        if (rev9 != null) {
+            stmt.bindString(26, rev9);
+        }
+ 
+        String rev10 = entity.getRev10();
+        if (rev10 != null) {
+            stmt.bindString(27, rev10);
+        }
     }
 
     @Override
@@ -243,6 +313,56 @@ public class ManageCardRecordDao extends AbstractDao<ManageCardRecord, Long> {
         }
         stmt.bindLong(16, entity.getUpStatus());
         stmt.bindLong(17, entity.getCreateTime());
+ 
+        String rev1 = entity.getRev1();
+        if (rev1 != null) {
+            stmt.bindString(18, rev1);
+        }
+ 
+        String rev2 = entity.getRev2();
+        if (rev2 != null) {
+            stmt.bindString(19, rev2);
+        }
+ 
+        String rev3 = entity.getRev3();
+        if (rev3 != null) {
+            stmt.bindString(20, rev3);
+        }
+ 
+        String rev4 = entity.getRev4();
+        if (rev4 != null) {
+            stmt.bindString(21, rev4);
+        }
+ 
+        String rev5 = entity.getRev5();
+        if (rev5 != null) {
+            stmt.bindString(22, rev5);
+        }
+ 
+        String rev6 = entity.getRev6();
+        if (rev6 != null) {
+            stmt.bindString(23, rev6);
+        }
+ 
+        String rev7 = entity.getRev7();
+        if (rev7 != null) {
+            stmt.bindString(24, rev7);
+        }
+ 
+        String rev8 = entity.getRev8();
+        if (rev8 != null) {
+            stmt.bindString(25, rev8);
+        }
+ 
+        String rev9 = entity.getRev9();
+        if (rev9 != null) {
+            stmt.bindString(26, rev9);
+        }
+ 
+        String rev10 = entity.getRev10();
+        if (rev10 != null) {
+            stmt.bindString(27, rev10);
+        }
     }
 
     @Override
@@ -269,7 +389,17 @@ public class ManageCardRecordDao extends AbstractDao<ManageCardRecord, Long> {
             cursor.isNull(offset + 13) ? null : cursor.getString(offset + 13), // cardId
             cursor.isNull(offset + 14) ? null : cursor.getString(offset + 14), // jobNO
             cursor.getInt(offset + 15), // UpStatus
-            cursor.getInt(offset + 16) // createTime
+            cursor.getInt(offset + 16), // createTime
+            cursor.isNull(offset + 17) ? null : cursor.getString(offset + 17), // rev1
+            cursor.isNull(offset + 18) ? null : cursor.getString(offset + 18), // rev2
+            cursor.isNull(offset + 19) ? null : cursor.getString(offset + 19), // rev3
+            cursor.isNull(offset + 20) ? null : cursor.getString(offset + 20), // rev4
+            cursor.isNull(offset + 21) ? null : cursor.getString(offset + 21), // rev5
+            cursor.isNull(offset + 22) ? null : cursor.getString(offset + 22), // rev6
+            cursor.isNull(offset + 23) ? null : cursor.getString(offset + 23), // rev7
+            cursor.isNull(offset + 24) ? null : cursor.getString(offset + 24), // rev8
+            cursor.isNull(offset + 25) ? null : cursor.getString(offset + 25), // rev9
+            cursor.isNull(offset + 26) ? null : cursor.getString(offset + 26) // rev10
         );
         return entity;
     }
@@ -293,6 +423,16 @@ public class ManageCardRecordDao extends AbstractDao<ManageCardRecord, Long> {
         entity.setJobNO(cursor.isNull(offset + 14) ? null : cursor.getString(offset + 14));
         entity.setUpStatus(cursor.getInt(offset + 15));
         entity.setCreateTime(cursor.getInt(offset + 16));
+        entity.setRev1(cursor.isNull(offset + 17) ? null : cursor.getString(offset + 17));
+        entity.setRev2(cursor.isNull(offset + 18) ? null : cursor.getString(offset + 18));
+        entity.setRev3(cursor.isNull(offset + 19) ? null : cursor.getString(offset + 19));
+        entity.setRev4(cursor.isNull(offset + 20) ? null : cursor.getString(offset + 20));
+        entity.setRev5(cursor.isNull(offset + 21) ? null : cursor.getString(offset + 21));
+        entity.setRev6(cursor.isNull(offset + 22) ? null : cursor.getString(offset + 22));
+        entity.setRev7(cursor.isNull(offset + 23) ? null : cursor.getString(offset + 23));
+        entity.setRev8(cursor.isNull(offset + 24) ? null : cursor.getString(offset + 24));
+        entity.setRev9(cursor.isNull(offset + 25) ? null : cursor.getString(offset + 25));
+        entity.setRev10(cursor.isNull(offset + 26) ? null : cursor.getString(offset + 26));
      }
     
     @Override

@@ -79,6 +79,23 @@ public class XdRecordDao extends AbstractDao<XdRecord, Void> {
         public final static Property VoiceType = new Property(52, int.class, "voiceType", false, "VOICE_TYPE");
         public final static Property PayCommand = new Property(53, String.class, "payCommand", false, "PAY_COMMAND");
         public final static Property LastTradeCount = new Property(54, String.class, "lastTradeCount", false, "LAST_TRADE_COUNT");
+        public final static Property RealFree = new Property(55, String.class, "realFree", false, "REAL_FREE");
+        public final static Property UnionPayStatus = new Property(56, String.class, "unionPayStatus", false, "UNION_PAY_STATUS");
+        public final static Property Res1 = new Property(57, String.class, "res1", false, "RES1");
+        public final static Property Res2 = new Property(58, String.class, "res2", false, "RES2");
+        public final static Property Res3 = new Property(59, String.class, "res3", false, "RES3");
+        public final static Property Res4 = new Property(60, String.class, "res4", false, "RES4");
+        public final static Property Res5 = new Property(61, String.class, "res5", false, "RES5");
+        public final static Property Rev1 = new Property(62, String.class, "rev1", false, "REV1");
+        public final static Property Rev2 = new Property(63, String.class, "rev2", false, "REV2");
+        public final static Property Rev3 = new Property(64, String.class, "rev3", false, "REV3");
+        public final static Property Rev4 = new Property(65, String.class, "rev4", false, "REV4");
+        public final static Property Rev5 = new Property(66, String.class, "rev5", false, "REV5");
+        public final static Property Rev6 = new Property(67, String.class, "rev6", false, "REV6");
+        public final static Property Rev7 = new Property(68, String.class, "rev7", false, "REV7");
+        public final static Property Rev8 = new Property(69, String.class, "rev8", false, "REV8");
+        public final static Property Rev9 = new Property(70, String.class, "rev9", false, "REV9");
+        public final static Property Rev10 = new Property(71, String.class, "rev10", false, "REV10");
     }
 
 
@@ -148,7 +165,24 @@ public class XdRecordDao extends AbstractDao<XdRecord, Void> {
                 "\"BALANCE\" INTEGER NOT NULL ," + // 51: balance
                 "\"VOICE_TYPE\" INTEGER NOT NULL ," + // 52: voiceType
                 "\"PAY_COMMAND\" TEXT," + // 53: payCommand
-                "\"LAST_TRADE_COUNT\" TEXT);"); // 54: lastTradeCount
+                "\"LAST_TRADE_COUNT\" TEXT," + // 54: lastTradeCount
+                "\"REAL_FREE\" TEXT," + // 55: realFree
+                "\"UNION_PAY_STATUS\" TEXT," + // 56: unionPayStatus
+                "\"RES1\" TEXT," + // 57: res1
+                "\"RES2\" TEXT," + // 58: res2
+                "\"RES3\" TEXT," + // 59: res3
+                "\"RES4\" TEXT," + // 60: res4
+                "\"RES5\" TEXT," + // 61: res5
+                "\"REV1\" TEXT," + // 62: rev1
+                "\"REV2\" TEXT," + // 63: rev2
+                "\"REV3\" TEXT," + // 64: rev3
+                "\"REV4\" TEXT," + // 65: rev4
+                "\"REV5\" TEXT," + // 66: rev5
+                "\"REV6\" TEXT," + // 67: rev6
+                "\"REV7\" TEXT," + // 68: rev7
+                "\"REV8\" TEXT," + // 69: rev8
+                "\"REV9\" TEXT," + // 70: rev9
+                "\"REV10\" TEXT);"); // 71: rev10
     }
 
     /** Drops the underlying database table. */
@@ -423,6 +457,91 @@ public class XdRecordDao extends AbstractDao<XdRecord, Void> {
         if (lastTradeCount != null) {
             stmt.bindString(55, lastTradeCount);
         }
+ 
+        String realFree = entity.getRealFree();
+        if (realFree != null) {
+            stmt.bindString(56, realFree);
+        }
+ 
+        String unionPayStatus = entity.getUnionPayStatus();
+        if (unionPayStatus != null) {
+            stmt.bindString(57, unionPayStatus);
+        }
+ 
+        String res1 = entity.getRes1();
+        if (res1 != null) {
+            stmt.bindString(58, res1);
+        }
+ 
+        String res2 = entity.getRes2();
+        if (res2 != null) {
+            stmt.bindString(59, res2);
+        }
+ 
+        String res3 = entity.getRes3();
+        if (res3 != null) {
+            stmt.bindString(60, res3);
+        }
+ 
+        String res4 = entity.getRes4();
+        if (res4 != null) {
+            stmt.bindString(61, res4);
+        }
+ 
+        String res5 = entity.getRes5();
+        if (res5 != null) {
+            stmt.bindString(62, res5);
+        }
+ 
+        String rev1 = entity.getRev1();
+        if (rev1 != null) {
+            stmt.bindString(63, rev1);
+        }
+ 
+        String rev2 = entity.getRev2();
+        if (rev2 != null) {
+            stmt.bindString(64, rev2);
+        }
+ 
+        String rev3 = entity.getRev3();
+        if (rev3 != null) {
+            stmt.bindString(65, rev3);
+        }
+ 
+        String rev4 = entity.getRev4();
+        if (rev4 != null) {
+            stmt.bindString(66, rev4);
+        }
+ 
+        String rev5 = entity.getRev5();
+        if (rev5 != null) {
+            stmt.bindString(67, rev5);
+        }
+ 
+        String rev6 = entity.getRev6();
+        if (rev6 != null) {
+            stmt.bindString(68, rev6);
+        }
+ 
+        String rev7 = entity.getRev7();
+        if (rev7 != null) {
+            stmt.bindString(69, rev7);
+        }
+ 
+        String rev8 = entity.getRev8();
+        if (rev8 != null) {
+            stmt.bindString(70, rev8);
+        }
+ 
+        String rev9 = entity.getRev9();
+        if (rev9 != null) {
+            stmt.bindString(71, rev9);
+        }
+ 
+        String rev10 = entity.getRev10();
+        if (rev10 != null) {
+            stmt.bindString(72, rev10);
+        }
     }
 
     @Override
@@ -691,6 +810,91 @@ public class XdRecordDao extends AbstractDao<XdRecord, Void> {
         if (lastTradeCount != null) {
             stmt.bindString(55, lastTradeCount);
         }
+ 
+        String realFree = entity.getRealFree();
+        if (realFree != null) {
+            stmt.bindString(56, realFree);
+        }
+ 
+        String unionPayStatus = entity.getUnionPayStatus();
+        if (unionPayStatus != null) {
+            stmt.bindString(57, unionPayStatus);
+        }
+ 
+        String res1 = entity.getRes1();
+        if (res1 != null) {
+            stmt.bindString(58, res1);
+        }
+ 
+        String res2 = entity.getRes2();
+        if (res2 != null) {
+            stmt.bindString(59, res2);
+        }
+ 
+        String res3 = entity.getRes3();
+        if (res3 != null) {
+            stmt.bindString(60, res3);
+        }
+ 
+        String res4 = entity.getRes4();
+        if (res4 != null) {
+            stmt.bindString(61, res4);
+        }
+ 
+        String res5 = entity.getRes5();
+        if (res5 != null) {
+            stmt.bindString(62, res5);
+        }
+ 
+        String rev1 = entity.getRev1();
+        if (rev1 != null) {
+            stmt.bindString(63, rev1);
+        }
+ 
+        String rev2 = entity.getRev2();
+        if (rev2 != null) {
+            stmt.bindString(64, rev2);
+        }
+ 
+        String rev3 = entity.getRev3();
+        if (rev3 != null) {
+            stmt.bindString(65, rev3);
+        }
+ 
+        String rev4 = entity.getRev4();
+        if (rev4 != null) {
+            stmt.bindString(66, rev4);
+        }
+ 
+        String rev5 = entity.getRev5();
+        if (rev5 != null) {
+            stmt.bindString(67, rev5);
+        }
+ 
+        String rev6 = entity.getRev6();
+        if (rev6 != null) {
+            stmt.bindString(68, rev6);
+        }
+ 
+        String rev7 = entity.getRev7();
+        if (rev7 != null) {
+            stmt.bindString(69, rev7);
+        }
+ 
+        String rev8 = entity.getRev8();
+        if (rev8 != null) {
+            stmt.bindString(70, rev8);
+        }
+ 
+        String rev9 = entity.getRev9();
+        if (rev9 != null) {
+            stmt.bindString(71, rev9);
+        }
+ 
+        String rev10 = entity.getRev10();
+        if (rev10 != null) {
+            stmt.bindString(72, rev10);
+        }
     }
 
     @Override
@@ -755,7 +959,24 @@ public class XdRecordDao extends AbstractDao<XdRecord, Void> {
             cursor.getLong(offset + 51), // balance
             cursor.getInt(offset + 52), // voiceType
             cursor.isNull(offset + 53) ? null : cursor.getString(offset + 53), // payCommand
-            cursor.isNull(offset + 54) ? null : cursor.getString(offset + 54) // lastTradeCount
+            cursor.isNull(offset + 54) ? null : cursor.getString(offset + 54), // lastTradeCount
+            cursor.isNull(offset + 55) ? null : cursor.getString(offset + 55), // realFree
+            cursor.isNull(offset + 56) ? null : cursor.getString(offset + 56), // unionPayStatus
+            cursor.isNull(offset + 57) ? null : cursor.getString(offset + 57), // res1
+            cursor.isNull(offset + 58) ? null : cursor.getString(offset + 58), // res2
+            cursor.isNull(offset + 59) ? null : cursor.getString(offset + 59), // res3
+            cursor.isNull(offset + 60) ? null : cursor.getString(offset + 60), // res4
+            cursor.isNull(offset + 61) ? null : cursor.getString(offset + 61), // res5
+            cursor.isNull(offset + 62) ? null : cursor.getString(offset + 62), // rev1
+            cursor.isNull(offset + 63) ? null : cursor.getString(offset + 63), // rev2
+            cursor.isNull(offset + 64) ? null : cursor.getString(offset + 64), // rev3
+            cursor.isNull(offset + 65) ? null : cursor.getString(offset + 65), // rev4
+            cursor.isNull(offset + 66) ? null : cursor.getString(offset + 66), // rev5
+            cursor.isNull(offset + 67) ? null : cursor.getString(offset + 67), // rev6
+            cursor.isNull(offset + 68) ? null : cursor.getString(offset + 68), // rev7
+            cursor.isNull(offset + 69) ? null : cursor.getString(offset + 69), // rev8
+            cursor.isNull(offset + 70) ? null : cursor.getString(offset + 70), // rev9
+            cursor.isNull(offset + 71) ? null : cursor.getString(offset + 71) // rev10
         );
         return entity;
     }
@@ -817,6 +1038,23 @@ public class XdRecordDao extends AbstractDao<XdRecord, Void> {
         entity.setVoiceType(cursor.getInt(offset + 52));
         entity.setPayCommand(cursor.isNull(offset + 53) ? null : cursor.getString(offset + 53));
         entity.setLastTradeCount(cursor.isNull(offset + 54) ? null : cursor.getString(offset + 54));
+        entity.setRealFree(cursor.isNull(offset + 55) ? null : cursor.getString(offset + 55));
+        entity.setUnionPayStatus(cursor.isNull(offset + 56) ? null : cursor.getString(offset + 56));
+        entity.setRes1(cursor.isNull(offset + 57) ? null : cursor.getString(offset + 57));
+        entity.setRes2(cursor.isNull(offset + 58) ? null : cursor.getString(offset + 58));
+        entity.setRes3(cursor.isNull(offset + 59) ? null : cursor.getString(offset + 59));
+        entity.setRes4(cursor.isNull(offset + 60) ? null : cursor.getString(offset + 60));
+        entity.setRes5(cursor.isNull(offset + 61) ? null : cursor.getString(offset + 61));
+        entity.setRev1(cursor.isNull(offset + 62) ? null : cursor.getString(offset + 62));
+        entity.setRev2(cursor.isNull(offset + 63) ? null : cursor.getString(offset + 63));
+        entity.setRev3(cursor.isNull(offset + 64) ? null : cursor.getString(offset + 64));
+        entity.setRev4(cursor.isNull(offset + 65) ? null : cursor.getString(offset + 65));
+        entity.setRev5(cursor.isNull(offset + 66) ? null : cursor.getString(offset + 66));
+        entity.setRev6(cursor.isNull(offset + 67) ? null : cursor.getString(offset + 67));
+        entity.setRev7(cursor.isNull(offset + 68) ? null : cursor.getString(offset + 68));
+        entity.setRev8(cursor.isNull(offset + 69) ? null : cursor.getString(offset + 69));
+        entity.setRev9(cursor.isNull(offset + 70) ? null : cursor.getString(offset + 70));
+        entity.setRev10(cursor.isNull(offset + 71) ? null : cursor.getString(offset + 71));
      }
     
     @Override

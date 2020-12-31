@@ -9,7 +9,7 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.hao.lib.Util.MiLog;
+import com.szxb.lib.Util.MiLog;
 import com.szxb.zibo.R;
 import com.szxb.zibo.base.BusApp;
 
@@ -83,7 +83,7 @@ public class BusToast extends Toast {
         BusApp.getInstance().getNowActivitie().runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                mToast = showTopay(BusApp.getInstance(), text, isOk);
+                mToast = showTopay(BusApp.getInstance().getApplication(), text, isOk);
                 mToast.show();
 //                if (mToast == null) {
 //                    mToast = showTopay(BusApp.getInstance(), text, isOk);

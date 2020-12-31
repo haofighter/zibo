@@ -1,7 +1,7 @@
 package com.szxb.zibo.moudle.function.card.M1;
 
-import com.hao.lib.Util.FileUtils;
-import com.hao.lib.Util.Type;
+import com.szxb.lib.Util.FileUtils;
+import com.szxb.lib.Util.Type;
 
 import static java.lang.System.arraycopy;
 

@@ -6,31 +6,28 @@ import android.media.AudioManager
 import android.os.Bundle
 import android.os.Environment
 import android.os.Handler
-import android.os.Message
-import android.support.v4.content.ContextCompat
-import android.support.v4.content.ContextCompat.startActivity
-import android.support.v7.widget.LinearLayoutManager
+import android.text.TextUtils
 import android.util.Log
 import android.view.View
 import android.widget.RelativeLayout
-import com.google.gson.Gson
-import com.hao.lib.Util.FileUtils
-import com.hao.lib.Util.MiLog
-import com.hao.lib.Util.StatusBarUtil
-import com.hao.lib.Util.ThreadUtils
-import com.hao.lib.base.Rx.Rx
+import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.szxb.java8583.module.manager.BusllPosManage
 import com.szxb.jni.SerialCom
+import com.szxb.lib.Util.FileUtils
+import com.szxb.lib.Util.MiLog
+import com.szxb.lib.Util.StatusBarUtil
+import com.szxb.lib.Util.ThreadUtils
+import com.szxb.lib.base.Rx.Rx
 import com.szxb.zibo.BuildConfig
 import com.szxb.zibo.R
-import com.szxb.zibo.base.BusApp
 import com.szxb.zibo.base.BaseActivity
+import com.szxb.zibo.base.BusApp
 import com.szxb.zibo.base.Task
 import com.szxb.zibo.cmd.DoCmd
-import com.szxb.zibo.cmd.devCmd
 import com.szxb.zibo.config.haikou.ConfigContext
+import com.szxb.zibo.config.zibo.DBManagerZB
 import com.szxb.zibo.config.zibo.InitConfigZB
-import com.szxb.zibo.config.zibo.Result
 import com.szxb.zibo.config.zibo.line.PraseLine
 import com.szxb.zibo.moudle.function.card.CardInfoEntity
 import com.szxb.zibo.moudle.function.card.PraseCard
@@ -42,17 +39,15 @@ import com.szxb.zibo.moudle.maintool.ParamShowInfo
 import com.szxb.zibo.record.XdRecord
 import com.szxb.zibo.util.BusToast
 import com.szxb.zibo.util.DateUtil
-import com.szxb.zibo.util.ZipUtils
 import com.szxb.zibo.util.sp.CommonSharedPreferences
 import com.szxb.zibo.voice.SoundPoolUtil
 import com.szxb.zibo.voice.VoiceConfig
+import com.tencent.tinker.lib.tinker.TinkerInstaller
 import kotlinx.android.synthetic.main.activity_base.*
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.activity_main.main
 import kotlinx.android.synthetic.main.param_layout.*
 import java.io.File
-import java.util.concurrent.Executor
-import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
 class Main2Activity : BaseActivity() {
@@ -66,7 +61,9 @@ class Main2Activity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Log.i("流程", "进入main")
+        Log.i("流程", "进入main 当前版本," + BusApp.getInstance().pakageVersion)
+        Log.i("升级", "当前版本" + BusApp.getInstance().pakageVersion)
+
         setContentView(R.layout.activity_main)
         try {
             main.setBackgroundResource(R.mipmap.background)
@@ -85,14 +82,37 @@ class Main2Activity : BaseActivity() {
         }
 
         now_time.setOnClickListener {
-            Thread {
-                val str = "{\"customer_code\":\"881641\",\"sign\":\"6E7DA68D54DD8C30D5C51D34EED7C37D\",\"req_type\":\"1\",\"timestamp\":\"1576805238388\",\"result_msg\":\"请求成功！\",\"merchant_no\":\"001\",\"seq_no\":\"20191220000122\",\"server_time\":\"1576805238\",\"charset\":\"UTF-8\",\"trans_data\":{\"request_code\":\"apk\",\"server_time\":\"1576805238\",\"task_no\":\"8f270015a6bf4508a425293830faa42d\",\"request_content\":{\"protocol\":\"fastdfs\",\"packet_size\":\"24040460\",\"httpUrl\":\"http://139.9.113.219:10091/group1/M00/00/06/rBQABV38Pa-AMyxZAXEuFBgV8gk903.apk\",\"group_name\":\"group1\",\"url\":\"Fastdfs://139.9.113.219:22000/group1/M00/00/05/rBQABV34lKmAMxnUAW7UDFjEyqA497.apk/1.0.1_191217_zibo.apk\",\"md5\":\"737894f461908c0b185e8eb4ffe892be\"}},\"channel_code\":\"0000001\",\"version\":\"1.0.2\",\"result_code\":\"0\",\"terminal_type\":\"Q6-B\",\"terminal_no\":\"Q6B0B1T219140389\",\"sign_type\":\"MD5\"}\n";
-                var r = Gson().fromJson<Result>(str, Result::class.java);
-                InitConfigZB.downLoadFile(r, r.trans_data.task_no);
-            }.start()
+//            DoCmd.startSearchICcard();
+//            Thread {
+////                val str = "{\"customer_code\":\"881641\",\"sign\":\"6E7DA68D54DD8C30D5C51D34EED7C37D\",\"req_type\":\"1\",\"timestamp\":\"1576805238388\",\"result_msg\":\"请求成功！\",\"merchant_no\":\"001\",\"seq_no\":\"20191220000122\",\"server_time\":\"1576805238\",\"charset\":\"UTF-8\",\"trans_data\":{\"request_code\":\"apk\",\"server_time\":\"1576805238\",\"task_no\":\"8f270015a6bf4508a425293830faa42d\",\"request_content\":{\"protocol\":\"fastdfs\",\"packet_size\":\"24040460\",\"httpUrl\":\"http://139.9.113.219:10091/group1/M00/00/06/rBQABV38Pa-AMyxZAXEuFBgV8gk903.apk\",\"group_name\":\"group1\",\"url\":\"Fastdfs://139.9.113.219:22000/group1/M00/00/05/rBQABV34lKmAMxnUAW7UDFjEyqA497.apk/1.0.1_191217_zibo.apk\",\"md5\":\"737894f461908c0b185e8eb4ffe892be\"}},\"channel_code\":\"0000001\",\"version\":\"1.0.2\",\"result_code\":\"0\",\"terminal_type\":\"Q6-B\",\"terminal_no\":\"Q6B0B1T219140389\",\"sign_type\":\"MD5\"}\n";
+////                var r = Gson().fromJson<Result>(str, Result::class.java);
+////                InitConfigZB.downLoadFile(r, r.trans_data.task_no);
+//                MiLog.i("流程", "安装patch");
+//                BusApp.getInstance().loadPatch(Environment.getExternalStorageDirectory().absolutePath + "/zibo.apk")
+
+            //卡解析
+
+//            MiLog.i("刷卡", FileUtils.bytesToHexString(bytes));
+
+            var xdRecord = XdRecord().praseDate("0200151F010401FDFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF34303032353133303330333433303339333933393338010000000000000000FFFFFFFF513642394131543231373438303732313700200137754131061623690000000000000061026503104930902000001577202012301241035D000000240000003C0000007423000037009583417AFB0100004530000366453065020103000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001F5A")
+
+
+//            MiLog.i("刷卡", FileUtils.bytesToHexString(bytes));
+            var cardInfoEntity = CardInfoEntity();
+            cardInfoEntity.putDate(FileUtils.hexStringToBytes("000000202012282145280800705d14012012788080024d54009d0040869b19705d14010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001493100100000134903674550ffffffff020103104931001000001349202009162040123159440000015645004550000101007900000000000000094131061636752020122821451109000037002009542800000000000000780000000000000dc420201228214511453013664530ffffffff2cf5b6dfa1f227027d010100000000000000012601453013664530ffffffff453000fb03303034303939393800004131061636752020122821451100000030ab00000000000000000000453000000000000000000000000000000000000000000000000000000000000c0000284000210050000000000000000000000000000000000000000000000dc4"));
+            var cardInfoEntity1 = CardInfoEntity();
+            cardInfoEntity1.putDate(FileUtils.hexStringToBytes("000000202012282145310800822c87a120127833b0024d54009d0042869b19822c87a10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001493150100000014003724710ffffffff020103104931501000000140202008242040123150000000015645004710000101005f000000000000060941310616237020201228214342090000370020067190000000000000005e0000000600000dc420201228214342453013664530ffffffff2cf5b6dfa1f227027d010100000000000000033602453013664530ffffffff453000fb01303034303939393900004131061636742020122817115900000000ab453013664530ffffffff453000fb0330303430393939390000413106163674202012281712220000000c0000284000210064000000000000000000000000000000000000000000000dc4"));
+
+
+            BusApp.getInstance().cleanParch()
+//            }.start()
         }
 
 //        PraseLine.praseUsrByte(FileUtils.readAssetsFileTobyte("20200726121107.usr", BusApp.getInstance()), "20200726121107.usr");
+
+//        BusllPosManage.getPosManager().setMachId("438370341112007")
+//        BusllPosManage.getPosManager().key = "2C4F497C20FB2FB6758651E5750DAD9B"
+//        BusllPosManage.getPosManager().posSn = "63461748"
     }
 
     private fun updateView() {
@@ -114,11 +134,22 @@ class Main2Activity : BaseActivity() {
     //更新UI
     fun refreshView() {
         try {
+            if (System.currentTimeMillis() - DoCmd.runtime > 3000) {
+                DoCmd.startSearchICcard();
+            }
+            var unupRecord = DBManagerZB.checkUnUp()
+            if (unupRecord > 100) {
+                BusToast.showToast("当前未上传记录" + unupRecord + "条", false);
+            }
             now_time.text = DateUtil.getCurrentDate();
-            version_tx.text = BuildConfig.BIN_NAME + "\n[" + BusApp.getInstance().getPakageVersion() + "]"
+            var versionInfo = BuildConfig.BIN_NAME + "\n[" + BusApp.getInstance().getPakageVersion() + "]"
+            if (!TextUtils.isEmpty(BusApp.getPosManager().upDateInfo)) {
+                versionInfo += ("\n[" + BusApp.getPosManager().upDateInfo + "]")
+            }
+            version_tx.text = versionInfo
             version_tx.append("\n" + BusApp.getPosManager().m1psam + "\n" + BusApp.getPosManager().cpupsam + "\n" + BusApp.getPosManager().jtBpsam)
-            white.text = "白名单：" + CommonSharedPreferences.get("white", "未获取到当前黑名单版本") as String
-            black.text = "黑名单：" + CommonSharedPreferences.get("black", "未获取到当前白名单版本") as String
+            white.text = "白名单：" + CommonSharedPreferences.get("usrver", "未获取到当前白名单版本") as String
+            black.text = "黑名单：" + CommonSharedPreferences.get("csnVer", "未获取到当前黑名单版本") as String
             busno.text = "车辆号：" + BusApp.getPosManager().busNo
             pos_num.text = "设备号：" + BusApp.getPosManager().getPosSN()
             if (BusApp.downProgress == 0) {
@@ -207,7 +238,11 @@ class Main2Activity : BaseActivity() {
         tools.add("设置车号")
         tools.add("采集GPS")
         tools.add("当前机器：" + (if (BusApp.getPosManager().posUpDate == 1) "前车机" else "后车机"))
+        tools.add("清理日志")
+        tools.add("升级版本")
+
         tools_list.layoutManager = LinearLayoutManager(this)
+//        tools_list.layoutManager = LinearLayoutManager(this)
         tools_list.adapter = MainToolAdapter(this, tools)
 
         history_list.layoutParams = RelativeLayout.LayoutParams(
@@ -342,6 +377,11 @@ class Main2Activity : BaseActivity() {
                     DoCmd.setAddress(o[0] as String?)
                 }
 
+                "doCardProcess" -> {
+                    DoCmd.doCardProcess()
+                }
+
+
                 "sendStationInfo" -> {
                     var time: Long = 0
                     if (BusApp.getPosManager().getPosUpDate() == 1) {
@@ -400,13 +440,8 @@ class Main2Activity : BaseActivity() {
                 5 -> {
                     Thread {
                         //更新初始化的参数
-                        BusApp.getPosManager().csnVer = "00000000000000"
-                        BusApp.getPosManager().usrver = "00000000000000"
-                        BusApp.getPosManager().farver = "00000000000000"
-//            posInfoDate.setFar_ver("00000000000000"
-                        BusApp.getPosManager().pub_ver = "00000000000000"
-                        BusApp.getPosManager().linver = "00000000000000"
-                        BusApp.getPosManager().ums_key_ver = "00000000000000"
+                        MiLog.i("流程", "按键初始化参数 初始化  线路版本  票价版本")
+                        BusApp.getPosManager().clearRunParam()
                         InitConfigZB.sendInfoToServer(InitConfigZB.INFO_UP)
                         refreshMoudle()
                     }.start()
@@ -420,11 +455,11 @@ class Main2Activity : BaseActivity() {
                                     "/storage/sdcard1/Log"
                             )
                             //导出数据库文件
-                            val posDirectory = "data/data/" + BusApp.getInstance().packageName + "/databases"
+                            val posDirectory = "data/data/" + BusApp.getInstance().application.packageName + "/databases"
                             val sdDirectory = "/databases/" + BusApp.getPosManager().busNo
 
                             FileUtils.copyDir(
-                                    "data/data/" + BusApp.getInstance().packageName,
+                                    "data/data/" + BusApp.getInstance().application.packageName,
                                     "/storage/sdcard1/date"
                             )
                             BusToast.showToast("导出成功", true)
@@ -501,6 +536,32 @@ class Main2Activity : BaseActivity() {
                     }
                     initView()
                 }
+                14 -> {//清理日志
+                    refreshMoudle()
+                    Thread {
+                        MiLog.clear(-1);
+                    }.start()
+                }
+
+                15 -> {
+                    refreshMoudle()
+                    Thread {
+                        try {
+                            var file = File("/storage/sdcard1");
+                            var filePath = FileUtils.searchFile("/storage/sdcard1", "zibo");
+                            file = File(filePath);
+                            if (file.exists() && file.length() < 10 * 1024 * 1024) {
+                                BusToast.showToast("正在更新", true)
+                                MiLog.i("流程", "正在加载补丁");
+                                BusApp.getInstance().loadPatch(file.path)
+                            } else {
+                                BusToast.showToast("请检查增量包", false)
+                            }
+                        } catch (e: Exception) {
+                            BusToast.showToast("更新失败," + e.message, false)
+                        }
+                    }.start()
+                }
             }
         }
     }
@@ -551,6 +612,7 @@ class Main2Activity : BaseActivity() {
             key_ver.text = paramShowInfo.pubver
             myself_keyboardAddress.text = paramShowInfo.mykeyborad
             keyboard_Address.text = paramShowInfo.keyborad
+            install_version.text = BuildConfig.InstallApk
         } catch (e: Exception) {
             Log.i("界面设置报错了", "报错了");
         }

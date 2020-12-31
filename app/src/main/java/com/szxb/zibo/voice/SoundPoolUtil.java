@@ -7,7 +7,7 @@ import android.media.SoundPool;
 
 import android.util.Log;
 
-import com.hao.lib.Util.MiLog;
+import com.szxb.lib.Util.MiLog;
 import com.szxb.zibo.R;
 
 import java.util.LinkedList;
@@ -87,7 +87,14 @@ public class SoundPoolUtil {
             R.raw.xueshengkaqingshangche,
             R.raw.laoniankaqingshangche,
             R.raw.aixinkaqingshangche,
-            R.raw.rongjunkaqingshangche
+            R.raw.rongjunkaqingshangche,
+            R.raw.tuiyijunren,
+            R.raw.tuiyijunrenqingshangche,
+            R.raw.tuiyijunrenqingxiache,
+            R.raw.laonianyouhuika,
+            R.raw.laonianyouhuikaqingshangche,
+            R.raw.laonianyouhuikaqingxiache,
+            R.raw.nianzhangzhe
     };
 
     static Queue<Integer> soundQueue = new LinkedList<>();
@@ -102,7 +109,7 @@ public class SoundPoolUtil {
         if (soundPlayUtils == null) {
             soundPlayUtils = new SoundPoolUtil();
         }
-        mContext = context.getApplicationContext();
+        mContext = context;
         for (int sound : sounds) {
             mSoundPlayer.load(mContext, sound, 1);
         }

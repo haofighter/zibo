@@ -1,8 +1,8 @@
 package com.szxb.zibo.moudle.function.unionpay.entity;
 
 import android.annotation.SuppressLint;
-import com.hao.lib.Util.FileUtils;
 import com.szxb.java8583.module.manager.BusllPosManage;
+import com.szxb.lib.Util.FileUtils;
 
 /**
  * 作者：Tangren on 2018-07-07
@@ -221,7 +221,6 @@ public class PassCode {
 
     public String getTAG9F33() {
         return TAG9F33;
-
     }
 
     public PassCode setTAG9F33(String TAG9F33) {
@@ -231,7 +230,6 @@ public class PassCode {
 
     public String getTAG57() {
         return TAG57;
-
     }
 
     public PassCode setTAG57(String TAG57) {

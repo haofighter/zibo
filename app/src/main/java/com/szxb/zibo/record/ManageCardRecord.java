@@ -25,16 +25,29 @@ public class ManageCardRecord {
     String jobNO;//员工号即driverId
     int UpStatus;//0  未上传  1 已上传
     int createTime;
-    
-    @Generated(hash = 1033293241)
-    public ManageCardRecord() {
-    }
-    @Generated(hash = 1870881133)
+
+    /********备用字段****************/
+    String rev1;//
+    String rev2;//
+    String rev3;//
+    String rev4;//
+    String rev5;//
+    String rev6;//
+    String rev7;//
+    String rev8;//
+    String rev9;//
+    String rev10;//
+
+
+
+    @Generated(hash = 2035895852)
     public ManageCardRecord(Long id, String bizType, String transSeqId,
             String signType, String transCityCode, String acquirer,
             String terminalId, String psamCardId, String psamTerminalId,
             String lineId, String transTime, String refeNo, String veguckeNO,
-            String cardId, String jobNO, int UpStatus, int createTime) {
+            String cardId, String jobNO, int UpStatus, int createTime, String rev1,
+            String rev2, String rev3, String rev4, String rev5, String rev6,
+            String rev7, String rev8, String rev9, String rev10) {
         this.id = id;
         this.bizType = bizType;
         this.transSeqId = transSeqId;
@@ -52,7 +65,23 @@ public class ManageCardRecord {
         this.jobNO = jobNO;
         this.UpStatus = UpStatus;
         this.createTime = createTime;
+        this.rev1 = rev1;
+        this.rev2 = rev2;
+        this.rev3 = rev3;
+        this.rev4 = rev4;
+        this.rev5 = rev5;
+        this.rev6 = rev6;
+        this.rev7 = rev7;
+        this.rev8 = rev8;
+        this.rev9 = rev9;
+        this.rev10 = rev10;
     }
+    @Generated(hash = 1033293241)
+    public ManageCardRecord() {
+    }
+
+
+
     public Long getId() {
         return this.id;
     }
@@ -155,6 +184,66 @@ public class ManageCardRecord {
     }
     public void setPsamTerminalId(String psamTerminalId) {
         this.psamTerminalId = psamTerminalId;
+    }
+    public String getRev1() {
+        return this.rev1;
+    }
+    public void setRev1(String rev1) {
+        this.rev1 = rev1;
+    }
+    public String getRev2() {
+        return this.rev2;
+    }
+    public void setRev2(String rev2) {
+        this.rev2 = rev2;
+    }
+    public String getRev3() {
+        return this.rev3;
+    }
+    public void setRev3(String rev3) {
+        this.rev3 = rev3;
+    }
+    public String getRev4() {
+        return this.rev4;
+    }
+    public void setRev4(String rev4) {
+        this.rev4 = rev4;
+    }
+    public String getRev5() {
+        return this.rev5;
+    }
+    public void setRev5(String rev5) {
+        this.rev5 = rev5;
+    }
+    public String getRev6() {
+        return this.rev6;
+    }
+    public void setRev6(String rev6) {
+        this.rev6 = rev6;
+    }
+    public String getRev7() {
+        return this.rev7;
+    }
+    public void setRev7(String rev7) {
+        this.rev7 = rev7;
+    }
+    public String getRev8() {
+        return this.rev8;
+    }
+    public void setRev8(String rev8) {
+        this.rev8 = rev8;
+    }
+    public String getRev9() {
+        return this.rev9;
+    }
+    public void setRev9(String rev9) {
+        this.rev9 = rev9;
+    }
+    public String getRev10() {
+        return this.rev10;
+    }
+    public void setRev10(String rev10) {
+        this.rev10 = rev10;
     }
 
 }

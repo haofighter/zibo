@@ -1,21 +1,30 @@
 package com.szxb.zibo.cmd;
 
 
+import android.os.Handler;
+import android.os.HandlerThread;
+import android.os.Looper;
+import android.os.Message;
+import android.os.SystemClock;
+import android.text.TextUtils;
 import android.util.Log;
+import android.widget.ListAdapter;
 
-import com.hao.lib.Util.FileUtils;
-import com.hao.lib.Util.MiLog;
-import com.hao.lib.Util.ThreadUtils;
-import com.hao.lib.Util.Type;
-import com.hao.lib.base.Rx.Rx;
 import com.szxb.java8583.core.Iso8583Message;
 import com.szxb.java8583.module.SignIn;
 import com.szxb.java8583.module.manager.BusllPosManage;
 
+import com.szxb.lib.Util.FileUtils;
+import com.szxb.lib.Util.MiLog;
+import com.szxb.lib.Util.ThreadUtils;
+import com.szxb.lib.Util.ToastUtils;
+import com.szxb.lib.Util.Type;
+import com.szxb.lib.base.Rx.Rx;
 import com.szxb.zibo.base.BusApp;
 import com.szxb.zibo.config.haikou.ConfigContext;
 import com.szxb.zibo.config.zibo.InitConfigZB;
 import com.szxb.zibo.config.zibo.line.PraseLine;
+import com.szxb.zibo.moudle.function.card.ICCard.PraseICCard;
 import com.szxb.zibo.moudle.function.keyboard.KeyBoardInfo;
 import com.szxb.zibo.moudle.function.keyboard.KeyBorad;
 import com.szxb.zibo.moudle.function.card.PraseCard;
@@ -32,6 +41,8 @@ import com.szxb.zibo.voice.VoiceConfig;
 
 import java.io.File;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -44,6 +55,7 @@ public class DoCmd {
     private static String priceSetting = "";
     private static String oldStationKey = "000000";
     private static String oldSynKey = "000000";
+    static boolean isDelay = false;//是否需要延迟发送身份证命令
 
     public static BlockingQueue<devCmd> queue = new MiLinkBlockQueue(1);
 
@@ -267,7 +279,7 @@ public class DoCmd {
                 i += CpuPosID.length;
                 String cpuPosID = (String) FileUtils.byte2Parm(CpuPosID, Type.HEX);
                 BusApp.getPosManager().setM1psam(cpuPosID);
-                if(BusApp.getPosManager().getMainPSAM().equals("000000000000")){
+                if (BusApp.getPosManager().getMainPSAM().equals("000000000000")) {
                     BusApp.getPosManager().setMainPSAM(cpuPosID);
                 }
 
@@ -299,7 +311,7 @@ public class DoCmd {
                 i += JTBPosID.length;
                 String jTBPosID = (String) FileUtils.byte2Parm(JTBPosID, Type.HEX);
                 BusApp.getPosManager().setJTBpsam(jTBPosID);
-                if(BusApp.getPosManager().getMainPSAM().equals("000000000000")){
+                if (BusApp.getPosManager().getMainPSAM().equals("000000000000")) {
                     BusApp.getPosManager().setMainPSAM(jTBPosID);
                 }
 
@@ -660,7 +672,9 @@ public class DoCmd {
         if (!BusApp.getPosManager().getLineNo().equals(keyBoardInfo.getLineNo())) {
             BusApp.getPosManager().setLineNo(keyBoardInfo.getLineNo());
             BusApp.getPosManager().setBasePrice(0);
+            MiLog.i("流程", "docmd synRuninfo   初始化校验");
             BusApp.getPosManager().setFarver("00000000000000");
+            MiLog.i("流程", "线路版本  docmd  synRuninfo 初始化校验");
             BusApp.getPosManager().setLinver("00000000000000");
             Executors.newScheduledThreadPool(1).schedule(new Runnable() {
                 @Override
@@ -688,7 +702,9 @@ public class DoCmd {
         if (!BusApp.getPosManager().getLineNo().equals(keyBoardInfo.getBackLineNo())) {
             BusApp.getPosManager().setLineNo(keyBoardInfo.getLineNo());
             BusApp.getPosManager().setBasePrice(0);
+            MiLog.i("流程", "docmd  synRuninfo2 初始化校验");
             BusApp.getPosManager().setFarver("00000000000000");
+            MiLog.i("流程", "线路版本   docmd  synRuninfo2初始化校验");
             BusApp.getPosManager().setLinver("00000000000000");
             Executors.newScheduledThreadPool(1).schedule(new Runnable() {
                 @Override
@@ -810,4 +826,170 @@ public class DoCmd {
     }
 
 
+    private static String lastCommand = "";
+    public final static String resetICcard = "aaaaaa9669000311ffed";
+    public final static String checkBcard = "aaaaaa966900032b0129";
+    public final static String closeAndopenFrequency = "aaaaaa966900042b00022d";
+    public final static String searchICcard = "aaaaaa96690003200122";
+    public final static String fixCard = "aaaaaa96690003200221";
+    public final static String readCard = "aaaaaa96690003300132";
+    public final static String openRed = "aaaaaa96690004c00100c5";
+    public final static String closeRed = "aaaaaa96690004c00200c6";
+    public final static String openGreen = "aaaaaa96690004c00101c4";
+    public final static String closeGreen = "aaaaaa96690004c00201c7";
+    public static int count = 0;
+    public static long runtime = 0;
+
+    public static void doCardProcess() {
+        MiLog.i("身份证", "前次命令：" + lastCommand + "      命令执行成功");
+        runtime = System.currentTimeMillis();
+        if (count == Integer.MAX_VALUE) {
+            count = 0;
+        } else {
+            count++;
+        }
+        if (handler == null) {
+            BusToast.showToast("身份证线程未启动", false);
+            return;
+        }
+        int time = 0;
+        if (isDelay) {
+            MiLog.i("身份证", "延迟执行");
+            time = 1000;
+        }
+
+        if (TextUtils.isEmpty(lastCommand)) {//当前无执行任务
+            handler.sendMessageDelayed(handler.obtainMessage(count, resetICcard), time);
+        } else if (resetICcard.equals(lastCommand)) {//复位身份证模块成功
+            handler.sendMessageDelayed(handler.obtainMessage(count, closeAndopenFrequency), time);
+        } else if (closeAndopenFrequency.equals(lastCommand)) {//关闭打开射频成功
+            handler.sendMessageDelayed(handler.obtainMessage(count, checkBcard), time);
+        } else if (checkBcard.equals(lastCommand)) {//寻b卡成功
+            handler.sendMessageDelayed(handler.obtainMessage(count, searchICcard), time);//寻找身份证
+        } else if (searchICcard.equals(lastCommand)) {//寻找身份证成功
+            handler.sendMessageDelayed(handler.obtainMessage(count, fixCard), time);
+        } else if (fixCard.equals(lastCommand)) {//选定身份证成功
+            handler.sendMessageDelayed(handler.obtainMessage(count, readCard), time);
+        } else if (readCard.equals(lastCommand)) {//读取身份证成功
+            handler.sendMessageDelayed(handler.obtainMessage(count, openGreen), time);
+        } else if (openGreen.equals(lastCommand)) {//开绿灯
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            handler.sendMessage(handler.obtainMessage(count, closeGreen));
+        } else if (closeRed.equals(lastCommand) || closeGreen.equals(lastCommand)) {//关灯
+            lastCommand = "";
+            doCardProcess();
+        } else if ("err".equals(lastCommand)) {//出错了开红灯
+            handler.sendMessage(handler.obtainMessage(count, openRed));
+        } else if (openRed.equals(lastCommand)) {//开红灯
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            handler.sendMessage(handler.obtainMessage(count, closeRed));
+        }
+
+    }
+
+    public static devCmd doCardCommand(String command) {
+        lastCommand = command;
+        MiLog.i("身份证", "发送命令：" + command);
+        devCmd verCmd = new devCmd();
+        verCmd.setCla((byte) 0x8e);
+        verCmd.setIns((byte) 0x01);
+        byte[] bytes = FileUtils.hexStringToBytes(lastCommand);
+        verCmd.setDataBuf(bytes);
+        verCmd.setnRecvLen(bytes.length);
+        byte[] sendCmd = verCmd.packageData();
+        SerialComWrite(sendCmd, sendCmd.length);
+        return null;
+    }
+
+    public static void doIdentityCard(devCmd devCmd) {
+        try {
+            byte[] keyboardInfo = new byte[devCmd.getnRecvLen()];
+            arraycopy(devCmd.getDataBuf(), 0, keyboardInfo, 0, devCmd.getnRecvLen());
+
+            int i = 0;
+            byte[] head = new byte[5];
+            arraycopy(keyboardInfo, i, head, 0, head.length);
+            i += head.length;
+
+            byte[] len = new byte[2];
+            arraycopy(keyboardInfo, i, len, 0, len.length);
+            int lenth1 = Integer.parseInt(FileUtils.bytesToHexString(len), 16);
+            i += len.length;
+
+            byte[] sw1 = new byte[3];
+            arraycopy(keyboardInfo, i, sw1, 0, sw1.length);
+            i += sw1.length;
+
+            byte[] date = new byte[lenth1 - 3];
+            arraycopy(keyboardInfo, i, date, 0, date.length);
+            i += date.length;
+
+            boolean isCanUse = true;
+            if (date.length > 100) {//表示后面有附加信息（身份证数据）
+                try {
+                    isCanUse = PraseICCard.praseIC(date);
+                } catch (Exception e) {
+                    MiLog.i("身份证", "身份证信息读取错误" + e.getMessage());
+                }
+            }
+            MiLog.i("身份证", "返回状态：" + FileUtils.bytesToHexString(sw1) + "      当前返回数据：" + FileUtils.bytesToHexString(keyboardInfo) + "     " + Thread.currentThread().getName());
+
+            if (isCanUse) {
+                if (FileUtils.bytesToHexString(sw1).equals("000090")) {//操作成功
+                } else if (FileUtils.bytesToHexString(sw1).equals("00009f")) {//寻卡成功
+                } else {
+                    if (lastCommand.equals(readCard) || lastCommand.equals(fixCard)) {
+                        lastCommand = "err";
+                    } else {
+                        lastCommand = "";
+                    }
+                }
+            } else {
+                lastCommand = "err";
+            }
+            Rx.getInstance().sendMessage("doCardProcess");
+        } catch (Exception e) {
+            MiLog.i("身份证", "出错了" + e.getMessage());
+        }
+    }
+
+    static Handler handler;
+
+    static HandlerThread thread;
+
+    public static Thread startSearchICcard() {
+        if (thread == null) {
+            thread = new HandlerThread("ICCARD");
+            thread.start();
+            handler = new Handler(thread.getLooper()) {
+                @Override
+                public void handleMessage(Message msg) {
+                    try {
+                        if (isDelay) {
+                            isDelay = false;
+                        }
+                        doCardCommand((String) msg.obj);
+                    } catch (Exception e) {
+
+                    }
+                }
+            };
+        } else {
+            if (!thread.isAlive()) {
+                thread = null;
+                startSearchICcard();
+            }
+        }
+        lastCommand = "";
+        doCardProcess();
+        return thread;
+    }
 }

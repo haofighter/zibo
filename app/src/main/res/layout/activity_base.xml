@@ -4,14 +4,7 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fitsSystemWindows="true"
-    tools:context="com.szxb.zibo.base.BaseActivity">
-
-    <RelativeLayout
-        android:id="@+id/content"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"></RelativeLayout>
-
+    android:fitsSystemWindows="true">
     <TextView
         android:id="@+id/net"
         android:layout_width="match_parent"
@@ -20,6 +13,15 @@
         android:gravity="center"
         android:padding="3dp"
         android:text="网络异常"
+        android:visibility="gone"
         android:textColor="@color/white"
-        android:visibility="gone" />
+         />
+
+    <RelativeLayout
+        android:id="@+id/content"
+        android:layout_width="match_parent"
+        android:layout_below="@+id/net"
+        android:layout_height="match_parent"></RelativeLayout>
+
+
 </RelativeLayout>

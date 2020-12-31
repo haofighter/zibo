@@ -1,0 +1,21 @@
+补丁包生成方式：
+Terminal命令行补丁包生成方式
+切换到项目目录下 即含有gradlew文件的目录
+运行./gradlew tinkerPatchDebug（mac） 命令    gradlew tinkerPatchDebug（win）
+之后会对项目进行编译打包
+补丁生成位置build/outputs/apk/tinkerPatch/debug/patch_signed_7zip.apk
+此补丁包针对的是debug包版本
+目前公交使用的为此版本
+
+补丁包命名规则：
+必须以zibo开头
+1.4.21(包括此版本)后加入校验功能，需以zibo开头 后跟版本信息及md5校验码
+
+相关配置信息：
+moudle的gradle：
+oldApkConfigPath 对比查分包的基础包 需要提供给公交安装 后续补丁包需在此包的基础上进行操作
+bakPath          每次编译完成后生成的包(不可与基础包混用)
+versionname      打包后的界面版本显示
+defaultConfig    进入程序后相关的基础参数包含 bin版本，apk安装器版本等
+
+

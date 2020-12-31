@@ -1,9 +1,15 @@
 package com.szxb.zibo.moudle.function.card;
 
 
+import android.util.Log;
+
 import com.hao.lib.Util.*;
 
 import com.szxb.java8583.module.manager.BusllPosManage;
+import com.szxb.lib.Util.FileUtils;
+import com.szxb.lib.Util.MiLog;
+import com.szxb.lib.Util.ThreadUtils;
+import com.szxb.lib.Util.Type;
 import com.szxb.zibo.BuildConfig;
 import com.szxb.zibo.base.BusApp;
 import com.szxb.zibo.config.zibo.line.PraseLine;
@@ -187,9 +193,9 @@ public class CardInfoEntity implements Cloneable {
                     return "99";
                 }
             } else if ((selete_aid.equals("00"))) {//银行卡
-                SoundPoolUtil.play(VoiceConfig.zanshibunengshiyong);
-                BusToast.showToast("暂时不能使用此方式乘车", false);
-//                praseUnionCard(date);
+//                SoundPoolUtil.play(VoiceConfig.zanshibunengshiyong);
+//                BusToast.showToast("暂时不能使用此方式乘车", false);
+                praseUnionCard(date);
                 return "01";
             } else if (selete_aid.equals("03")) {//CPU卡 本地卡
                 praseLoaclCard(date);
@@ -197,6 +203,7 @@ public class CardInfoEntity implements Cloneable {
                 praseNewCPUCard(date);
             } else if (selete_aid.equals("01")) {//交通部
                 praseJTBCard(date);
+//                return "999";
             }
             MiLog.i("刷卡", "主卡类型：" + cardType + "       字卡类型：" + childCardType + "          实际主卡类型：" + realCardType + "          实际字卡类型：" + realChildCardType + "     卡号：" + cardNo);
             return "00";
@@ -222,12 +229,16 @@ public class CardInfoEntity implements Cloneable {
 
         file18JTBInfoEntity = new File18JTBInfoEntity();
         i = file18JTBInfoEntity.praseFile(i, date);
+        Log.i("刷卡", "18长度：" + file18JTBInfoEntity.toString().length());
 
         file1EJTBInfoEntity = new File1EJTBInfoEntity();
         i = file1EJTBInfoEntity.praseFile(i, date);
+        Log.i("刷卡", "1E长度：" + file1EJTBInfoEntity.getPayDate().length());
 
         file1AJTBInfoEntity = new File1AJTBInfoEntity();
         i = file1AJTBInfoEntity.praseFile(i, date);
+
+        Log.i("刷卡", "1A长度：" + file1AJTBInfoEntity.getPaydate().length() + "         " + file1AJTBInfoEntity.getPaydate());
 
         byte[] blance = new byte[4];
         arraycopy(date, i, blance, 0, blance.length);
@@ -364,7 +375,7 @@ public class CardInfoEntity implements Cloneable {
                         UnionCard.getInstance().run(aid);
                     }
                 } catch (Exception e) {
-                    MiLog.i("银联刷卡错误", e.toString());
+                    MiLog.i("银联", "刷卡错误：" + e.toString());
                 }
             }
         });
@@ -440,7 +451,7 @@ public class CardInfoEntity implements Cloneable {
         } else if (selete_aid.equals("02")) {
             return getnewCPUMorePriceInfo().getPre_preferential_amount();
         } else if (selete_aid.equals("01")) {
-            return file1AJTBInfoEntity.getBoarding_max_amount_1a();
+            return file1AJTBInfoEntity.getBoarding_pay_all_1a();
         }
         return "00";
     }
@@ -451,7 +462,7 @@ public class CardInfoEntity implements Cloneable {
         } else if (selete_aid.equals("02")) {
             getnewCPUMorePriceInfo().setFull_fare(fullprice);
         } else if (selete_aid.equals("01")) {
-            file1AJTBInfoEntity.setBoarding_max_amount_1a(fullprice);
+            file1AJTBInfoEntity.setAllpay(fullprice);
         }
     }
 
@@ -461,7 +472,12 @@ public class CardInfoEntity implements Cloneable {
         } else if (selete_aid.equals("02")) {
             getnewCPUMorePriceInfo().setComplete_mark(s);
         } else if (selete_aid.equals("01")) {
-            getJTBMorePriceInfo().setTransaction_status_1a(s);
+            if (s.equals("00")) {//下车
+                getJTBMorePriceInfo().setTransaction_status_1a("02");
+            } else {
+                getJTBMorePriceInfo().setTransaction_status_1a("01");
+            }
+
         }
     }
 
@@ -471,6 +487,9 @@ public class CardInfoEntity implements Cloneable {
         } else if (selete_aid.equals("02")) {
             return getnewCPUMorePriceInfo().getComplete_mark();
         } else if (selete_aid.equals("01")) {
+            if (getJTBMorePriceInfo().getTransaction_status_1a().equals("02")) {//下车
+                return "00";
+            }
             return getJTBMorePriceInfo().getTransaction_status_1a();
         }
         return "00";
@@ -482,7 +501,7 @@ public class CardInfoEntity implements Cloneable {
         } else if (selete_aid.equals("02")) {
             return Integer.parseInt(getnewCPUMorePriceInfo().getFull_fare(), 16);
         } else if (selete_aid.equals("01")) {
-            return Integer.parseInt(getJTBMorePriceInfo().getBoarding_max_amount_1a(), 16);
+            return Integer.parseInt(getJTBMorePriceInfo().getAllpay(), 16);
         }
         return 0;
     }
@@ -493,7 +512,7 @@ public class CardInfoEntity implements Cloneable {
         } else if (selete_aid.equals("02")) {
             return getnewCPUMorePriceInfo().getBoarding_site_indexInt();
         } else if (selete_aid.equals("01")) {
-            return getJTBMorePriceInfo().getBoarding_the_site_1a();
+            return getJTBMorePriceInfo().getBoarding_station_1a();
         }
         return 0;
     }
@@ -508,8 +527,41 @@ public class CardInfoEntity implements Cloneable {
             return getMorePriceInfo().getVehicle_number();
         } else if (selete_aid.equals("02")) {
             return getnewCPUMorePriceInfo().getVehicle_number();
+        } else if (selete_aid.equals("01")) {
+            String carno = FileUtils.asciiHexToHex(getJTBMorePriceInfo().getBoarding_carno_1a());
+            if (carno.length() > 6) {
+                carno = carno.substring(carno.length() - 6);
+            }
+            return carno;
+        }
+        return "000000";
+    }
+
+    public String getLineNumber() {
+        if (selete_aid.equals("03") || selete_aid.equals("04")) {
+            String line = getMorePriceInfo().getLink_number();
+            if (line.length() == 4) {
+                String cardLineEnd = FileUtils.formatHexStringToByteString(2, Integer.parseInt(line.substring(2, 4), 16) + "", true);
+                String cardLineStart = FileUtils.formatHexStringToByteString(1, Integer.parseInt(line.substring(0, 2), 16) + "", true);
+                line = cardLineStart + cardLineEnd;
+            }
+            return line;
         } else if (selete_aid.equals("02")) {
-            return getnewCPUMorePriceInfo().getVehicle_number();
+            String line = getnewCPUMorePriceInfo().getLink_number();
+            if (line.length() == 6) {
+                String cardLineEnd = FileUtils.formatHexStringToByteString(2, Integer.parseInt(line.substring(2, 6), 16) + "", true);
+                String cardLineStart = FileUtils.formatHexStringToByteString(1, Integer.parseInt(line.substring(0, 2), 16) + "", true);
+                line = cardLineStart + cardLineEnd;
+            } else if (line.length() == 4) {
+                String cardLineEnd = FileUtils.formatHexStringToByteString(2, Integer.parseInt(line.substring(2, 4), 16) + "", true);
+                String cardLineStart = FileUtils.formatHexStringToByteString(1, Integer.parseInt(line.substring(0, 2), 16) + "", true);
+                line = cardLineStart + cardLineEnd;
+            }
+            return line;
+        } else if (selete_aid.equals("01")) {
+            String cardLineEnd = FileUtils.formatHexStringToByteString(2, Integer.parseInt(getFile1AJTBInfoEntity().getBoarding_lineno_1a(), 16) + "", true);
+            String cardLineStart = FileUtils.formatHexStringToByteString(1, Integer.parseInt(getFile1AJTBInfoEntity().getLineno(), 16) + "", true);
+            return cardLineStart + cardLineEnd;
         }
         return "000000";
     }
@@ -519,6 +571,8 @@ public class CardInfoEntity implements Cloneable {
             return getMorePriceInfo().getDriver_direction();
         } else if (selete_aid.equals("02")) {
             return getnewCPUMorePriceInfo().getDriver_direction();
+        } else if (selete_aid.equals("01")) {
+            return getFile1AJTBInfoEntity().getDriverno();
         }
         return "00";
     }

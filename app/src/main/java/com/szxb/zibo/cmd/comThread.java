@@ -3,9 +3,9 @@ package com.szxb.zibo.cmd;
 import android.os.Handler;
 import android.util.Log;
 
-import com.hao.lib.Util.FileUtils;
-import com.hao.lib.Util.MiLog;
 import com.szxb.jni.SerialCom;
+import com.szxb.lib.Util.FileUtils;
+import com.szxb.lib.Util.MiLog;
 import com.szxb.zibo.moudle.function.unionpay.unionutil.HexUtil;
 
 import java.util.ArrayList;
@@ -65,7 +65,6 @@ public class comThread extends Thread {
                     lastDatetime = System.currentTimeMillis();
                     MiLog.i(TAG, "SerialComRead lenth 重启k21");
                 }
-                Log.i("线程028b", "运行");
                 arraycopy(nulldate, 0, recvBuf, 0, recvBuf.length);
                 ret = SerialComRead(recvBuf, 5000);
                 if (0 > ret) {

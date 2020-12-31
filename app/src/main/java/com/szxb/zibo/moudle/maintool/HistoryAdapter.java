@@ -1,15 +1,16 @@
 package com.szxb.zibo.moudle.maintool;
 
 import android.content.Context;
-import android.support.annotation.NonNull;
-import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.hao.lib.Util.FileUtils;
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.szxb.lib.Util.FileUtils;
 import com.szxb.zibo.R;
 import com.szxb.zibo.config.zibo.DBManagerZB;
 import com.szxb.zibo.record.XdRecord;

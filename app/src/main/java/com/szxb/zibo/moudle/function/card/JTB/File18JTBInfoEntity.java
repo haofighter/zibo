@@ -1,7 +1,8 @@
 package com.szxb.zibo.moudle.function.card.JTB;
 
-import com.hao.lib.Util.FileUtils;
-import com.hao.lib.Util.Type;
+
+import com.szxb.lib.Util.FileUtils;
+import com.szxb.lib.Util.Type;
 
 import static java.lang.System.arraycopy;
 
@@ -52,5 +53,11 @@ public class File18JTBInfoEntity {
 
     public String getTransaction_number_18() {
         return transaction_number_18;
+    }
+
+
+    @Override
+    public String toString() {
+        return transaction_number_18 + overdrawn_account + transaction_amount + transaction_type + pose_id + transaction_time;
     }
 }
