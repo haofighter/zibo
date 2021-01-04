@@ -58,6 +58,20 @@ public class PraseCard {
         }
     };
 
+    //过期后能使用的卡片
+    static List<String> needRepeatPsam = new ArrayList<String>() {
+        @Override
+        public boolean contains(Object o) {
+            for (int i = 0; i < size(); i++) {
+                if (get(i).equals(o)) {
+                    return true;
+                }
+            }
+            return super.contains(o);
+        }
+    };
+
+
 //    static List<String> errCard = new ArrayList<String>() {
 //        @Override
 //        public boolean contains(Object o) {
@@ -72,6 +86,16 @@ public class PraseCard {
 
     private static void initSpCard() {
         spCard.add("02");
+
+
+
+        needRepeatPsam.add("21");
+        needRepeatPsam.add("3A");
+        needRepeatPsam.add("3B");
+        needRepeatPsam.add("3C");
+        needRepeatPsam.add("61");
+        needRepeatPsam.add("63");
+        needRepeatPsam.add("65");
     }
 
 //    private static void initErrCard() {
@@ -115,7 +139,7 @@ public class PraseCard {
 
 //            MiLog.i("刷卡", FileUtils.bytesToHexString(bytes));
 
-//            bytes = FileUtils.hexStringToBytes("00000020201230091540080060c4e80720107880a00220900082e0856e60c4e8070000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000200002550000000000000255000119000000701022020072000000000000000000120200720211912310a000000000000000025500001ffff0101255025500011900000072020072020401231010200000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000062e00002800fb0001003220201229151025409999370020095429400021006400000000000000000000000000000000010a00000000000001092550020010052020122915285000006a830000000000000000000000000000000000000000001f78");
+//            bytes = FileUtils.hexStringToBytes("000000202101021049090800075342f720107880a002209000b91aac4a075342f70000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000200002550000000000000255000010000011303012019120400000000000000000120191204202112040a000000000000000025500001ffff0101255025500001000001132019120420991231030100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000062e0001040006000e010e20210102134301409998255001005875400021012c0000000000000000000000000000000001a600000000000000092550010058752021010213430100006a830000000000000000000000000000000000000000000d27");
 //            解析卡 如果00 则表示解析成功
             if (!cardInfoEntity.putDate(bytes).equals("00")) {
                 MiLog.i("刷卡", "卡解析失败   ");
@@ -649,6 +673,9 @@ public class PraseCard {
                 MiLog.i("刷卡", "错误记录保存：" + praseConsumCard.status);
                 BusToast.showToast("刷卡失败【" + praseConsumCard.getStatus() + "】", false);
                 showErr(praseConsumCard.getSw());
+                if(needRepeatPsam.contains(praseConsumCard.getStatus())){
+                    Rx.getInstance().sendMessage("resetPSAM");
+                }
             } else {
                 initConsumCardToRecord(cardInfoEntity, praseConsumCard, newXdRecord);
                 newXdRecord.setPayType("FD");

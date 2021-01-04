@@ -32,6 +32,14 @@ import static java.lang.System.arraycopy;
 
 public class FileUtils {
 
+
+    public static boolean checkStrIsAllZero(String str) {
+        if (str.replaceAll("0", "").equals("")) {
+            return true;
+        }
+        return false;
+    }
+
     /**
      * 获得指定文件的byte数组
      */

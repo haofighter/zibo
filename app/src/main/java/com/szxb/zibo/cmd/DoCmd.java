@@ -914,6 +914,11 @@ public class DoCmd {
             byte[] keyboardInfo = new byte[devCmd.getnRecvLen()];
             arraycopy(devCmd.getDataBuf(), 0, keyboardInfo, 0, devCmd.getnRecvLen());
 
+            Log.i("身份证", "keyboardInfo:" + FileUtils.bytesToHexString(keyboardInfo));
+            if (FileUtils.checkStrIsAllZero(FileUtils.bytesToHexString(keyboardInfo))) {
+                Log.i("身份证", "当前无数据");
+                return;
+            }
             int i = 0;
             byte[] head = new byte[5];
             arraycopy(keyboardInfo, i, head, 0, head.length);
@@ -966,6 +971,7 @@ public class DoCmd {
     static HandlerThread thread;
 
     public static Thread startSearchICcard() {
+        Log.i("身份证", "线程开始：" + Thread.currentThread().getName());
         if (thread == null) {
             thread = new HandlerThread("ICCARD");
             thread.start();
@@ -976,6 +982,7 @@ public class DoCmd {
                         if (isDelay) {
                             isDelay = false;
                         }
+                        Log.i("身份证", "需要发送的命令 当前线程：" + Thread.currentThread().getName());
                         doCardCommand((String) msg.obj);
                     } catch (Exception e) {
 
@@ -983,10 +990,12 @@ public class DoCmd {
                 }
             };
         } else {
-            if (!thread.isAlive()) {
+            Looper looper = thread.getLooper();
+            if (looper != null) {
+                looper.quit();
                 thread = null;
-                startSearchICcard();
             }
+            return null;
         }
         lastCommand = "";
         doCardProcess();

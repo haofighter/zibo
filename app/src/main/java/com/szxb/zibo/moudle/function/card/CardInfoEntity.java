@@ -548,11 +548,7 @@ public class CardInfoEntity implements Cloneable {
             return line;
         } else if (selete_aid.equals("02")) {
             String line = getnewCPUMorePriceInfo().getLink_number();
-            if (line.length() == 6) {
-                String cardLineEnd = FileUtils.formatHexStringToByteString(2, Integer.parseInt(line.substring(2, 6), 16) + "", true);
-                String cardLineStart = FileUtils.formatHexStringToByteString(1, Integer.parseInt(line.substring(0, 2), 16) + "", true);
-                line = cardLineStart + cardLineEnd;
-            } else if (line.length() == 4) {
+            if (line.length() == 4) {
                 String cardLineEnd = FileUtils.formatHexStringToByteString(2, Integer.parseInt(line.substring(2, 4), 16) + "", true);
                 String cardLineStart = FileUtils.formatHexStringToByteString(1, Integer.parseInt(line.substring(0, 2), 16) + "", true);
                 line = cardLineStart + cardLineEnd;

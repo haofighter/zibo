@@ -106,14 +106,12 @@ public class SamplePatchListener extends DefaultPatchListener {
         try {
             apkFirstVersion = Integer.parseInt(str[0]);
             apkSencondVersion = Integer.parseInt(str[1]);
+            if (apkFirstVersion >= 1 && apkSencondVersion >= 5 && !BusApp.getPosManager().getIsClean() && returnCode != ShareConstants.ERROR_PATCH_OK) {
+                BusApp.getInstance().cleanParch();
+            }
         } catch (Exception e) {
 
         }
-        if (apkFirstVersion >= 1 && apkSencondVersion >= 5 && !BusApp.getPosManager().getIsClean()) {
-            BusApp.getInstance().cleanParch();
-        }
-
-
         return returnCode;
     }
 }

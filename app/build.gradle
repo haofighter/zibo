@@ -8,7 +8,7 @@ static def version() {
 }
 
 static def versionname() {
-    return "1.5.0"
+    return "1.4.21"
 }
 
 static def appname() {
@@ -31,11 +31,11 @@ ext {
     isIgnoreWarning = true
     //for normal build
     //old apk file to build patch apk
-    tinkerOldApkPath = "${oldApkConfigPath}/zibo_1.5.0_201231.apk"
+    tinkerOldApkPath = "${oldApkConfigPath}/zibo_1.4.0_201126.apk"
     //proguard mapping file to build patch apk
     tinkerApplyMappingPath = "${oldApkConfigPath}/app-debug-1018-17-33-47-mapping.txt"
     //resource R.txt to build patch apk, must input if there is resource changed
-    tinkerApplyResourcePath = "${oldApkConfigPath}/zibo_1.5.0_201231-R.txt"
+    tinkerApplyResourcePath = "${oldApkConfigPath}/zibo_1.4.0_201126-R.txt"
 
     //only use for build all flavor, if not, just ignore this field
     tinkerBuildFlavorDirectory = "${oldApkConfigPath}/app-1018-17-32-47"
