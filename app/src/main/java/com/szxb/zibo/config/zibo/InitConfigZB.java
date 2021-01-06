@@ -35,6 +35,7 @@ import com.szxb.zibo.config.zibo.RequestDate.PosInfoDate;
 import com.szxb.zibo.config.zibo.RequestDate.RequestParam;
 import com.szxb.zibo.config.zibo.line.PraseLine;
 import com.szxb.zibo.config.zibo.line.StationName;
+import com.szxb.zibo.manager.PosManager;
 import com.szxb.zibo.moudle.function.location.GPSEntity;
 import com.szxb.zibo.moudle.function.location.GPSEvent;
 import com.szxb.zibo.moudle.function.location.GPSToBaidu;
@@ -48,6 +49,7 @@ import com.szxb.zibo.net.bean.HeartBean;
 import com.szxb.zibo.record.AppParamInfo;
 import com.szxb.zibo.record.XdRecord;
 import com.szxb.zibo.runTool.RunSettiing;
+import com.szxb.zibo.util.MMKVManager;
 import com.szxb.zibo.util.ZipUtils;
 import com.szxb.zibo.util.apkmanage.AppUtil;
 import com.szxb.zibo.util.BusToast;
@@ -194,7 +196,7 @@ public class InitConfigZB {
                     message.obj = "刷卡线程启动成功";
                     BusApp.getInstance().getHandler().sendMessage(message);
                     MiLog.i("流程", "线程开启");
-                    resetPSAM();
+                    DoCmd.resetPSAM();
                     subscriber.onNext(true);
                 } catch (Exception e) {
                     subscriber.onNext(true);
@@ -204,48 +206,48 @@ public class InitConfigZB {
     }
 
     //初始化 PSAM
-    private static void resetPSAM() {
-        try {
-            devCmd psamDate = DoCmd.resetPSAM();//重置PSAM／
-            if (psamDate != null) {
-                byte[] psamInfo = new byte[psamDate.getnRecvLen()];
-                arraycopy(psamDate.getDataBuf(), 0, psamInfo, 0, psamInfo.length);
-
-                int i = 0;
-                //选择卡槽
-                byte[] Slot = new byte[1];
-                arraycopy(psamDate.getDataBuf(), i, Slot, 0, Slot.length);
-                i += Slot.length;
-                String slot = FileUtils.bytesToHexString(Slot);
-
-                //终端号
-                byte[] PosID = new byte[6];
-                arraycopy(psamDate.getDataBuf(), i, PosID, 0, PosID.length);
-                i += PosID.length;
-                String posID = FileUtils.bytesToHexString(PosID);
-                BusApp.getPosManager().setPsamNo(posID);
-                Log.i("psamid", posID);
-
-                //PSAM卡号
-                byte[] SerialNum = new byte[10];
-                arraycopy(psamDate.getDataBuf(), i, SerialNum, 0, SerialNum.length);
-                i += SerialNum.length;
-                String serialNum = FileUtils.bytesToHexString(SerialNum);
-
-                Log.i("psam卡号", serialNum);
-
-                //密钥索引
-                byte[] Key_index = new byte[1];
-                arraycopy(psamDate.getDataBuf(), i, Key_index, 0, Key_index.length);
-                String key_index = FileUtils.bytesToHexString(Key_index);
-
-            } else {
-                BusToast.showToast("PSAM卡重置数据获取失败", false);
-            }
-        } catch (Exception e) {
-            MiLog.i("错误", "PSAM卡重置数据获取失败");
-        }
-    }
+//    private static void resetPSAM() {
+//        try {
+//            devCmd psamDate = DoCmd.resetPSAM();//重置PSAM／
+//            if (psamDate != null) {
+//                byte[] psamInfo = new byte[psamDate.getnRecvLen()];
+//                arraycopy(psamDate.getDataBuf(), 0, psamInfo, 0, psamInfo.length);
+//
+//                int i = 0;
+//                //选择卡槽
+//                byte[] Slot = new byte[1];
+//                arraycopy(psamDate.getDataBuf(), i, Slot, 0, Slot.length);
+//                i += Slot.length;
+//                String slot = FileUtils.bytesToHexString(Slot);
+//
+//                //终端号
+//                byte[] PosID = new byte[6];
+//                arraycopy(psamDate.getDataBuf(), i, PosID, 0, PosID.length);
+//                i += PosID.length;
+//                String posID = FileUtils.bytesToHexString(PosID);
+//                BusApp.getPosManager().setPsamNo(posID);
+//                Log.i("psamid", posID);
+//
+//                //PSAM卡号
+//                byte[] SerialNum = new byte[10];
+//                arraycopy(psamDate.getDataBuf(), i, SerialNum, 0, SerialNum.length);
+//                i += SerialNum.length;
+//                String serialNum = FileUtils.bytesToHexString(SerialNum);
+//
+//                Log.i("psam卡号", serialNum);
+//
+//                //密钥索引
+//                byte[] Key_index = new byte[1];
+//                arraycopy(psamDate.getDataBuf(), i, Key_index, 0, Key_index.length);
+//                String key_index = FileUtils.bytesToHexString(Key_index);
+//
+//            } else {
+//                BusToast.showToast("PSAM卡重置数据获取失败", false);
+//            }
+//        } catch (Exception e) {
+//            MiLog.i("错误", "PSAM卡重置数据获取失败");
+//        }
+//    }
 
     public static Observable<Boolean> sendPosInfo() {
         return Observable.create(new ObservableOnSubscribe<Boolean>() {
@@ -526,7 +528,7 @@ public class InitConfigZB {
             posInfoDate.setLocation_info(GPSEvent.bdLocation == null ? "0" : (GPSEvent.bdLocation.getLongitude() + "," + GPSEvent.bdLocation.getLatitude()));
             posInfoDate.setMax_pos_sn(BusApp.getPosManager().getmchTrxIdNow() + "");
             posInfoDate.setPsamInf(BusApp.getPosManager().getM1psam() + "," + BusApp.getPosManager().getCpupsam() + "," + BusApp.getPosManager().getJTBpsam());
-            posInfoDate.setPsam_no(BusApp.getPosManager().getPsamNo());
+            posInfoDate.setPsam_no(BusApp.getPosManager().getM1psam());
             posInfoDate.setPub_ver(BusApp.getPosManager().getPub_ver());
             posInfoDate.setSoftwar_ver(BusApp.getInstance().getPakageVersion());
             posInfoDate.setUnion_com_no(BusllPosManage.getPosManager().getMchId());
@@ -693,6 +695,33 @@ public class InitConfigZB {
         });
     }
 
+    //将超过5000条的数据 转换成文件进行储存
+    public static Observable<Boolean> checkConfig() {
+        return Observable.create(new ObservableOnSubscribe<Boolean>() {
+            @Override
+            public void subscribe(ObservableEmitter<Boolean> subscriber) throws Exception {
+                try {
+                    AppParamInfo appParamInfo = DBManagerZB.checkAppParamInfo();
+                    MiLog.i("流程", "检查运行参数 开机检查：" + new Gson().toJson(DBManagerZB.checkAppParamInfo()));
+                    if (!appParamInfo.checked()) {//如果当前的运行配置缺少参数  检查保存的
+                        String string = (String) MMKVManager.getInstance().get("appRunInfo", String.class);
+                        PosManager posManager = new Gson().fromJson(string, PosManager.class);
+                        MiLog.i("流程", "检查运行参数 获取缓存数据：" + string);
+                        if (posManager != null) {
+                            MiLog.i("流程", "获取并设置备份数据");
+                            BusApp.setManager(posManager);
+                            MiLog.i("流程", "清除线路信息");
+                            BusApp.getPosManager().clearRunParam();
+                        }
+                    }
+                } catch (Exception e) {
+                    MiLog.i("错误", "开机检查配置报错    " + e.getMessage());
+                }
+                subscriber.onNext(false);
+            }
+        });
+    }
+
     //更新键盘程序
     public static Observable<Boolean> updateKeyBroad() {
         return Observable.create(new ObservableOnSubscribe<Boolean>() {
@@ -830,7 +859,7 @@ public class InitConfigZB {
         }
     }
 
-    //    public static void uploadeFile(File file, String url) {
+//    public static void uploadeFile(File file, String url) {
 //        RequestQueue requestQueue = NoHttp.newRequestQueue();
 //        Request<String> request = NoHttp.createStringRequest(url, RequestMethod.POST);
 //        FileBinary binary = new FileBinary(file, "log");

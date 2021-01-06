@@ -59,6 +59,7 @@ import io.reactivex.functions.Function5;
 import io.reactivex.functions.Function6;
 import io.reactivex.functions.Function7;
 import io.reactivex.functions.Function8;
+import io.reactivex.functions.Function9;
 import io.reactivex.schedulers.Schedulers;
 
 import static com.szxb.zibo.config.zibo.InitConfigZB.uploadFile;
@@ -111,28 +112,10 @@ public class InitActiivty extends AppCompatActivity implements RxMessage {
 //            bytes = FileUtils.hexStringToBytes("0000002020112416591908007256b2d02011788080024d54009d0060869b7256b2d0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001493090100006833903664530ffffffff02010310493090100006833920200917208009170000000001564500453000010100390000000000003009413106163674202011241659160900004131061636740200fc000000003700000030000021a620201124165916453013664530ffffffff68fbb68de8f827027d01010000000000000001b802453013664530ffffffff453000fc0d000034303939393800004131061636752020112416591600000000ba453013664530ffffffff453000fc0530303430393939380000413106163674202011241659160000003000002840002100140000000000000000000000000000000000000000000021a60000002020112416591908007256b2d02011788080024d54009d0060869b7256b2d0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001493090100006833903664530ffffffff02010310493090100006833920200917208009170000000001564500453000010100390000000000003009413106163674202011241659160900004131061636740200fc000000003700000030000021a620201124165916453013664530ffffffff68fbb68de8f827027d01010000000000000001b802453013664530ffffffff453000fc0d000034303939393800004131061636752020112416591600000000ba453013664530ffffffff453000fc0530303430393939380000413106163674202011241659160000003000002840002100140000000000000000000000000000000000000000000021a6");
 //            解析卡 如果00 则表示解析成功
 
-        checkedConfig();
+
     }
 
-    private void checkedConfig() {
-        try {
-            AppParamInfo appParamInfo = DBManagerZB.checkAppParamInfo();
-            MiLog.i("流程", "检查运行参数 开机检查：" + new Gson().toJson(DBManagerZB.checkAppParamInfo()));
-            if (!appParamInfo.checked()) {//如果当前的运行配置缺少参数  检查保存的
-                String string = (String) MMKVManager.getInstance().get("appRunInfo", String.class);
-                PosManager posManager = new Gson().fromJson(string, PosManager.class);
-                MiLog.i("流程", "检查运行参数 获取缓存数据：" + string);
-                if (posManager != null) {
-                    MiLog.i("流程", "获取并设置备份数据");
-                    BusApp.setManager(posManager);
-                    MiLog.i("流程", "清除线路信息");
-                    BusApp.getPosManager().clearRunParam();
-                }
-            }
-        } catch (Exception e) {
-            MiLog.i("错误", "开机检查配置报错    " + e.getMessage());
-        }
-    }
+
 
     Handler handler = new Handler() {
         @Override
@@ -156,10 +139,10 @@ public class InitActiivty extends AppCompatActivity implements RxMessage {
     private void startInit() {
 //        PraseLine.praseLine(new File("/storage/sdcard0/20190816141533 (1).far"));
 
-        Disposable subscribe = Observable.zip(InitConfigZB.uninstall(), InitConfigZB.initBin(), InitConfigZB.updateKeyBroad(), InitConfigZB.initK21Thread(), InitConfigZB.initUnionParam(), InitConfigZB.sendPosInfo(),
-                InitConfigZB.initInstallApk(), InitConfigZB.initLine(), new Function8<Boolean, Boolean, Boolean, Boolean, Boolean, Boolean, Boolean, Boolean, Object>() {
+        Disposable subscribe = Observable.zip(InitConfigZB.uninstall(), InitConfigZB.initBin(), InitConfigZB.updateKeyBroad(), InitConfigZB.initK21Thread(),InitConfigZB.checkConfig(), InitConfigZB.initUnionParam(), InitConfigZB.sendPosInfo(),
+                InitConfigZB.initInstallApk(), InitConfigZB.initLine(), new Function9<Boolean,Boolean, Boolean, Boolean, Boolean, Boolean, Boolean, Boolean, Boolean, Object>() {
                     @Override
-                    public Object apply(Boolean aBoolean, Boolean aBoolean2, Boolean aBoolean3, Boolean aBoolean4, Boolean a, Boolean aBoolean6, Boolean aBoolean7, Boolean aBoolean8) throws Exception {
+                    public Object apply(Boolean aBoolean, Boolean aBoolean2, Boolean aBoolean3, Boolean aBoolean4, Boolean a, Boolean aBoolean6, Boolean aBoolean7, Boolean aBoolean8,Boolean aBoolean9) throws Exception {
                         MiLog.clear(3);
                         return true;
                     }
@@ -193,71 +176,71 @@ public class InitActiivty extends AppCompatActivity implements RxMessage {
     }
 
 
-    private void resetPSAM() {
-        try {
-            devCmd psamDate = DoCmd.resetPSAM();//重置PSAM／
-            if (psamDate != null) {
-                byte[] psamInfo = new byte[psamDate.getnRecvLen()];
-                arraycopy(psamDate.getDataBuf(), 0, psamInfo, 0, psamInfo.length);
-
-                int i = 0;
-                //选择卡槽
-                byte[] Slot = new byte[1];
-                arraycopy(psamDate.getDataBuf(), i, Slot, 0, Slot.length);
-                i += Slot.length;
-                String slot = FileUtils.bytesToHexString(Slot);
-
-                //终端号
-                byte[] PosID = new byte[6];
-                arraycopy(psamDate.getDataBuf(), i, PosID, 0, PosID.length);
-                i += PosID.length;
-                String posID = FileUtils.bytesToHexString(PosID);
-                BusApp.getPosManager().setPsamNo(posID);
-                Log.i("psamid", posID);
-
-                //PSAM卡号
-                byte[] SerialNum = new byte[10];
-                arraycopy(psamDate.getDataBuf(), i, SerialNum, 0, SerialNum.length);
-                i += SerialNum.length;
-                String serialNum = FileUtils.bytesToHexString(SerialNum);
-                Log.i("psam卡号", serialNum);
-
-                //密钥索引
-                byte[] Key_index = new byte[1];
-                arraycopy(psamDate.getDataBuf(), i, Key_index, 0, Key_index.length);
-                String key_index = FileUtils.bytesToHexString(Key_index);
-
-                //选择卡槽
-                byte[] Slot1 = new byte[1];
-                arraycopy(psamDate.getDataBuf(), i, Slot1, 0, Slot1.length);
-                i += Slot1.length;
-                String slot1 = FileUtils.bytesToHexString(Slot1);
-
-                //终端号
-                byte[] PosID1 = new byte[6];
-                arraycopy(psamDate.getDataBuf(), i, PosID1, 0, PosID1.length);
-                i += PosID1.length;
-                String posID1 = FileUtils.bytesToHexString(PosID1);
-                Log.i("psamid", posID);
-
-                //PSAM卡号
-                byte[] SerialNum1 = new byte[10];
-                arraycopy(psamDate.getDataBuf(), i, SerialNum1, 0, SerialNum1.length);
-                i += SerialNum1.length;
-                String serialNum1 = FileUtils.bytesToHexString(SerialNum1);
-                Log.i("psam卡号", serialNum1);
-
-                //密钥索引
-                byte[] Key_index1 = new byte[1];
-                arraycopy(psamDate.getDataBuf(), i, Key_index1, 0, Key_index1.length);
-                String key_index1 = FileUtils.bytesToHexString(Key_index1);
-            } else {
-                BusToast.showToast("PSAM卡重置数据获取失败", false);
-            }
-        } catch (Exception e) {
-            Log.i("错误", "PSAM卡重置数据获取失败");
-        }
-    }
+//    private void resetPSAM() {
+//        try {
+//            devCmd psamDate = DoCmd.resetPSAM();//重置PSAM／
+//            if (psamDate != null) {
+//                byte[] psamInfo = new byte[psamDate.getnRecvLen()];
+//                arraycopy(psamDate.getDataBuf(), 0, psamInfo, 0, psamInfo.length);
+//
+//                int i = 0;
+//                //选择卡槽
+//                byte[] Slot = new byte[1];
+//                arraycopy(psamDate.getDataBuf(), i, Slot, 0, Slot.length);
+//                i += Slot.length;
+//                String slot = FileUtils.bytesToHexString(Slot);
+//
+//                //终端号
+//                byte[] PosID = new byte[6];
+//                arraycopy(psamDate.getDataBuf(), i, PosID, 0, PosID.length);
+//                i += PosID.length;
+//                String posID = FileUtils.bytesToHexString(PosID);
+//                BusApp.getPosManager().setPsamNo(posID);
+//                Log.i("psamid", posID);
+//
+//                //PSAM卡号
+//                byte[] SerialNum = new byte[10];
+//                arraycopy(psamDate.getDataBuf(), i, SerialNum, 0, SerialNum.length);
+//                i += SerialNum.length;
+//                String serialNum = FileUtils.bytesToHexString(SerialNum);
+//                Log.i("psam卡号", serialNum);
+//
+//                //密钥索引
+//                byte[] Key_index = new byte[1];
+//                arraycopy(psamDate.getDataBuf(), i, Key_index, 0, Key_index.length);
+//                String key_index = FileUtils.bytesToHexString(Key_index);
+//
+//                //选择卡槽
+//                byte[] Slot1 = new byte[1];
+//                arraycopy(psamDate.getDataBuf(), i, Slot1, 0, Slot1.length);
+//                i += Slot1.length;
+//                String slot1 = FileUtils.bytesToHexString(Slot1);
+//
+//                //终端号
+//                byte[] PosID1 = new byte[6];
+//                arraycopy(psamDate.getDataBuf(), i, PosID1, 0, PosID1.length);
+//                i += PosID1.length;
+//                String posID1 = FileUtils.bytesToHexString(PosID1);
+//                Log.i("psamid", posID);
+//
+//                //PSAM卡号
+//                byte[] SerialNum1 = new byte[10];
+//                arraycopy(psamDate.getDataBuf(), i, SerialNum1, 0, SerialNum1.length);
+//                i += SerialNum1.length;
+//                String serialNum1 = FileUtils.bytesToHexString(SerialNum1);
+//                Log.i("psam卡号", serialNum1);
+//
+//                //密钥索引
+//                byte[] Key_index1 = new byte[1];
+//                arraycopy(psamDate.getDataBuf(), i, Key_index1, 0, Key_index1.length);
+//                String key_index1 = FileUtils.bytesToHexString(Key_index1);
+//            } else {
+//                BusToast.showToast("PSAM卡重置数据获取失败", false);
+//            }
+//        } catch (Exception e) {
+//            Log.i("错误", "PSAM卡重置数据获取失败");
+//        }
+//    }
 
     private void initView() {
         try {

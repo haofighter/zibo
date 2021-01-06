@@ -56,6 +56,7 @@ public class DoCmd {
     private static String oldStationKey = "000000";
     private static String oldSynKey = "000000";
     static boolean isDelay = false;//是否需要延迟发送身份证命令
+    static boolean portClose = false;//是否需要延迟发送身份证命令
 
     public static BlockingQueue<devCmd> queue = new MiLinkBlockQueue(1);
 
@@ -186,6 +187,53 @@ public class DoCmd {
         return null;
     }
 
+    //关闭串口
+    public static devCmd closePort1(byte[] date) {
+        MiLog.i("身份证", "关闭串口1");
+        isDelay = true;
+        devCmd verCmd = new devCmd();
+        verCmd.setCla((byte) 0x8e);
+        verCmd.setIns((byte) 0x11);
+        verCmd.setDataBuf(date);
+        verCmd.setnRecvLen(date.length);
+        byte[] sendCmd = verCmd.packageData();
+        SerialComWrite(sendCmd, sendCmd.length);
+        portClose = true;
+        try {
+            devCmd bean = queue.poll(1, TimeUnit.SECONDS);
+            if (bean != null && bean.getS() == 0 && bean.getDataBuf() != null) {
+                byte[] result = new byte[bean.getnRecvLen()];
+                arraycopy(bean.getDataBuf(), 0, result, 0, result.length);
+                MiLog.i("身份证", "关闭串口返回：" + FileUtils.bytesToHexString(result));
+                return bean;
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    //打开串口
+    public static devCmd openPort1(byte[] date) {
+        devCmd verCmd = new devCmd();
+        verCmd.setCla((byte) 0x8e);
+        verCmd.setIns((byte) 0x21);
+        verCmd.setDataBuf(date);
+        verCmd.setnRecvLen(date.length);
+        byte[] sendCmd = verCmd.packageData();
+        SerialComWrite(sendCmd, sendCmd.length);
+        portClose = false;
+        try {
+            devCmd bean = queue.poll(1, TimeUnit.SECONDS);
+            if (bean != null && bean.getS() == 0 && bean.getDataBuf() != null) {
+                return bean;
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
 
     //银联
     public static devCmd checkUnion(byte[] date) {
@@ -248,7 +296,7 @@ public class DoCmd {
                 arraycopy(PASMresult, i, M1PosID, 0, M1PosID.length);
                 i += M1PosID.length;
                 String m1qposID = (String) FileUtils.byte2Parm(M1PosID, Type.HEX);
-                BusApp.getPosManager().setCpupsam(m1qposID);
+                BusApp.getPosManager().setM1psam(m1qposID);
                 BusApp.getPosManager().setMainPSAM(m1qposID);
 
                 //PSAM卡号
@@ -256,7 +304,6 @@ public class DoCmd {
                 arraycopy(PASMresult, i, M1SerialNum, 0, M1SerialNum.length);
                 i += M1SerialNum.length;
                 String m1serialNum = (String) FileUtils.byte2Parm(M1SerialNum, Type.HEX);
-
 
                 ////密钥索引 有卡01
                 byte[] M1Key_index = new byte[1];
@@ -278,7 +325,7 @@ public class DoCmd {
                 arraycopy(PASMresult, i, CpuPosID, 0, CpuPosID.length);
                 i += CpuPosID.length;
                 String cpuPosID = (String) FileUtils.byte2Parm(CpuPosID, Type.HEX);
-                BusApp.getPosManager().setM1psam(cpuPosID);
+                BusApp.getPosManager().setCpupsam(cpuPosID);
                 if (BusApp.getPosManager().getMainPSAM().equals("000000000000")) {
                     BusApp.getPosManager().setMainPSAM(cpuPosID);
                 }
@@ -289,7 +336,6 @@ public class DoCmd {
                 arraycopy(PASMresult, i, CpuSerialNum, 0, CpuSerialNum.length);
                 i += CpuSerialNum.length;
                 String cpuSerialNum = (String) FileUtils.byte2Parm(CpuSerialNum, Type.HEX);
-
 
                 ////密钥索引 有卡01
                 byte[] CpuKey_index = new byte[1];
@@ -327,7 +373,6 @@ public class DoCmd {
                 arraycopy(PASMresult, i, JTBKey_index, 0, JTBKey_index.length);
                 i += JTBKey_index.length;
                 String jtbkey_index = (String) FileUtils.byte2Parm(JTBKey_index, Type.HEX);
-
 
             }
 
@@ -849,7 +894,7 @@ public class DoCmd {
             count++;
         }
         if (handler == null) {
-            BusToast.showToast("身份证线程未启动", false);
+            MiLog.i("身份证", "线程未启动");
             return;
         }
         int time = 0;
@@ -909,6 +954,9 @@ public class DoCmd {
         return null;
     }
 
+
+    static int noneICDate = 0;
+
     public static void doIdentityCard(devCmd devCmd) {
         try {
             byte[] keyboardInfo = new byte[devCmd.getnRecvLen()];
@@ -917,8 +965,14 @@ public class DoCmd {
             Log.i("身份证", "keyboardInfo:" + FileUtils.bytesToHexString(keyboardInfo));
             if (FileUtils.checkStrIsAllZero(FileUtils.bytesToHexString(keyboardInfo))) {
                 Log.i("身份证", "当前无数据");
+                if (noneICDate > 10) {
+                    //当连续10次未获取到设备返回数据 进行串口1关闭
+                    Rx.getInstance().sendMessage("closeport");
+                }
+                noneICDate++;
                 return;
             }
+            noneICDate = 0;
             int i = 0;
             byte[] head = new byte[5];
             arraycopy(keyboardInfo, i, head, 0, head.length);
@@ -971,6 +1025,10 @@ public class DoCmd {
     static HandlerThread thread;
 
     public static Thread startSearchICcard() {
+        if (portClose) {
+            Log.i("身份证", "身份证模块已关闭");
+            return null;
+        }
         Log.i("身份证", "线程开始：" + Thread.currentThread().getName());
         if (thread == null) {
             thread = new HandlerThread("ICCARD");

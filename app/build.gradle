@@ -8,7 +8,7 @@ static def version() {
 }
 
 static def versionname() {
-    return "1.4.21"
+    return "1.4.26"
 }
 
 static def appname() {
@@ -90,7 +90,8 @@ android {
         versionName versionname()
         buildConfigField 'String', 'LOG_TAG', '"zibo"'
 //        buildConfigField 'String', 'BIN_NAME', '"Q6_ZiBo_20081710391.bin"'
-        buildConfigField 'String', 'BIN_NAME', '"Q6_ZiBo_201216150500_SFZ.bin"'//身份证测试
+//        buildConfigField 'String', 'BIN_NAME', '"Q6_ZiBo_201216150500_SFZ.bin"'//身份证测试
+        buildConfigField 'String', 'BIN_NAME', '"Q6_ZiBo_210106171001_closeport.bin"'//身份证测试
         buildConfigField 'int', 'CITY', '0'
         buildConfigField 'String', 'InstallApk', '"install1.6.apk"'
         buildConfigField 'boolean', 'isTest', 'true'

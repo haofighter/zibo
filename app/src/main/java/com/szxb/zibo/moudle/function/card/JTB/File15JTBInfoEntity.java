@@ -68,4 +68,8 @@ public class File15JTBInfoEntity {
     public String getPan() {
         return pan;
     }
+
+    public String getValid_time() {
+        return valid_time;
+    }
 }

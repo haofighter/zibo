@@ -59,7 +59,7 @@ class Main2Activity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Log.i("流程", "进入main 当前版本," + BusApp.getInstance().pakageVersion)
+        Log.i("流程", "进入main")
         Log.i("升级", "当前版本" + BusApp.getInstance().pakageVersion)
 
         setContentView(R.layout.activity_main)
@@ -80,35 +80,30 @@ class Main2Activity : BaseActivity() {
         }
 
         now_time.setOnClickListener {
+            DoCmd.closePort1(byteArrayOf())
 //            DoCmd.startSearchICcard();
 //            Thread {
-////                val str = "{\"customer_code\":\"881641\",\"sign\":\"6E7DA68D54DD8C30D5C51D34EED7C37D\",\"req_type\":\"1\",\"timestamp\":\"1576805238388\",\"result_msg\":\"请求成功！\",\"merchant_no\":\"001\",\"seq_no\":\"20191220000122\",\"server_time\":\"1576805238\",\"charset\":\"UTF-8\",\"trans_data\":{\"request_code\":\"apk\",\"server_time\":\"1576805238\",\"task_no\":\"8f270015a6bf4508a425293830faa42d\",\"request_content\":{\"protocol\":\"fastdfs\",\"packet_size\":\"24040460\",\"httpUrl\":\"http://139.9.113.219:10091/group1/M00/00/06/rBQABV38Pa-AMyxZAXEuFBgV8gk903.apk\",\"group_name\":\"group1\",\"url\":\"Fastdfs://139.9.113.219:22000/group1/M00/00/05/rBQABV34lKmAMxnUAW7UDFjEyqA497.apk/1.0.1_191217_zibo.apk\",\"md5\":\"737894f461908c0b185e8eb4ffe892be\"}},\"channel_code\":\"0000001\",\"version\":\"1.0.2\",\"result_code\":\"0\",\"terminal_type\":\"Q6-B\",\"terminal_no\":\"Q6B0B1T219140389\",\"sign_type\":\"MD5\"}\n";
-////                var r = Gson().fromJson<Result>(str, Result::class.java);
-////                InitConfigZB.downLoadFile(r, r.trans_data.task_no);
+//                val str = "{\"customer_code\":\"881641\",\"sign\":\"6E7DA68D54DD8C30D5C51D34EED7C37D\",\"req_type\":\"1\",\"timestamp\":\"1576805238388\",\"result_msg\":\"请求成功！\",\"merchant_no\":\"001\",\"seq_no\":\"20191220000122\",\"server_time\":\"1576805238\",\"charset\":\"UTF-8\",\"trans_data\":{\"request_code\":\"apk\",\"server_time\":\"1576805238\",\"task_no\":\"8f270015a6bf4508a425293830faa42d\",\"request_content\":{\"protocol\":\"fastdfs\",\"packet_size\":\"24040460\",\"httpUrl\":\"http://139.9.113.219:10091/group1/M00/00/06/rBQABV38Pa-AMyxZAXEuFBgV8gk903.apk\",\"group_name\":\"group1\",\"url\":\"Fastdfs://139.9.113.219:22000/group1/M00/00/05/rBQABV34lKmAMxnUAW7UDFjEyqA497.apk/1.0.1_191217_zibo.apk\",\"md5\":\"737894f461908c0b185e8eb4ffe892be\"}},\"channel_code\":\"0000001\",\"version\":\"1.0.2\",\"result_code\":\"0\",\"terminal_type\":\"Q6-B\",\"terminal_no\":\"Q6B0B1T219140389\",\"sign_type\":\"MD5\"}\n";
+//               var r = Gson().fromJson<Result>(str, Result::class.java);
+//               InitConfigZB.downLoadFile(r, r.trans_data.task_no);
 //                MiLog.i("流程", "安装patch");
 //                BusApp.getInstance().loadPatch(Environment.getExternalStorageDirectory().absolutePath + "/zibo.apk")
-
-            //卡解析
-
+//卡解析
 //            MiLog.i("刷卡", FileUtils.bytesToHexString(bytes));
-
 //            var xdRecord = XdRecord().praseDate("0200151F010401FDFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF34303032353133303330333433303339333933393338010000000000000000FFFFFFFF513642394131543231373438303732313700200137754131061623690000000000000061026503104930902000001577202012301241035D000000240000003C0000007423000037009583417AFB0100004530000366453065020103000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001F5A")
 //
 //
-////            MiLog.i("刷卡", FileUtils.bytesToHexString(bytes));
+//            MiLog.i("刷卡", FileUtils.bytesToHexString(bytes));
 //            var cardInfoEntity = CardInfoEntity();
 //            cardInfoEntity.putDate(FileUtils.hexStringToBytes("000000202012282145280800705d14012012788080024d54009d0040869b19705d14010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001493100100000134903674550ffffffff020103104931001000001349202009162040123159440000015645004550000101007900000000000000094131061636752020122821451109000037002009542800000000000000780000000000000dc420201228214511453013664530ffffffff2cf5b6dfa1f227027d010100000000000000012601453013664530ffffffff453000fb03303034303939393800004131061636752020122821451100000030ab00000000000000000000453000000000000000000000000000000000000000000000000000000000000c0000284000210050000000000000000000000000000000000000000000000dc4"));
 //            var cardInfoEntity1 = CardInfoEntity();
 //            cardInfoEntity1.putDate(FileUtils.hexStringToBytes("000000202012282145310800822c87a120127833b0024d54009d0042869b19822c87a10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001493150100000014003724710ffffffff020103104931501000000140202008242040123150000000015645004710000101005f000000000000060941310616237020201228214342090000370020067190000000000000005e0000000600000dc420201228214342453013664530ffffffff2cf5b6dfa1f227027d010100000000000000033602453013664530ffffffff453000fb01303034303939393900004131061636742020122817115900000000ab453013664530ffffffff453000fb0330303430393939390000413106163674202012281712220000000c0000284000210064000000000000000000000000000000000000000000000dc4"));
-            Thread {
-                FileUtils.copyFile("/storage/sdcard1/zibo_1.5.1.apk", "/storage/sdcard0/oldVersion.apk")
-            }
-
-
+//            Thread {
+//                FileUtils.copyFile("/storage/sdcard1/zibo_1.5.1.apk", "/storage/sdcard0/oldVersion.apk")
+//            }
 //            BusApp.getInstance().cleanParch()
 //            }.start()
         }
-
 //        PraseLine.praseUsrByte(FileUtils.readAssetsFileTobyte("20200726121107.usr", BusApp.getInstance()), "20200726121107.usr");
 
 //        BusllPosManage.getPosManager().setMachId("438370341112007")
@@ -136,7 +131,7 @@ class Main2Activity : BaseActivity() {
     fun refreshView() {
         try {
             if (System.currentTimeMillis() - DoCmd.runtime > 3000) {
-//                DoCmd.startSearchICcard();
+                DoCmd.startSearchICcard();
             }
             var unupRecord = DBManagerZB.checkUnUp()
             if (unupRecord > 100) {
@@ -240,6 +235,7 @@ class Main2Activity : BaseActivity() {
         tools.add("采集GPS")
         tools.add("当前机器：" + (if (BusApp.getPosManager().posUpDate == 1) "前车机" else "后车机"))
         tools.add("清理日志")
+        tools.add("打开身份证识别")
         tools.add("升级版本")
 
         tools_list.layoutManager = LinearLayoutManager(this)
@@ -342,6 +338,8 @@ class Main2Activity : BaseActivity() {
                         Log.i("参数接收出错", o.toString())
                     }
                 }
+
+
                 "checkMac" -> {
                     try {
 //                        arrayOf<Any>(cardInfoEntity, xdRecord)
@@ -368,6 +366,9 @@ class Main2Activity : BaseActivity() {
                 }
                 "resetPSAM" -> {
                     DoCmd.resetPSAM()
+                }
+                "closeport" -> {
+                    DoCmd.closePort1(byteArrayOf())
                 }
 
                 "myselfAddress" -> {
@@ -547,8 +548,12 @@ class Main2Activity : BaseActivity() {
                         MiLog.clear(-1);
                     }.start()
                 }
+                15 -> {//打开串口
+                    refreshMoudle()
+                    DoCmd.openPort1(byteArrayOf())
+                }
 
-                15 -> {
+                16 -> {
                     refreshMoudle()
                     Thread {
                         try {

@@ -201,8 +201,7 @@ public class PosManager implements IPosManager, IAddRess, ISwitch {
     //安装方向 0:前门 1:后门
     private int windowDirection = 0;
 
-    //初始化时获取的psam卡号
-    private String psamNo;
+
 
     private String conductor;
 
@@ -682,14 +681,6 @@ public class PosManager implements IPosManager, IAddRess, ISwitch {
         CommonSharedPreferences.put("signTime", signTime);
     }
 
-    public String getPsamNo() {
-        return psamNo;
-    }
-
-    public void setPsamNo(String psamNo) {
-        this.psamNo = psamNo;
-    }
-
     public String getConductor() {
         return conductor;
     }
@@ -955,8 +946,6 @@ public class PosManager implements IPosManager, IAddRess, ISwitch {
 
     public void init(PosManager manager) {
         setLineType();
-        setM1psam(manager.m1psam);
-        setCpupsam(manager.cpupsam);
         setPosManagerSetTime(manager.posManagerSetTime);
         setOperate(manager.operate);
         setPosUpDate(manager.posUpDate);
@@ -1005,7 +994,6 @@ public class PosManager implements IPosManager, IAddRess, ISwitch {
         setLocation(manager.location);
         setType(manager.type);
         windowDirection = (manager.windowDirection);
-        setPsamNo(manager.psamNo);
         setConductor(manager.conductor);
         setMainPSAM(manager.mainPSAM);
         GPSStatus = manager.GPSStatus;

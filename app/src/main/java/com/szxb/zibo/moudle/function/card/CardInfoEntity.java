@@ -256,7 +256,12 @@ public class CardInfoEntity implements Cloneable {
             realChildCardType = childCardType = "03";
         }
 
-        MiLog.i("刷卡", "交通部卡余额：" + balance);
+        if (System.currentTimeMillis() - DateUtil.getDateLong(file15JTBInfoEntity.getValid_time(), "yyyyMMdd") > 0) {
+            isExpire = true;
+        } else {
+            isExpire = false;
+        }
+        MiLog.i("刷卡", "过期时间：" + file05NewCPUInfoEntity.getValid_date() + "     是否过期：" + isExpire);
     }
 
     private void praseNewCPUCard(byte[] date) {
@@ -541,22 +546,22 @@ public class CardInfoEntity implements Cloneable {
         if (selete_aid.equals("03") || selete_aid.equals("04")) {
             String line = getMorePriceInfo().getLink_number();
             if (line.length() == 4) {
-                String cardLineEnd = FileUtils.formatHexStringToByteString(2, Integer.parseInt(line.substring(2, 4), 16) + "", true);
-                String cardLineStart = FileUtils.formatHexStringToByteString(1, Integer.parseInt(line.substring(0, 2), 16) + "", true);
+                String cardLineEnd = FileUtils.formatHexStringToByteString(2, Integer.parseInt(line.substring(2, 4), 16) + "", false);
+                String cardLineStart = FileUtils.formatHexStringToByteString(1, Integer.parseInt(line.substring(0, 2), 16) + "", false);
                 line = cardLineStart + cardLineEnd;
             }
             return line;
         } else if (selete_aid.equals("02")) {
             String line = getnewCPUMorePriceInfo().getLink_number();
-            if (line.length() == 4) {
-                String cardLineEnd = FileUtils.formatHexStringToByteString(2, Integer.parseInt(line.substring(2, 4), 16) + "", true);
-                String cardLineStart = FileUtils.formatHexStringToByteString(1, Integer.parseInt(line.substring(0, 2), 16) + "", true);
+            if (line.length() == 6) {
+                String cardLineEnd = FileUtils.formatHexStringToByteString(2, Integer.parseInt(line.substring(2, 6), 16) + "", false);
+                String cardLineStart = FileUtils.formatHexStringToByteString(1, Integer.parseInt(line.substring(0, 2), 16) + "", false);
                 line = cardLineStart + cardLineEnd;
             }
             return line;
         } else if (selete_aid.equals("01")) {
-            String cardLineEnd = FileUtils.formatHexStringToByteString(2, Integer.parseInt(getFile1AJTBInfoEntity().getBoarding_lineno_1a(), 16) + "", true);
-            String cardLineStart = FileUtils.formatHexStringToByteString(1, Integer.parseInt(getFile1AJTBInfoEntity().getLineno(), 16) + "", true);
+            String cardLineEnd = FileUtils.formatHexStringToByteString(2, Integer.parseInt(getFile1AJTBInfoEntity().getBoarding_lineno_1a(), 16) + "", false);
+            String cardLineStart = FileUtils.formatHexStringToByteString(1, Integer.parseInt(getFile1AJTBInfoEntity().getLineno(), 16) + "", false);
             return cardLineStart + cardLineEnd;
         }
         return "000000";

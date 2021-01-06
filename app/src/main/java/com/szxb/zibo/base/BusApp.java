@@ -154,7 +154,7 @@ public class BusApp extends MI2App {
                 }
 
             }
-        }, 10, 10, TimeUnit.MINUTES);
+        }, 3, 3, TimeUnit.MINUTES);
     }
 
     public static PosManager getPosManager() {
@@ -182,9 +182,11 @@ public class BusApp extends MI2App {
      * 升级后参数需重新下载
      */
     private void initRunParam() {
-        String version = (String) CommonSharedPreferences.get("version", "00000000000000");
+        String version = (String) MMKVManager.getInstance().get("version", "00000000000000");
+        Log.i("流程", "当前版本：" + BusApp.getInstance().getPakageVersion() + "            历史版本： " + version);
         if (!BusApp.getInstance().getPakageVersion().equals(version)) {
             BusApp.getPosManager().clearRunParam();
+            MMKVManager.getInstance().put("version", BusApp.getInstance().getPakageVersion());
         }
 
     }
@@ -324,7 +326,6 @@ public class BusApp extends MI2App {
         if (!TextUtils.isEmpty(BusApp.getPosManager().getLineNo()) && !BusApp.getPosManager().getLineNo().equals("000000") && !TextUtils.isEmpty(BusApp.getPosManager().getBusNo()) && !BusApp.getPosManager().getBusNo().equals("000000")) {
             try {
                 MMKVManager.getInstance().put("appRunInfo", new Gson().toJson(BusApp.getPosManager()));
-                MiLog.i("流程", "保存备份数据" + "      " + new Gson().toJson(BusApp.getPosManager()));
             } catch (Exception e) {
                 e.getMessage();
             }
@@ -350,6 +351,7 @@ public class BusApp extends MI2App {
     public void cleanParch() {
         BusApp.getPosManager().setUpDateInfo("更新失败,判定升级失败,还原版本,需重启");
         BusApp.getPosManager().setIsClean(true);
+        MiLog.i("升级", "清除补丁");
         TinkerInstaller.cleanPatch(BusApp.getInstance().getApplication());
     }
 }
