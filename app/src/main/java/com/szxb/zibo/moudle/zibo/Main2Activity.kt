@@ -225,6 +225,7 @@ class Main2Activity : BaseActivity() {
         tools.add("TX二维码记录")
         tools.add("银联记录")
         tools.add("支付宝记录")
+        tools.add("身份证记录")
         tools.add("更新初始化的参数")
         tools.add("导出日志")
         tools.add("导入黑名单")
@@ -442,8 +443,14 @@ class Main2Activity : BaseActivity() {
                     viewTag = 2
                     (history_list.adapter as HistoryAdapter).setType(3)
                 }
-
                 5 -> {
+                    //身份证记录
+                    setViewAnimal(history_list, true)
+                    viewTag = 2
+                    (history_list.adapter as HistoryAdapter).setType(4)
+                }
+
+                6 -> {
                     Thread {
                         //更新初始化的参数
                         MiLog.i("流程", "按键初始化参数 初始化  线路版本  票价版本")
@@ -452,7 +459,7 @@ class Main2Activity : BaseActivity() {
                         refreshMoudle()
                     }.start()
                 }
-                6 -> {//导出历史数据
+                7 -> {//导出历史数据
                     Thread {
                         try {
                             BusToast.showToast("正在导出日志", true)
@@ -477,7 +484,7 @@ class Main2Activity : BaseActivity() {
                     }.start()
                     refreshMoudle()
                 }
-                7 -> {//导入黑名单
+                8 -> {//导入黑名单
                     Thread {
                         try {
                             BusToast.showToast("正在获取黑名单数据", true)
@@ -495,7 +502,7 @@ class Main2Activity : BaseActivity() {
                     refreshMoudle()
                 }
 
-                8 -> {
+                9 -> {
                     refreshMoudle()
                     Thread {
                         try {
@@ -514,26 +521,26 @@ class Main2Activity : BaseActivity() {
                     }.start()
                 }
 
-                9 -> {
+                10 -> {
                     refreshMoudle()
                     startActivity(Intent(this, SelectLineActivity::class.java))
                 }
 
-                10 -> {
+                11 -> {
                     BusApp.getPosManager().operate = (BusApp.getPosManager().operate + 1) % 2
                     initView()
                     viewTag = 0
                 }
 
-                11 -> {
+                12 -> {
                     refreshMoudle()
                     startActivity(Intent(this, SetBusNuActivity::class.java))
                 }
-                12 -> {
+                13 -> {
                     refreshMoudle()
                     startActivity(Intent(this, GPSColletActivity::class.java))
                 }
-                13 -> {
+                14 -> {
                     refreshMoudle()
                     if (BusApp.getPosManager().posUpDate == 1) {
                         BusApp.getPosManager().posUpDate = 2
@@ -542,18 +549,18 @@ class Main2Activity : BaseActivity() {
                     }
                     initView()
                 }
-                14 -> {//清理日志
+                15 -> {//清理日志
                     refreshMoudle()
                     Thread {
                         MiLog.clear(-1);
                     }.start()
                 }
-                15 -> {//打开串口
+                16 -> {//打开串口
                     refreshMoudle()
                     DoCmd.openPort1(byteArrayOf())
                 }
 
-                16 -> {
+                17 -> {
                     refreshMoudle()
                     Thread {
                         try {

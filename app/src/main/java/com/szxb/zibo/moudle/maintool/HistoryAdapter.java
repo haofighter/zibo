@@ -67,6 +67,9 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.Holder> 
             case 3:
                 list = DBManagerZB.checkXdRecord("0002", false);//支付宝
                 break;
+            case 4:
+                list = DBManagerZB.checkXdRecord("0018", false);//身份证
+                break;
         }
         maxPage = ((List) list).size() / pageShowNum;
         notifyDataSetChanged();
@@ -97,7 +100,11 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.Holder> 
                 try {
                     pay = FileUtils.fen2Yuan(Integer.parseInt(FileUtils.getSHByte(card.getTradePay()), 16));
                 } catch (Exception e) {
-                    pay = FileUtils.fen2Yuan(Integer.parseInt(FileUtils.getSHByte(card.getTradePay())));
+                    try {
+                        pay = FileUtils.fen2Yuan(Integer.parseInt(FileUtils.getSHByte(card.getTradePay())));
+                    } catch (Exception e1) {
+                        pay = "0";
+                    }
                 }
 
                 String upstate = "";//上车状态

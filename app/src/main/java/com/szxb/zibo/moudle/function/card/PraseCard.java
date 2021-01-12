@@ -58,6 +58,7 @@ public class PraseCard {
         }
     };
 
+
     //过期后能使用的卡片
     static List<String> needRepeatPsam = new ArrayList<String>() {
         @Override

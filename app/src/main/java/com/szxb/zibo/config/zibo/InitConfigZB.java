@@ -457,7 +457,6 @@ public class InitConfigZB {
                 Result result = new Gson().fromJson(resultStr, Result.class);
                 MiLog.i("心跳", "上送返回result：" + resultStr);
                 if (result.getResult_code().equals("0")) {
-
                     if (("ums_info").equals(result.getTrans_data().getRequest_code())) {//银联参数
                         String union = result.getTrans_data().getRequest_content().getUms_tenant_no() + "-"
                                 + result.getTrans_data().getRequest_content().getKek() + "-"

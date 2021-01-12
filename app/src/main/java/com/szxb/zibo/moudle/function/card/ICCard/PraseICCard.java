@@ -101,6 +101,10 @@ public class PraseICCard {
                 limitRepeatTime = Integer.parseInt(cardPlan.getUseInterval());
                 int limitUseTime = Integer.parseInt(cardPlan.getNeedCheckStartTime());
                 MiLog.i("身份证", "限制时间：" + limitUseTime);
+                if (limitUseTime == 0) {
+                    limitUseTime = 60;
+                }
+                MiLog.i("身份证", "是否使用默认限制时间：" + limitUseTime);
                 Date birthDay = DateUtil.getDate(new String(birth, "UTF16-LE").trim(), "yyyyMMdd");
                 Calendar calendar = Calendar.getInstance();
                 calendar.setTime(birthDay);
@@ -126,7 +130,11 @@ public class PraseICCard {
 
         XdRecord xdRecord = new XdRecord();
         int price = PraseLine.getNormalPayPrice("72", "00");
-        xdRecord.setTradePay(price);
+        if (price >=0) {
+            xdRecord.setTradePay(price);
+        } else {
+            xdRecord.setTradePay(0);
+        }
         xdRecord.setTradeType("16");
 
         xdRecord.setRecordVersion("0018");
@@ -142,6 +150,12 @@ public class PraseICCard {
         }
         if (cardNumber.toLowerCase().contains("x")) {
             cardNumber = cardNumber.toLowerCase().replaceAll("x", "a");
+        }
+
+        if (DBManagerZB.checkedBlack(cardNumber)) {
+            SoundPoolUtil.play(VoiceConfig.heimingdanka);
+            BusToast.showToast("黑名单卡", false);
+            return false;
         }
 
 
