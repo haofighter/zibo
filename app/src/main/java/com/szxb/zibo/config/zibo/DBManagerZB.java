@@ -49,7 +49,6 @@ import static com.szxb.zibo.db.manage.DBCore.getDaoSession;
 public class DBManagerZB {
 
     public static void saveAppParamInfo(AppParamInfo runParam) {
-        MiLog.i("参数配置", "保存配置：" + runParam.getLinNo() + "    " + runParam.getLinName());
         runParam.setRunId(1);
         getDaoSession().getAppParamInfoDao().insertOrReplaceInTx(runParam);
         BusApp.getInstance().saveBackeUp();//保存基本配置

@@ -137,8 +137,6 @@ public class InitActiivty extends AppCompatActivity implements RxMessage {
     }
 
     private void startInit() {
-//        PraseLine.praseLine(new File("/storage/sdcard0/20190816141533 (1).far"));
-
         Disposable subscribe = Observable.zip(InitConfigZB.uninstall(), InitConfigZB.initBin(), InitConfigZB.updateKeyBroad(), InitConfigZB.initK21Thread(),InitConfigZB.checkConfig(), InitConfigZB.initUnionParam(), InitConfigZB.sendPosInfo(),
                 InitConfigZB.initInstallApk(), InitConfigZB.initLine(), new Function9<Boolean,Boolean, Boolean, Boolean, Boolean, Boolean, Boolean, Boolean, Boolean, Object>() {
                     @Override

@@ -76,6 +76,11 @@ public class PraseICCard {
         index += endTime.length;
         String endtime = new String(endTime, "UTF16-LE");
 
+
+        if(endtime.contains("长期")){
+            endtime="99999999";
+        }
+
         byte[] rev = new byte[36];
         arraycopy(ICcardTextByte, index, rev, 0, rev.length);
         index += rev.length;
@@ -130,7 +135,7 @@ public class PraseICCard {
 
         XdRecord xdRecord = new XdRecord();
         int price = PraseLine.getNormalPayPrice("72", "00");
-        if (price >=0) {
+        if (price >= 0) {
             xdRecord.setTradePay(price);
         } else {
             xdRecord.setTradePay(0);
@@ -143,39 +148,43 @@ public class PraseICCard {
         xdRecord.setDirection(BusApp.getPosManager().getDirection());
         xdRecord.setInCardStatus("01");
         xdRecord.setPayType("FD");
-        if (BusApp.getPosManager().getLineType().equals("O")) {
-            xdRecord.setInCardStatus("00");
-        } else {
-            xdRecord.setInCardStatus("01");
+        try {
+            if (BusApp.getPosManager().getLineType().equals("O")) {
+                xdRecord.setInCardStatus("00");
+            } else {
+                xdRecord.setInCardStatus("01");
+            }
+            if (cardNumber.toLowerCase().contains("x")) {
+                cardNumber = cardNumber.toLowerCase().replaceAll("x", "a");
+            }
+
+            if (DBManagerZB.checkedBlack(cardNumber)) {
+                SoundPoolUtil.play(VoiceConfig.heimingdanka);
+                BusToast.showToast("黑名单卡", false);
+                return false;
+            }
+
+
+            XdRecord oldXdRecord = DBManagerZB.checkICCardRecordNearNow(FileUtils.hexStringFromatByF(10, cardNumber, false), limitRepeatTime);
+            if (oldXdRecord != null) {
+                SoundPoolUtil.play(VoiceConfig.zanshibunengshiyong);
+                BusToast.showToast("重复刷卡", true);
+                MiLog.i("身份证", "___________________重复刷卡，暂时不能使用_____________________");
+                return false;
+            }
+
+
+            SoundPoolUtil.play(VoiceConfig.nianzhangzhe);
+            BusToast.showToast("姓名：" + new String(name, "UTF16-LE") + "\n身份证号：" + cardNumber, true);
+
+
+            xdRecord.setUseCardnum(FileUtils.hexStringFromatByF(10, cardNumber, false));
+            String extraDate = FileUtils.hexStringFromatByF(10, cardNumber, false) + FileUtils.formatStringToByteStringF(4, starttime) + FileUtils.formatStringToByteStringF(4, endtime);
+
+            xdRecord.setExtraDate(extraDate);
+        } catch (Exception e) {
+            MiLog.i("身份证", "保存数据错误，" + e.getMessage());
         }
-        if (cardNumber.toLowerCase().contains("x")) {
-            cardNumber = cardNumber.toLowerCase().replaceAll("x", "a");
-        }
-
-        if (DBManagerZB.checkedBlack(cardNumber)) {
-            SoundPoolUtil.play(VoiceConfig.heimingdanka);
-            BusToast.showToast("黑名单卡", false);
-            return false;
-        }
-
-
-        XdRecord oldXdRecord = DBManagerZB.checkICCardRecordNearNow(FileUtils.hexStringFromatByF(10, cardNumber, false), limitRepeatTime);
-        if (oldXdRecord != null) {
-            SoundPoolUtil.play(VoiceConfig.zanshibunengshiyong);
-            BusToast.showToast("重复刷卡", true);
-            MiLog.i("身份证", "___________________重复刷卡，暂时不能使用_____________________");
-            return false;
-        }
-
-
-        SoundPoolUtil.play(VoiceConfig.nianzhangzhe);
-        BusToast.showToast("姓名：" + new String(name, "UTF16-LE") + "\n身份证号：" + cardNumber, true);
-
-
-        xdRecord.setUseCardnum(FileUtils.hexStringFromatByF(10, cardNumber, false));
-        String extraDate = FileUtils.hexStringFromatByF(10, cardNumber, false) + FileUtils.formatStringToByteStringF(4, starttime) + FileUtils.formatStringToByteStringF(4, endtime);
-
-        xdRecord.setExtraDate(extraDate);
 
         MiLog.i("身份证", "___________________刷卡完毕_____________________");
         RecordUpload.saveRecord(xdRecord);

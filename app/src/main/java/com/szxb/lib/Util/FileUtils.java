@@ -1318,6 +1318,16 @@ public class FileUtils {
         }
     }
 
+    public static byte[] formatByte(int i, byte[] endTime) {
+        byte[] bytes = new byte[i];
+        if (endTime.length > i) {
+            arraycopy(endTime, endTime.length - i, bytes, 0, i);
+        } else {
+            arraycopy(endTime, 0, bytes, bytes.length - endTime.length, bytes.length);
+        }
+        return bytes;
+    }
+
     /**
      * 复制文件到SD卡中
      *

@@ -322,7 +322,6 @@ public class BusApp extends MI2App {
      * 备份运行数据
      */
     public void saveBackeUp() {
-        MiLog.i("流程", "保存备份数据" + "      " + BusApp.getPosManager().getLineNo() + "        " + BusApp.getPosManager().getBusNo());
         if (!TextUtils.isEmpty(BusApp.getPosManager().getLineNo()) && !BusApp.getPosManager().getLineNo().equals("000000") && !TextUtils.isEmpty(BusApp.getPosManager().getBusNo()) && !BusApp.getPosManager().getBusNo().equals("000000")) {
             try {
                 MMKVManager.getInstance().put("appRunInfo", new Gson().toJson(BusApp.getPosManager()));

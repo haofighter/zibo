@@ -202,7 +202,6 @@ public class PosManager implements IPosManager, IAddRess, ISwitch {
     private int windowDirection = 0;
 
 
-
     private String conductor;
 
     private String mainPSAM;
@@ -231,7 +230,6 @@ public class PosManager implements IPosManager, IAddRess, ISwitch {
         companyID = FetchAppConfig.unitno();
         lastVersion = FetchAppConfig.getLastVersion();
         binName = bin;
-
         numSeq = FetchAppConfig.getNumSeq();
         unitno = FetchAppConfig.getUnion();
         type = FetchAppConfig.getType();
@@ -311,6 +309,7 @@ public class PosManager implements IPosManager, IAddRess, ISwitch {
         this.lineName = var1;
         AppParamInfo appParamInfo = DBManagerZB.checkAppParamInfo();
         appParamInfo.setLinName(var1);
+        MiLog.i("流程", "参数配置   保存线路：" + var1);
         DBManagerZB.saveAppParamInfo(appParamInfo);
         setPosManagerSetTime(System.currentTimeMillis());
     }
@@ -376,6 +375,7 @@ public class PosManager implements IPosManager, IAddRess, ISwitch {
         if (zbLineInfo != null) {
             appParamInfo.setLinName(zbLineInfo.getRoutename());
         }
+        MiLog.i("流程", "参数配置   保存线路号：" + var1);
         DBManagerZB.saveAppParamInfo(appParamInfo);
         CommonSharedPreferences.put("line_no", var1);
         setPosManagerSetTime(System.currentTimeMillis());
@@ -394,6 +394,7 @@ public class PosManager implements IPosManager, IAddRess, ISwitch {
         this.basePrice = var1;
         AppParamInfo appParamInfo = DBManagerZB.checkAppParamInfo();
         appParamInfo.setBasePrice(var1);
+        MiLog.i("流程", "参数配置   保存基础票价：" + var1);
         DBManagerZB.saveAppParamInfo(appParamInfo);
         CommonSharedPreferences.put("base_price", var1);
     }
@@ -429,6 +430,7 @@ public class PosManager implements IPosManager, IAddRess, ISwitch {
         }
         AppParamInfo appParamInfo = DBManagerZB.checkAppParamInfo();
         appParamInfo.setBusNo(bus_no);
+        MiLog.i("流程", "参数配置   保存车辆号：" + bus_no);
         DBManagerZB.saveAppParamInfo(appParamInfo);
         setPosManagerSetTime(System.currentTimeMillis());
     }
@@ -460,6 +462,7 @@ public class PosManager implements IPosManager, IAddRess, ISwitch {
         this.driverNo = driverNo;
         AppParamInfo appParamInfo = DBManagerZB.checkAppParamInfo();
         appParamInfo.setDriverNo(driverNo);
+        MiLog.i("流程", "参数配置   保存司机号：" + driverNo);
         DBManagerZB.saveAppParamInfo(appParamInfo);
         setPosManagerSetTime(System.currentTimeMillis());
     }
@@ -705,6 +708,7 @@ public class PosManager implements IPosManager, IAddRess, ISwitch {
     public void setCsnVer(String csnVer) {
         this.csnVer = csnVer;
         CommonSharedPreferences.put("csnVer", csnVer);
+        MiLog.i("流程", "保存备份数据   csnVer=" + csnVer);
         BusApp.getInstance().saveBackeUp();//保存基本配置
     }
 
@@ -714,6 +718,7 @@ public class PosManager implements IPosManager, IAddRess, ISwitch {
 
     public void setWhlVer(String whlVer) {
         this.whlVer = whlVer;
+        MiLog.i("流程", "保存备份数据   whlVer=" + whlVer);
         BusApp.getInstance().saveBackeUp();//保存基本配置
     }
 
@@ -722,9 +727,13 @@ public class PosManager implements IPosManager, IAddRess, ISwitch {
     }
 
     public void setFarver(String farver) {
-        MiLog.i("流程", "设置线路版本：" + farver);
         this.farver = farver;
         CommonSharedPreferences.put("farver", farver);
+        BusApp.getInstance().saveBackeUp();//保存基本配置
+        AppParamInfo appParamInfo = DBManagerZB.checkAppParamInfo();
+        appParamInfo.setLinVer(farver);
+        MiLog.i("流程", "参数配置   保存farver版本：" + farver);
+        DBManagerZB.saveAppParamInfo(appParamInfo);
     }
 
     public String getParver() {
@@ -742,6 +751,7 @@ public class PosManager implements IPosManager, IAddRess, ISwitch {
     public void setUsrver(String usrver) {
         this.usrver = usrver;
         CommonSharedPreferences.put("usrver", usrver);
+        MiLog.i("流程", "保存备份数据   usrver=" + usrver);
         BusApp.getInstance().saveBackeUp();//保存基本配置
     }
 
@@ -787,6 +797,7 @@ public class PosManager implements IPosManager, IAddRess, ISwitch {
     public void setUms_key_ver(String ums_key_ver) {
         this.ums_key_ver = ums_key_ver;
         CommonSharedPreferences.put("ums_key_ver", ums_key_ver);
+        MiLog.i("流程", "保存备份数据   ums_key_ver=" + ums_key_ver);
         BusApp.getInstance().saveBackeUp();//保存基本配置
     }
 
@@ -821,6 +832,7 @@ public class PosManager implements IPosManager, IAddRess, ISwitch {
     public void setPub_ver(String pub_ver) {
         this.pub_ver = pub_ver;
         CommonSharedPreferences.put("pub_ver", pub_ver);
+        MiLog.i("流程", "保存备份数据   pub_ver=" + pub_ver);
         BusApp.getInstance().saveBackeUp();//保存基本配置
     }
 
@@ -830,10 +842,6 @@ public class PosManager implements IPosManager, IAddRess, ISwitch {
 
     public void setLinver(String linver) {
         Linver = linver;
-        MiLog.i("流程", "线路版本：" + linver);
-        AppParamInfo appParamInfo = DBManagerZB.checkAppParamInfo();
-        appParamInfo.setLinVer(linver);
-        DBManagerZB.saveAppParamInfo(appParamInfo);
     }
 
 
@@ -962,12 +970,14 @@ public class PosManager implements IPosManager, IAddRess, ISwitch {
         setWavVer(manager.wavVer);
         setCsnVer(manager.csnVer);
         setWhlVer(manager.whlVer);
-        MiLog.i("流程", "线路版本 初始化数据");
-        setFarver("00000000000000");
+        if (getFarver().equals("00000000000000")) {
+            setFarver(manager.farver);
+        }
         setParver(manager.parver);
         setUsrver(manager.usrver);
-        MiLog.i("流程", "posmanager 初始化  线路版本");
-        setLinver(manager.Linver);
+        if (getLinver().equals("00000000000000")) {
+            setLinver(manager.Linver);
+        }
         setUnitno(manager.unitno);
         setMchID(manager.mchID);
         setPub_ver(manager.pub_ver);
@@ -985,7 +995,6 @@ public class PosManager implements IPosManager, IAddRess, ISwitch {
         setFtpPsw(manager.ftpPsw);
         setFTP(manager.ftpEntity);
         setLastVersion(manager.lastVersion);
-        binName = (manager.binName);
         isSuppScanPay = (manager.isSuppScanPay);
         isSuppUnionPay = (manager.isSuppUnionPay);
         isSuppIcPay = (manager.isSuppIcPay);

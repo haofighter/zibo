@@ -30,6 +30,7 @@ import com.szxb.zibo.config.zibo.DBManagerZB
 import com.szxb.zibo.config.zibo.InitConfigZB
 import com.szxb.zibo.config.zibo.line.PraseLine
 import com.szxb.zibo.moudle.function.card.CardInfoEntity
+import com.szxb.zibo.moudle.function.card.ICCard.PraseICCard
 import com.szxb.zibo.moudle.function.card.PraseCard
 import com.szxb.zibo.moudle.function.location.GPSEvent
 import com.szxb.zibo.moudle.init.InitActiivty.init21Time
@@ -47,7 +48,6 @@ import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.activity_main.main
 import kotlinx.android.synthetic.main.param_layout.*
 import java.io.File
-import java.io.IOException
 import java.util.concurrent.TimeUnit
 
 class Main2Activity : BaseActivity() {
@@ -80,7 +80,8 @@ class Main2Activity : BaseActivity() {
         }
 
         now_time.setOnClickListener {
-            DoCmd.closePort1(byteArrayOf())
+            var date = FileUtils.hexStringToBytes("01000400ed904268b38220002000200020002000200020002000200020002000200032003000310031003900350038003000350030003200715c1c4e0177e07a184e025ecc53715c578853909e528b4e0459d56e0b67516751677f89ef8d32003400f7532000200020002000200020002000200020002000200020002000330037003000310032003200310039003500380030003500300032003400380034003400e07a184e025e6c51895b405c200020002000200020002000200020002000320030003000350031003100300036007f951f67200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000574c66007e00320000ff851d5151513e710dd564f30f654d7a1450470511eac30c608564c794e754535ed71f7139b2cac53235a885682f7ddf916bda8b9d9bd398234628c1e5288a2afc01cb8d1cfc4890988fd54b09b96af651aed65251515a3e9540b4d21ba9fbc567d2dc6a825a5e2b639a38eacf8cf45ececeb4d1287e8a3f531104121bff91502795a8dd991948d46b063caae63361bbb4c29002b604edeed9ea7123b9c41e0b80d38b2e72e9db30f9c0b85b5377bfe2bfc6d20ddcb440eafed5934ba16eb7414363571058d923b24423e3e55ba5ed62b9e7ad9b0b9a1b41e5aaccdf080bbee880140bed0c1d84366aeab063eaebf6eaf6fff01c6cfb8b3144fb5ccb30e92ede7f1c02b8be654170a6d45f2778a8c2326c2db5b2ae510720d1ae51b700270ecc6672c13fd7533a56d867f0542bfae2b77a8022c2ceb7263139d370a3160d92202352bb83a444e17ea5eab93d7a1d0641f6ec5d87f13c4441c57ce8a297f0c7843ec59892f59582234f64fa2ed5a69b655b6d9a6b8ccfde615ad603fc0d89c217e473eb85d87db7fcbd1410b8df803224492e9c2f21b720ff39254411d58386cbc73654c4c26239935ab802ba8ebf4f21288583ebd1f1dde0349bd5cba8504be0e7006578d30461bafc2aea7ea9fd8e721db692427e6700f57fec5bbfd0a436f841ac5a49834cd91242e57188717eca58488186aa6b09f0fd32e72db5169710af748550a2c14799d95a08b5984ef80e463f03e0d988b5989db72673f8a42d2fbad82dedf09276b0c3f635ac9d72402d41394c9daa23d141efc2d4eb098a2bae51c377fb8527c7ae51025fbd9c251b8003bcbfee276e677d7d8add0314f667323b6ff2becf555db39c373981ba43a1234a2fb76ff5d06dc39b574ed6625978334320058274476ba3f917774833822ec0233e885f77128811e3a220ffa167678f1d7e73a7599e1d042278568cebc3e08a9b32bde5b83266cd68de563afeb86afa98003c4f6942b2647c0ed4ea16194f76d994c6f21183dedadff0771f6a56b760eac7c1eebbd0c95bdb8de366dfe0a88b39fb2e4f1e99cd979cdf405237c086bc249d3cedecda744de7b1672433d5042a6db5321cfe4c83884c7eaacf72728271441ddf3016e932c639549ab4b641a56efa29cb231876ee087f5dc3a7491169f2fb526409e25692657929ec4efc0ae01cdec6ac24b253ffaa48f2f2a6bb5a3e0093151403b91d2cb5eebe6cb1fe5c9ed90de5beee81de0f45b671215d0329863a08351b6dc599cea8efb2e71a02409d0f7bd07af35b75021a9e344ccd5bef357c414b253fa73dd61b369c704933df5a3e8163a70fc1276d8847c05fad9ec9cc633b3e494274722b46a6b4aa28624ac8a9cf9f8d644791ff5f78f8b73033241e0078d98544c173004cdfc32e53f82c2884f86d8574f957b0bb68")
+            PraseICCard.praseIC(date)
 //            DoCmd.startSearchICcard();
 //            Thread {
 //                val str = "{\"customer_code\":\"881641\",\"sign\":\"6E7DA68D54DD8C30D5C51D34EED7C37D\",\"req_type\":\"1\",\"timestamp\":\"1576805238388\",\"result_msg\":\"请求成功！\",\"merchant_no\":\"001\",\"seq_no\":\"20191220000122\",\"server_time\":\"1576805238\",\"charset\":\"UTF-8\",\"trans_data\":{\"request_code\":\"apk\",\"server_time\":\"1576805238\",\"task_no\":\"8f270015a6bf4508a425293830faa42d\",\"request_content\":{\"protocol\":\"fastdfs\",\"packet_size\":\"24040460\",\"httpUrl\":\"http://139.9.113.219:10091/group1/M00/00/06/rBQABV38Pa-AMyxZAXEuFBgV8gk903.apk\",\"group_name\":\"group1\",\"url\":\"Fastdfs://139.9.113.219:22000/group1/M00/00/05/rBQABV34lKmAMxnUAW7UDFjEyqA497.apk/1.0.1_191217_zibo.apk\",\"md5\":\"737894f461908c0b185e8eb4ffe892be\"}},\"channel_code\":\"0000001\",\"version\":\"1.0.2\",\"result_code\":\"0\",\"terminal_type\":\"Q6-B\",\"terminal_no\":\"Q6B0B1T219140389\",\"sign_type\":\"MD5\"}\n";

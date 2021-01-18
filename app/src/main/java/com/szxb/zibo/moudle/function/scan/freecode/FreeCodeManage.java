@@ -57,23 +57,24 @@ public class FreeCodeManage {
         try {
             FreeScanEntity freeScanEntity = new Gson().fromJson(result, FreeScanEntity.class);
 
-            if (freeScanEntity.getBlueRing().getType().equals("Driver")) {//司机
-                BusApp.getPosManager().setDriverNo(freeScanEntity.getBlueRing().getValue());
-                BusToast.showToast("设置成功\n司机：" + freeScanEntity.getBlueRing().getValue(), true);
-                SoundPoolUtil.play(VoiceConfig.sijika);
-            } else if (freeScanEntity.getBlueRing().getType().equals("Price")) {//票价
-                if (TextUtils.equals(BusApp.getPosManager().getLineNo(), "")) {
-                    BusToast.showToast("请先设置线路", false);
-                    return;
-                }
-                BusApp.getPosManager().setBasePrice(Integer.parseInt(freeScanEntity.getBlueRing().getValue()));
-                BusToast.showToast("设置成功\n票价：" + freeScanEntity.getBlueRing().getValue(), true);
-                SoundPoolUtil.play(VoiceConfig.shuamachenggong);
-            } else if (freeScanEntity.getBlueRing().getType().equals("Conductor")) {//售票员
-//                appRunConfigEntity.setConductor(freeScanEntity.getBlueRing().getValue());
-                BusToast.showToast("设置成功\n售票员：" + freeScanEntity.getBlueRing().getValue(), true);
-                SoundPoolUtil.play(VoiceConfig.shuamachenggong);
-            } else if (freeScanEntity.getBlueRing().getType().equals("Carno")) {//车辆号
+//            if (freeScanEntity.getBlueRing().getType().equals("Driver")) {//司机
+//                BusApp.getPosManager().setDriverNo(freeScanEntity.getBlueRing().getValue());
+//                BusToast.showToast("设置成功\n司机：" + freeScanEntity.getBlueRing().getValue(), true);
+//                SoundPoolUtil.play(VoiceConfig.sijika);
+//            } else if (freeScanEntity.getBlueRing().getType().equals("Price")) {//票价
+//                if (TextUtils.equals(BusApp.getPosManager().getLineNo(), "")) {
+//                    BusToast.showToast("请先设置线路", false);
+//                    return;
+//                }
+//                BusApp.getPosManager().setBasePrice(Integer.parseInt(freeScanEntity.getBlueRing().getValue()));
+//                BusToast.showToast("设置成功\n票价：" + freeScanEntity.getBlueRing().getValue(), true);
+//                SoundPoolUtil.play(VoiceConfig.shuamachenggong);
+//            } else if (freeScanEntity.getBlueRing().getType().equals("Conductor")) {//售票员
+////                appRunConfigEntity.setConductor(freeScanEntity.getBlueRing().getValue());
+//                BusToast.showToast("设置成功\n售票员：" + freeScanEntity.getBlueRing().getValue(), true);
+//                SoundPoolUtil.play(VoiceConfig.shuamachenggong);
+//            } else
+            if (freeScanEntity.getBlueRing().getType().equals("Carno")) {//车辆号
                 if (freeScanEntity.getBlueRing().getValue().length() > 8) {
                     BusToast.showToast("请检查车号", true);
                     SoundPoolUtil.play(VoiceConfig.erweimageshicuowu);
@@ -98,7 +99,7 @@ public class FreeCodeManage {
                     BusApp.getPosManager().setLineName(zbLineInfo.getRoutename());
                     BusApp.getPosManager().setLineNo(zbLineInfo.getRouteno());
                     BusApp.getPosManager().setBasePrice(0);
-                    MiLog.i("流程", "posmanager 初始化  线路版本  票价版本" );
+                    MiLog.i("流程", "posmanager 初始化  线路版本  票价版本");
                     BusApp.getPosManager().setFarver("00000000000000");
                     BusApp.getPosManager().setLinver("00000000000000");
                     BusToast.showToast("下载线路", true);

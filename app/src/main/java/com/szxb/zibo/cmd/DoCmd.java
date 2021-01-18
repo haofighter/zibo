@@ -886,7 +886,6 @@ public class DoCmd {
     public static long runtime = 0;
 
     public static void doCardProcess() {
-        MiLog.i("身份证", "前次命令：" + lastCommand + "      命令执行成功");
         runtime = System.currentTimeMillis();
         if (count == Integer.MAX_VALUE) {
             count = 0;
@@ -942,7 +941,6 @@ public class DoCmd {
 
     public static devCmd doCardCommand(String command) {
         lastCommand = command;
-        MiLog.i("身份证", "发送命令：" + command);
         devCmd verCmd = new devCmd();
         verCmd.setCla((byte) 0x8e);
         verCmd.setIns((byte) 0x01);
@@ -962,7 +960,6 @@ public class DoCmd {
             byte[] keyboardInfo = new byte[devCmd.getnRecvLen()];
             arraycopy(devCmd.getDataBuf(), 0, keyboardInfo, 0, devCmd.getnRecvLen());
 
-            Log.i("身份证", "keyboardInfo:" + FileUtils.bytesToHexString(keyboardInfo));
             if (FileUtils.checkStrIsAllZero(FileUtils.bytesToHexString(keyboardInfo))) {
                 Log.i("身份证", "当前无数据");
                 if (noneICDate > 10) {
@@ -999,7 +996,6 @@ public class DoCmd {
                     MiLog.i("身份证", "身份证信息读取错误" + e.getMessage());
                 }
             }
-            MiLog.i("身份证", "返回状态：" + FileUtils.bytesToHexString(sw1) + "      当前返回数据：" + FileUtils.bytesToHexString(keyboardInfo) + "     " + Thread.currentThread().getName());
 
             if (isCanUse) {
                 if (FileUtils.bytesToHexString(sw1).equals("000090")) {//操作成功
@@ -1027,9 +1023,9 @@ public class DoCmd {
     public static Thread startSearchICcard() {
         if (portClose) {
             Log.i("身份证", "身份证模块已关闭");
+            runtime = System.currentTimeMillis();
             return null;
         }
-        Log.i("身份证", "线程开始：" + Thread.currentThread().getName());
         if (thread == null) {
             thread = new HandlerThread("ICCARD");
             thread.start();
@@ -1040,7 +1036,6 @@ public class DoCmd {
                         if (isDelay) {
                             isDelay = false;
                         }
-                        Log.i("身份证", "需要发送的命令 当前线程：" + Thread.currentThread().getName());
                         doCardCommand((String) msg.obj);
                     } catch (Exception e) {
 

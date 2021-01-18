@@ -17,7 +17,7 @@ public class AppParamInfo {
     String linName;
     String busNo;
     int basePrice;
-    String linVer;
+    String linVer;//票价版本 非线路文件版本
     String lineType;
 
     @Generated(hash = 1398782373)

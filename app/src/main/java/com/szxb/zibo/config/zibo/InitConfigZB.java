@@ -112,7 +112,6 @@ public class InitConfigZB {
                 Message message = new Message();
                 message.what = 99;
                 try {
-
                     if (AppUtil.getAppProcessName("com.szxb.buspay")) {
                         AppUtil.unInstallAPk("com.szxb.buspay");
                         message.obj = "卸载单票成功";
@@ -152,6 +151,7 @@ public class InitConfigZB {
                 try {
                     String binName = BuildConfig.BIN_NAME;
                     message.obj = binName;
+                    MiLog.i("流程", BusApp.getPosManager().getLastVersion()+"       "+binName);
                     if (!TextUtils.equals(BusApp.getPosManager().getLastVersion(), binName)) {
                         MiLog.i("流程", "开始更新");
                         AssetManager ass = BusApp.getInstance().getApplication().getAssets();
@@ -170,10 +170,8 @@ public class InitConfigZB {
                     } else {
                         message.obj = "bin无需更新\n版本" + message.obj;
                     }
-
-
                 } catch (Exception e) {
-                    message.obj = "bin更新出错\n版本" + message.obj;
+                    message.obj = "bin更新出错\n版本" + message.obj+"    "+e.getMessage();
                     subscriber.onNext(false);
                 }
                 BusApp.getInstance().getHandler().sendMessage(message);
