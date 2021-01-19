@@ -89,7 +89,6 @@ public class PraseCard {
         spCard.add("02");
 
 
-
         needRepeatPsam.add("21");
         needRepeatPsam.add("3A");
         needRepeatPsam.add("3B");
@@ -97,6 +96,7 @@ public class PraseCard {
         needRepeatPsam.add("61");
         needRepeatPsam.add("63");
         needRepeatPsam.add("65");
+        needRepeatPsam.add("75");
     }
 
 //    private static void initErrCard() {
@@ -142,7 +142,11 @@ public class PraseCard {
 
 //            bytes = FileUtils.hexStringToBytes("000000202101040901500800a79842f720107880a0022090004a1b598fa79842f70000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000200002550000000000000255000000000000501002019112100000000000000000120191121211912310a000000000000000025500001ffff0101255025500000000000052019112120991231010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000062e00002800fb0006001e2020123018231440999825500100588040002100320000000000000000000000000000000001ff00000000000006062550020020312021010315293200006a830000000000000000000000000000000000000000000bce");
 //            解析卡 如果00 则表示解析成功
-            if (!cardInfoEntity.putDate(bytes).equals("00")) {
+            String resultCode = cardInfoEntity.putDate(bytes);
+            if (!resultCode.equals("00")) {
+                if (needRepeatPsam.contains(resultCode)) {
+                    DoCmd.resetPSAM();
+                }
                 MiLog.i("刷卡", "卡解析失败   ");
                 return;
             }
@@ -674,7 +678,7 @@ public class PraseCard {
                 MiLog.i("刷卡", "错误记录保存：" + praseConsumCard.status);
                 BusToast.showToast("刷卡失败【" + praseConsumCard.getStatus() + "】", false);
                 showErr(praseConsumCard.getSw());
-                if(needRepeatPsam.contains(praseConsumCard.getStatus())){
+                if (needRepeatPsam.contains(praseConsumCard.getStatus())) {
                     Rx.getInstance().sendMessage("resetPSAM");
                 }
             } else {
